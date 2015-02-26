@@ -49,7 +49,7 @@ namespace larlite {
   {
 	 
      auto MinosTrackHandle = storage->get_data<larlite::event_minos>("minos"); //tracks");
-     auto LArTrackHandle = storage->get_data<larlite::event_track>("mcreco");
+     auto LArTrackHandle = storage->get_data<larlite::event_track>("tracks3d"); //mcreco");
      if(MinosTrackHandle->size()==0 || LArTrackHandle->size()==0)
  		return -1;
  
