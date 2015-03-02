@@ -16,13 +16,15 @@ my_proc = fmwk.ana_processor()
 for x in xrange(len(sys.argv)-1):
     my_proc.add_input_file(sys.argv[x+1])
 
-# Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kREAD)
-
 #my_proc.set_data_to_write(fmwk.data.kMinos,"minos");
+# Specify IO mode
+my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
+
 
 # Specify output root file name
-my_proc.set_ana_output_file("minosTest.root");
+my_proc.set_ana_output_file("minosAnaTest.root");
+
+my_proc.set_output_file("nue_larlite_matched.root");
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
