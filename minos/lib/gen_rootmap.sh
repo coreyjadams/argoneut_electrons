@@ -17,7 +17,6 @@ rootlibmap() {
 ######################################################
 # minos
 rootlibmap libargoneut_electrons_minos.rootmap libargoneut_electrons_minos.so $LARLITE_USERDEVDIR/argoneut_electrons/minos/LinkDef.h \
-    libLArLite_Analysis.so \
-    libSelectionTool_ERBase.so \
+    libLArLite_Analysis.so #\
 
 

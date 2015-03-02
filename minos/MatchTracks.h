@@ -62,6 +62,8 @@ namespace larlite {
 			fdBoundary = dBoundary;
 			}
 
+	void PrepareTTree() ;
+
  	double fdZ;    //max. z distance between projected T962 track and MINOS track
     double fdXY;   //max. radial distance between projected T962 track and MINOS track
     double fdCosx; //tolerance in dircosX matching
@@ -97,6 +99,9 @@ namespace larlite {
       TH2D* fDiffXvD;
       TH2D* fDiffYvD;
 
+      TTree* fAnaTree; 
+
+	  int _count ;
 
   };
 }

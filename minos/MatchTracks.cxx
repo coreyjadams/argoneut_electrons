@@ -12,6 +12,11 @@ namespace larlite {
 
 	  SetFclParams(20.0,35.0,1.0,1.0,0.5,5.0);
 
+	  fAnaTree=nullptr;
+	  PrepareTTree();
+
+	  _count =0;
+
       fDiffDirCosX = new TH1D("fDiffDirCosX","Diff: DirCosX", 100,-2.0,2.0);
       fDiffDirCosY = new TH1D("fDiffDirCosY","Diff: DirCosY", 100,-2.0,2.0);
       fDiffDirCosZ = new TH1D("fDiffDirCosZ","Diff: DirCosZ", 100,-2.0,2.0);
@@ -43,15 +48,27 @@ namespace larlite {
     return true;
   }
 
+ void MatchTracks::PrepareTTree(){
+	if(!fAnaTree){
+		fAnaTree = new TTree("ana_tree","");
+		fAnaTree->Branch("_count",&_count,"count/I");
+	}
+
+	}
+
 
 
   bool MatchTracks::analyze(storage_manager* storage)
   {
+	 _count++;
 	 
      auto MinosTrackHandle = storage->get_data<larlite::event_minos>("minos"); //tracks");
-     auto LArTrackHandle = storage->get_data<larlite::event_track>("tracks3d"); //mcreco");
-     if(MinosTrackHandle->size()==0 || LArTrackHandle->size()==0)
+     auto LArTrackHandle = storage->get_data<larlite::event_track>("ct"); //mcreco");
+     if(MinosTrackHandle->size()==0 || LArTrackHandle->size()==0){
+	std::cout<<"Event number: "<<_count<<std::endl;
  		return -1;
+
+       }
  
     // Associations:
 	AssUnit_t ass;
@@ -162,11 +179,12 @@ namespace larlite {
  		   lar_tag->push_back(LArTrackHandle->at(i));
  		   ass.push_back(lar_tag->size()-1);
     	   minos_to_argoTrack.push_back(ass);  
-         }//if(matchnumber!=999){
+         }//if(matchnumber!=999)
 
 	  }//loop over T962 tracks
 
     MinosTrackHandle->set_association(lar_tag->id(),minos_to_argoTrack);
+	fAnaTree->Fill();
 
 	return true;
 	
@@ -320,10 +338,13 @@ bool MatchTracks::EndsOnBoundary(const larlite::track& lar_track){
  		fMinosMom_Neg->Write();
  		fDiffXvD->Write();
  		fDiffYvD->Write();
+		fAnaTree->Write();
      }   
    
      else
        print(larlite::msg::kERROR,__FUNCTION__,"Did not find an output file pointer!!! File not opened?");
+
+	delete fAnaTree ;
    
     return true;
   }
