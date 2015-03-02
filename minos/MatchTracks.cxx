@@ -10,6 +10,8 @@ namespace larlite {
 
   bool MatchTracks::initialize() {
 
+	  std::cout<<"\nIntializing "<<std::endl;
+
 	  SetFclParams(20.0,35.0,1.0,1.0,0.5,5.0);
 
 	  fAnaTree=nullptr;
@@ -61,22 +63,23 @@ namespace larlite {
   bool MatchTracks::analyze(storage_manager* storage)
   {
 	 _count++;
+	fAnaTree->Fill();
 	 
      auto MinosTrackHandle = storage->get_data<larlite::event_minos>("minos"); //tracks");
      auto LArTrackHandle = storage->get_data<larlite::event_track>("ct"); //mcreco");
-     if(MinosTrackHandle->size()==0 || LArTrackHandle->size()==0){
-	std::cout<<"Event number: "<<_count<<std::endl;
+     if(MinosTrackHandle->size()==0 || LArTrackHandle->size()==0)
  		return -1;
-
-       }
  
     // Associations:
 	AssUnit_t ass;
     AssSet_t minos_to_argoTrack;
     minos_to_argoTrack.reserve(MinosTrackHandle->size());
-//    auto lar_tag = storage->get_data<larlite::event_track>("mcreco");
-	event_track *lar_tag = nullptr;
+	event_track lar_tag[MinosTrackHandle->size()] ;
 
+	fT962_Ntracks->Fill(LArTrackHandle->size());
+	fMINOS_Ntracks->Fill(MinosTrackHandle->size());
+
+//	std::cout<<"size of tracks : "<<LArTrackHandle->size()<<std::endl;
 	 int exiting=0;
   	 for(unsigned int i=0; i<LArTrackHandle->size();++i){
          if(EndsOnBoundary(LArTrackHandle->at(i))) ++exiting;
@@ -96,7 +99,7 @@ namespace larlite {
          unsigned int matchnumber = 999;
          if(!EndsOnBoundary(LArTrackHandle->at(i))) continue;//track doesn't leave TPC
 
-	     std::vector<double> larStart, larEnd;
+	     std::vector<double> larStart(3,0), larEnd(3,0);
 	     larStart[0] = lar_track.vertex_at(0)[0];
 	     larStart[1] = lar_track.vertex_at(0)[1];
 	     larStart[2] = lar_track.vertex_at(0)[2];
@@ -104,13 +107,15 @@ namespace larlite {
 	     larEnd[1] = lar_track.vertex_at(lar_track.n_point()-1)[1];
 	     larEnd[2] = lar_track.vertex_at(lar_track.n_point()-1)[2];
 	  
-	     std::vector<double> lardirectionStart, lardirectionEnd;
+	     std::vector<double> lardirectionStart(3,0), lardirectionEnd(3,0);
 	     lardirectionStart[0] = lar_track.direction_at(0)[0];	
 	     lardirectionStart[1] = lar_track.direction_at(0)[1];	
 	     lardirectionStart[2] = lar_track.direction_at(0)[2];	
 	     lardirectionEnd[0] = lar_track.direction_at(lar_track.n_point()-1)[0];	
 	     lardirectionEnd[1] = lar_track.direction_at(lar_track.n_point()-1)[1];	
 	     lardirectionEnd[2] = lar_track.direction_at(lar_track.n_point()-1)[2];	
+
+//		std::cout<<"size of tracks : "<<MinosTrackHandle->size()<<std::endl;
 
          for(unsigned int j=0; j<MinosTrackHandle->size();++j)
          {
@@ -146,6 +151,7 @@ namespace larlite {
          if(matchnumber!=999){
 			auto minostrack = MinosTrackHandle->at(matchnumber);
 
+			std::cout<<"Filling things"<<std::endl;
             fDiffR->Fill(rdiff_best);
             fDiffTotal->Fill(totaldiff2);
             fDiffXvDiffY->Fill(xdiff_best,ydiff_best);
@@ -176,15 +182,17 @@ namespace larlite {
 
 
 		   //make Association between T962 track and matched MINOS track
+			std::cout<<"making association..."<<std::endl;
  		   lar_tag->push_back(LArTrackHandle->at(i));
  		   ass.push_back(lar_tag->size()-1);
     	   minos_to_argoTrack.push_back(ass);  
+			std::cout<<"association made successfully"<<std::endl;
          }//if(matchnumber!=999)
 
 	  }//loop over T962 tracks
 
     MinosTrackHandle->set_association(lar_tag->id(),minos_to_argoTrack);
-	fAnaTree->Fill();
+			std::cout<<"or was it?"<<std::endl;
 
 	return true;
 	
@@ -197,7 +205,7 @@ bool MatchTracks::Compare(const larlite::track& lar_track,const larlite::minos& 
    double x_offset=117.4; // previously 116.9;
    double y_offset=19.3; // previously  20.28;
 	
-   std::vector<double> larStart, larEnd;
+   std::vector<double> larStart(3,0), larEnd(3,0);
    larStart[0] = lar_track.vertex_at(0)[0];
    larStart[1] = lar_track.vertex_at(0)[1];
    larStart[2] = lar_track.vertex_at(0)[2];
@@ -210,7 +218,7 @@ bool MatchTracks::Compare(const larlite::track& lar_track,const larlite::minos& 
    //std::cout << "larStart = (" << larStart[0] << "," << larStart[1] << "," << larStart[2] << ")" << std::endl;
    //std::cout << "larEnd = (" << larEnd[0] << "," << larEnd[1] << "," << larEnd[2] << ")" << std::endl;
 	
-   std::vector<double> lardirectionStart, lardirectionEnd;
+   std::vector<double> lardirectionStart(3,0), lardirectionEnd(3,0);
    lardirectionStart[0] = lar_track.direction_at(0)[0];	
    lardirectionStart[1] = lar_track.direction_at(0)[1];	
    lardirectionStart[2] = lar_track.direction_at(0)[2];	
@@ -280,7 +288,9 @@ if((x_pred + x_offset)>297.7
 
 bool MatchTracks::EndsOnBoundary(const larlite::track& lar_track){
 
-   std::vector<double> larStart, larEnd;
+   std::vector<double> larStart (3,0); 
+   std::vector<double> larEnd (3,0); 
+
    larStart[0] = lar_track.vertex_at(0)[0];
    larStart[1] = lar_track.vertex_at(0)[1];
    larStart[2] = lar_track.vertex_at(0)[2];
@@ -288,7 +298,8 @@ bool MatchTracks::EndsOnBoundary(const larlite::track& lar_track){
    larEnd[1] = lar_track.vertex_at(lar_track.n_point()-1)[1];
    larEnd[2] = lar_track.vertex_at(lar_track.n_point()-1)[2];
 
-   std::vector<double> lardirectionStart, lardirectionEnd;
+   std::vector<double> lardirectionStart (3,0);
+   std::vector<double> lardirectionEnd (3,0);
    lardirectionStart[0] = lar_track.direction_at(0)[0];	
    lardirectionStart[1] = lar_track.direction_at(0)[1];	
    lardirectionStart[2] = lar_track.direction_at(0)[2];	
@@ -301,9 +312,15 @@ bool MatchTracks::EndsOnBoundary(const larlite::track& lar_track){
          || fabs(larEnd[1]+20.)<fdBoundary
          || fabs(20.-larEnd[1])<fdBoundary
          || fabs(larEnd[2])<fdBoundary
-         || fabs(90.-larEnd[2])<fdBoundary )   
+         || fabs(90.-larEnd[2])<fdBoundary ){
+		//std::cout<<"returning true..."<<std::endl;
          return true;  
-      else return false;
+		}
+
+      else {
+//		std::cout<<"returning false..."<<std::endl;
+		return false;
+		}
   }
 
 

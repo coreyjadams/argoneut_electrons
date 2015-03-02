@@ -19,6 +19,8 @@ for x in xrange(len(sys.argv)-1):
 # Specify IO mode
 my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 
+#my_proc.set_data_to_write(fmwk.data.kMinos,"minos");
+
 # Specify output root file name
 my_proc.set_ana_output_file("minosTest.root");
 
