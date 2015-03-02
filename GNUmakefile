@@ -20,7 +20,7 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := minos minosTest #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := minos #ADD_NEW_SUBDIR ... do not remove this comment from this line
 
 #####################################################################################
 #
