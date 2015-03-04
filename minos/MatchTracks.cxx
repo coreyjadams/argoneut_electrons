@@ -85,7 +85,11 @@ namespace larlite {
          if(EndsOnBoundary(LArTrackHandle->at(i))) ++exiting;
         }
 
+<<<<<<< HEAD
      std::cout<<"Exiting T962 tracks: "<<exiting<<std::endl;    
+=======
+	 std::cout<<"\nExiting T962 tracks: "<<exiting<<std::endl;	
+>>>>>>> d422b96fb9b3801351cbfe34c47066d01be7aceb
 
 //the following makes sure that only 1 argoneut track is assigned to one minos track and that the match is the strongest (in terms of projected radial difference and angle between the tracks) among the candidate matches       
       for(unsigned int i=0; i<LArTrackHandle->size();++i)
@@ -151,7 +155,10 @@ namespace larlite {
          if(matchnumber!=999){
             auto minostrack = MinosTrackHandle->at(matchnumber);
 
+<<<<<<< HEAD
             std::cout<<"Filling things"<<std::endl;
+=======
+>>>>>>> d422b96fb9b3801351cbfe34c47066d01be7aceb
             fDiffR->Fill(rdiff_best);
             fDiffTotal->Fill(totaldiff2);
             fDiffXvDiffY->Fill(xdiff_best,ydiff_best);
@@ -181,18 +188,29 @@ namespace larlite {
             }
 
 
+<<<<<<< HEAD
            //make Association between T962 track and matched MINOS track
             std::cout<<"making association..."<<std::endl;
             lar_tag->push_back(LArTrackHandle->at(i));
             ass.push_back(lar_tag->size()-1);
            minos_to_argoTrack.push_back(ass);  
             std::cout<<"association made successfully"<<std::endl;
+=======
+		   //make Association between T962 track and matched MINOS track
+			std::cout<<"making association..."<<std::endl;
+ 		   lar_tag->push_back(LArTrackHandle->at(i));
+ 		   ass.push_back(lar_tag->size()-1);
+    	   minos_to_argoTrack.push_back(ass);  
+>>>>>>> d422b96fb9b3801351cbfe34c47066d01be7aceb
          }//if(matchnumber!=999)
 
       }//loop over T962 tracks
 
     MinosTrackHandle->set_association(lar_tag->id(),minos_to_argoTrack);
+<<<<<<< HEAD
             std::cout<<"or was it?"<<std::endl;
+=======
+>>>>>>> d422b96fb9b3801351cbfe34c47066d01be7aceb
 
     return true;
     
