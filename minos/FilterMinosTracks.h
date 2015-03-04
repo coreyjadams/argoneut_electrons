@@ -5,7 +5,7 @@
  * 
  * \brief Class def header for a class FilterMinosTracks
  *
- * @author ahack379
+ * @author ariana Hackenburg 
  */
 
 /** \addtogroup minos
@@ -32,22 +32,17 @@ namespace larlite {
     /// Default destructor
     virtual ~FilterMinosTracks(){}
 
-    /** IMPLEMENT in FilterMinosTracks.cc!
-        Initialization method to be called before the analysis event loop.
-    */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in FilterMinosTracks.cc! 
-        Analyze a data event-by-event  
-    */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in FilterMinosTracks.cc! 
-        Finalize method to be called after all events processed.
-    */
     virtual bool finalize();
 
+	void SetBoundary(double boundary){ fdBoundary = boundary ; }
+
   protected:
+
+	double fdBoundary ;
     
   };
 }

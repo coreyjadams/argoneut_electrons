@@ -9,12 +9,12 @@ namespace larlite {
 
   bool FilterMinosTracks::initialize() {
 
+	SetBoundary(2.) ;
+
     return true;
   }
   
   bool FilterMinosTracks::analyze(storage_manager* storage) {
-
-  double fdBoundary = 3.0 ; 
 
   auto evt_minos = storage->get_data<larlite::event_minos>("minos");
   auto evt_track = storage->get_data<larlite::event_track>("ct");
