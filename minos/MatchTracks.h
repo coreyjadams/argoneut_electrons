@@ -4,8 +4,9 @@
  * \ingroup minos
  * 
  * \brief Class def header for a class MatchTracks
- *
- * @author ariana Hackenburg
+ * Adapted from larsoft to larlite by ariana Hackenburg
+ * Original larsoft code can be found here:
+ * https://cdcvs.fnal.gov/redmine/projects/argoneutcode/repository/revisions/master/entry/MatchTracks/MatchTracks_module.cc
  */
 
 /** \addtogroup minos

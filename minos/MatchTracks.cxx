@@ -62,6 +62,7 @@ namespace larlite {
 
   bool MatchTracks::analyze(storage_manager* storage)
   {
+//	std::cout<<" \n\nNew event! "<<std::endl;
 	 _count++;
 	fAnaTree->Fill();
 	 
@@ -72,9 +73,12 @@ namespace larlite {
  
     // Associations:
 	AssUnit_t ass;
-    AssSet_t minos_to_argoTrack;
-    minos_to_argoTrack.reserve(MinosTrackHandle->size());
-	event_track lar_tag[MinosTrackHandle->size()] ;
+    AssSet_t argo_to_minosTrack;
+    argo_to_minosTrack.reserve(LArTrackHandle->size());
+//	event_minos minos_tag("minos") ;
+//	minos_tag.reserve(MinosTrackHandle->size()) ;
+	event_track track_tag("ct") ;
+	track_tag.reserve(LArTrackHandle->size()) ;
 
 	fT962_Ntracks->Fill(LArTrackHandle->size());
 	fMINOS_Ntracks->Fill(MinosTrackHandle->size());
@@ -85,12 +89,13 @@ namespace larlite {
          if(EndsOnBoundary(LArTrackHandle->at(i))) ++exiting;
         }
 
-	 std::cout<<"\nExiting T962 tracks: "<<exiting<<std::endl;	
+//	 std::cout<<"Exiting T962 tracks: "<<exiting<<std::endl;	
+	double fdBoundary = 6.0 ;
 
 //the following makes sure that only 1 argoneut track is assigned to one minos track and that the match is the strongest (in terms of projected radial difference and angle between the tracks) among the candidate matches       
       for(unsigned int i=0; i<LArTrackHandle->size();++i)
       {
-//		assn.clear() ;
+		ass.clear() ;
 		auto lar_track = LArTrackHandle->at(i);
          double totaldiff2=1000000.;
          double rdiff_best = -999.0;
@@ -181,15 +186,24 @@ namespace larlite {
 
 
 		   //make Association between T962 track and matched MINOS track
-			std::cout<<"making association..."<<std::endl;
- 		   lar_tag->push_back(LArTrackHandle->at(i));
- 		   ass.push_back(lar_tag->size()-1);
-    	   minos_to_argoTrack.push_back(ass);  
+//			std::cout<<"making association..."<<std::endl;
+// 		   minos_tag.push_back(minostrack);
+//		   ass.push_back(minos_tag.size()-1);
+	   	   track_tag.push_back(LArTrackHandle->at(i));
+ 		   ass.push_back(track_tag.size()-1);
+    	   argo_to_minosTrack.push_back(ass);  
+			   
+    //  if(fabs(larStart[0])<fdBoundary || fabs(47.-larStart[0])<fdBoundary || fabs(larStart[1]+20.)<fdBoundary
+    //     || fabs(20.-larStart[1])<fdBoundary || fabs(larStart[2])<fdBoundary ){
+	//		return false; 
+   //         }   
+
          }//if(matchnumber!=999)
 
 	  }//loop over T962 tracks
 
-    MinosTrackHandle->set_association(lar_tag->id(),minos_to_argoTrack);
+    //LArTrackHandle->set_association(minos_tag.id(),argo_to_minosTrack);
+    MinosTrackHandle->set_association(track_tag.id(),argo_to_minosTrack);
 
 	return true;
 	
@@ -285,24 +299,11 @@ if((x_pred + x_offset)>297.7
 
 bool MatchTracks::EndsOnBoundary(const larlite::track& lar_track){
 
-   std::vector<double> larStart (3,0); 
    std::vector<double> larEnd (3,0); 
 
-   larStart[0] = lar_track.vertex_at(0)[0];
-   larStart[1] = lar_track.vertex_at(0)[1];
-   larStart[2] = lar_track.vertex_at(0)[2];
    larEnd[0] = lar_track.vertex_at(lar_track.n_point()-1)[0];
    larEnd[1] = lar_track.vertex_at(lar_track.n_point()-1)[1];
    larEnd[2] = lar_track.vertex_at(lar_track.n_point()-1)[2];
-
-   std::vector<double> lardirectionStart (3,0);
-   std::vector<double> lardirectionEnd (3,0);
-   lardirectionStart[0] = lar_track.direction_at(0)[0];	
-   lardirectionStart[1] = lar_track.direction_at(0)[1];	
-   lardirectionStart[2] = lar_track.direction_at(0)[2];	
-   lardirectionEnd[0] = lar_track.direction_at(lar_track.n_point()-1)[0];	
-   lardirectionEnd[1] = lar_track.direction_at(lar_track.n_point()-1)[1];	
-   lardirectionEnd[2] = lar_track.direction_at(lar_track.n_point()-1)[2];	
 
       if(fabs(larEnd[0])<fdBoundary
          || fabs(47.-larEnd[0])<fdBoundary 

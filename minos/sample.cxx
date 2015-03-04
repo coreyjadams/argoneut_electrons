@@ -1,6 +1,0 @@
-#ifndef ARGONEUT_ELECTRONS_MINOS_SAMPLE_CXX
-#define ARGONEUT_ELECTRONS_MINOS_SAMPLE_CXX
-
-#include "sample.h"
-
-#endif
