@@ -187,11 +187,10 @@ namespace larlite {
 
 
            //make Association between T962 track and matched MINOS track
-            std::cout<<"making association..."<<std::endl;
-            lar_tag->push_back(LArTrackHandle->at(i));
-            ass.push_back(lar_tag->size()-1);
-           minos_to_argoTrack.push_back(ass);  
-            std::cout<<"association made successfully"<<std::endl;
+//            std::cout<<"making association..."<<std::endl;
+            track_tag.push_back(LArTrackHandle->at(i));
+            ass.push_back(track_tag.size()-1);
+            argo_to_minosTrack.push_back(ass);  
          }//if(matchnumber!=999)
 
       }//loop over T962 tracks
