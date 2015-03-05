@@ -16,6 +16,7 @@
 #define LARLITE_DRAWRAW_H
 
 #include "Analysis/ana_base.h"
+#include "LArUtil/Geometry.h"
 
 namespace larlite {
   /**
@@ -47,13 +48,16 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    // std::vector<float> * getData(){return data;}
-    std::vector<std::vector<float>> * getData(){return data;}
+    // Function to get the data by plane:
+    const std::vector<std::vector<float>> & getDataByPlane(unsigned int p) const;
 
   protected:
     
-    std::vector<std::vector<float>> * data;
+    //vector of [tpc][wire][time]
+    std::vector<std::vector<std::vector<float>>> * wiredata;
     // std::vector<float> * data;
+
+    const larutil::Geometry * geoService;
 
   };
 }

@@ -14,7 +14,19 @@ namespace larlite {
     // If you have a histogram to fill in the event loop, for example,
     // here is a good place to create one on the heap (i.e. "new TH1D"). 
     //
-    data = new std::vector<std::vector<float>>;
+
+    // Initialize the geoService object:
+    geoService = larutil::Geometry::GetME();
+
+    // Initialize data holder:
+    wiredata = new std::vector<std::vector<std::vector<float> > > ;
+    // Resize data holder to accomodate planes and wires:
+    wiredata->resize(geoService -> Nplanes());
+    for (unsigned int p = 0; p < geoService -> Nplanes(); p ++){
+      wiredata->at(p).resize(geoService->Nwires(p));
+    }
+
+
     return true;
 
   }
@@ -40,17 +52,13 @@ namespace larlite {
 
     // This is an event viewer.  In particular, this handles raw wire signal drawing.
     // So, obviously, first thing to do is to get the wires.
-    auto WireHandle = storage->get_data<larlite::event_wire>("caldata"); //tracks");
+    auto WireHandle = storage->get_data<larlite::event_wire>("caldata");
     
-    if (data -> size() == 0) data->resize(WireHandle->size());
 
-    for (int i = 0; i < WireHandle->size(); i++){
-        if (data -> at(i).size() == 0) data->at(i).resize(WireHandle->at(i).Signal().size());
-        for (int j = 0; j < data ->at(i).size(); j ++){
-            data->at(i).at(j) = WireHandle->at(i).Signal()[j];
-        }
+    for (auto & wire: *WireHandle){
+        unsigned int ch = wire.Channel();
+        wiredata->at(geoService->ChannelToPlane(ch))[geoService->ChannelToWire(ch)] = wire.Signal();
     }
-    std::cout << "Done this part ... " << std::endl;
 
     return true;
   }
@@ -70,10 +78,28 @@ namespace larlite {
     //   print(MSG::ERROR,__FUNCTION__,"Did not find an output file pointer!!! File not opened?");
     //
   
-    delete data;
+    delete wiredata;
 
     return true;
   }
+
+  const std::vector<std::vector<float>> & DrawRaw::getDataByPlane(unsigned int p) const{
+    static std::vector<std::vector<float>> returnNull;
+    if (p >= geoService->Nplanes()){
+      std::cerr << "ERROR: Request for nonexistant plane " << p << std::endl;
+      return returnNull;
+    }
+    else{
+      if (wiredata !=0){
+        return wiredata->at(p);
+      }
+      else{
+        return returnNull;
+      }
+    }
+    
+  }
+
 
 }
 #endif
