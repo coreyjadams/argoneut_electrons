@@ -40,9 +40,25 @@ namespace larlite {
 
 	void SetBoundary(double boundary){ fdBoundary = boundary ; }
 
+	void PrepareTTree() ;
+
+	void Reset() ;
+
   protected:
 
 	double fdBoundary ;
+	TTree * _ana_tree ;
+
+	int _outGoingLepton;
+	int _pdgRejected;
+ 	int _pdgKept ;
+	double _rejX ;
+	double _rejY ;
+	double _rejZ ;
+	double _keptX ;
+	double _keptY ;
+	double _keptZ ;
+    
     
   };
 }

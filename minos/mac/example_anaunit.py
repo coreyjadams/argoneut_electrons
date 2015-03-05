@@ -30,6 +30,8 @@ my_proc.set_output_file("nue_larlite_filtered.root");
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
 #my_proc.add_process(fmwk.MatchTracks())
+filter = fmwk.FilterMinosTracks()
+filter.SetBoundary(1.)
 my_proc.add_process(fmwk.FilterMinosTracks())
 
 print
