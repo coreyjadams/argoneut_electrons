@@ -1,0 +1,6 @@
+#ifndef ARGONEUT_ELECTRONS_MERGING_SAMPLE_CXX
+#define ARGONEUT_ELECTRONS_MERGING_SAMPLE_CXX
+
+#include "sample.h"
+
+#endif

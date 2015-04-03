@@ -2,7 +2,7 @@
 // Example C++ routine to run instantiate your sample class
 //
 
-#include "EventViewer/sample.h"
+#include "merging/sample.h"
 #include <iostream>
 
 int main(int argc, char** argv){

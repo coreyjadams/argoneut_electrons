@@ -1,0 +1,98 @@
+/**
+ * \file CBAlgoMergeSmallToTrack.h
+ *
+ * \ingroup CMTool
+ * 
+ * \brief Class def header for a class CBAlgoMergeSmallToTrack
+ *
+ * @author Corey Adams
+ */
+
+/** \addtogroup CMTool
+
+    @{*/
+#ifndef RECOTOOL_CBALGOMERGESMALLTOTRACK_H
+#define RECOTOOL_CBALGOMERGESMALLTOTRACK_H
+
+#include <iostream>
+#include "CMTool/CMToolBase/CBoolAlgoBase.h"
+#include "LArUtil/GeometryUtilities.h"
+
+
+namespace cmtool {
+  /**
+     \class CMalgoPolyContain
+     Merge Polygons if the two overlap even partially
+  */
+  class CBAlgoMergeSmallToTrack : public CBoolAlgoBase{
+    
+  public:
+    
+    /// Default constructor
+    CBAlgoMergeSmallToTrack();
+    
+    /// Default destructor
+    virtual ~CBAlgoMergeSmallToTrack(){};
+ 
+    /**
+       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       merged or not.
+    */
+    virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
+		      const ::cluster::ClusterParamsAlg &cluster2);
+
+    void SetDebug(bool debug) { _debug = debug; }
+
+    /// Method to re-configure the instance
+    void reconfigure();
+
+    bool isTrack(const ::cluster::ClusterParamsAlg &cluster);
+    bool isSmall(const ::cluster::ClusterParamsAlg &cluster);
+
+
+    /// Setter for track-like parameters
+    void SetMinHits(size_t mh)          { _min_hits           = mh; }
+    void SetMinModHitDens(Double_t mhd) { _min_mod_hit_dens   = mhd; }
+    void SetMinMHitWires(Double_t mmhw) { _min_multihit_wires = mmhw; }
+    void SetMinPrincipal(Double_t mp)   { _min_principal      = mp; }
+    void SetMinCharge(Double_t charge)  { _min_charge         = charge;}
+
+    // Setter for small like parameters
+    void SetMaxHit(int mh)      {_max_hits   = mh;}
+    void SetMaxCharge(float mc) {_max_charge = mc;}
+    void SetMaxLength(float ml) {_max_length = ml;}
+    void SetMaxWidth(float mw)  {_max_width  = mw;}
+    
+    // Setter for merging parameters
+    void SetMaxClosestDist(float mcd)  {_max_closest_dist=mcd;} 
+    void SetMaxDistToStart(float mdts) {_max_dist_to_start=mdts;} 
+    void SetMaxDistToEnd(float mdte)   {_max_dist_to_end=mdte;} 
+  private:
+    
+    // Criteria for a cluster to be a "track"
+    int   _min_hits;
+    float _min_mod_hit_dens;
+    float _min_multihit_wires;
+    float _min_principal;
+    float _min_charge;
+
+    // Criteria for a cluster to be "small"
+    int   _max_hits;
+    float _max_charge;
+    float _max_length;
+    float _max_width;
+
+    // Criteria to merge a small cluster into a track: 
+    float _max_closest_dist;
+    float _max_dist_to_start;
+    float _max_dist_to_end;
+
+
+    bool _debug;
+    // size_t _min_hits;
+  };
+}
+
+#endif
+/** @} */ // end of doxygen group 
+

@@ -3,7 +3,7 @@ CXXFLAGS += -I$(LARLITE_USERDEVDIR)/argoneut_electrons
 CXXFLAGS += -I. $(shell root-config --cflags) -g
 
 # Include your shared object lib location
-LDFLAGS += -L$(LARLITE_LIBDIR) -largoneut_electrons_EventViewer 
+LDFLAGS += -L$(LARLITE_LIBDIR) -largoneut_electrons_merging 
 LDFLAGS += $(shell root-config --libs) -lPhysics -lMatrix -g
 
 # platform-specific options

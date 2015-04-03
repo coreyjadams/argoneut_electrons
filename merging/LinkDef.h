@@ -10,8 +10,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class sample+;
-#pragma link C++ class larlite::DrawRaw+;
+#pragma link C++ class cmtool::CBAlgoMergeSmallToTrack+;
+
 //ADD_NEW_CLASS ... do not change this line
 #endif
-
-
