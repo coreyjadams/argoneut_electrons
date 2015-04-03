@@ -43,12 +43,11 @@ namespace cmtool {
 
     void SetDebug(bool debug) { _debug = debug; }
 
-    /// Method to re-configure the instance
-    void reconfigure();
 
     bool isTrack(const ::cluster::ClusterParamsAlg &cluster);
     bool isSmall(const ::cluster::ClusterParamsAlg &cluster);
-
+    float closestApproach(const ::cluster::ClusterParamsAlg &cluster1,
+                          const ::cluster::ClusterParamsAlg &cluster2);
 
     /// Setter for track-like parameters
     void SetMinHits(size_t mh)          { _min_hits           = mh; }
@@ -65,8 +64,8 @@ namespace cmtool {
     
     // Setter for merging parameters
     void SetMaxClosestDist(float mcd)  {_max_closest_dist=mcd;} 
-    void SetMaxDistToStart(float mdts) {_max_dist_to_start=mdts;} 
-    void SetMaxDistToEnd(float mdte)   {_max_dist_to_end=mdte;} 
+    void SetMinDistToStart(float mdts) {_min_dist_to_start=mdts;} 
+    void SetMinDistToEnd(float mdte)   {_min_dist_to_end=mdte;} 
   private:
     
     // Criteria for a cluster to be a "track"
@@ -84,8 +83,8 @@ namespace cmtool {
 
     // Criteria to merge a small cluster into a track: 
     float _max_closest_dist;
-    float _max_dist_to_start;
-    float _max_dist_to_end;
+    float _min_dist_to_start;
+    float _min_dist_to_end;
 
 
     bool _debug;
