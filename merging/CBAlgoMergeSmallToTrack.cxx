@@ -30,6 +30,8 @@ namespace cmtool {
     // Figure out which cluster is the track and which is the small
     // If both are track or both are small, return false
 
+    return true;
+
     const ::cluster::ClusterParamsAlg * track;
     const ::cluster::ClusterParamsAlg * small;
 
