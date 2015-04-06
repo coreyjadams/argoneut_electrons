@@ -74,6 +74,8 @@ namespace cmtool {
     float _min_multihit_wires;
     float _min_principal;
     float _min_charge;
+    float _min_length;
+    float _max_width
 
     // Criteria for a cluster to be "small"
     int   _max_hits;
