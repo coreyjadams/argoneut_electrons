@@ -55,6 +55,7 @@ namespace cmtool {
     void SetMinMHitWires(Double_t mmhw) { _min_multihit_wires = mmhw; }
     void SetMinPrincipal(Double_t mp)   { _min_principal      = mp; }
     void SetMinCharge(Double_t charge)  { _min_charge         = charge;}
+    void SetMinLength(Double_t length)  { _min_length         = length;}
 
     // Setter for small like parameters
     void SetMaxHit(int mh)      {_max_hits   = mh;}
@@ -69,16 +70,16 @@ namespace cmtool {
   private:
     
     // Criteria for a cluster to be a "track"
-    int   _min_hits;
+    unsigned int   _min_hits;
     float _min_mod_hit_dens;
     float _min_multihit_wires;
     float _min_principal;
     float _min_charge;
     float _min_length;
-    float _max_width
+    float _max_track_width;
 
     // Criteria for a cluster to be "small"
-    int   _max_hits;
+    unsigned int   _max_hits;
     float _max_charge;
     float _max_length;
     float _max_width;

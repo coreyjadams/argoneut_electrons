@@ -96,7 +96,7 @@ algo_array.AddAlgo(ALL_algo)
 merge_viewer.GetManager().AddMergeAlgo(algo_array)
 # done attaching merge algos
 ########################################
-merge_viewer.GetManager().MergeTillConverge(True)
+merge_viewer.GetManager().MergeTillConverge(False)
 
 
 my_proc.add_process(raw_viewer)
