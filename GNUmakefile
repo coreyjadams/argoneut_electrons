@@ -30,7 +30,7 @@ SUBDIRS := minos merging #ADD_NEW_SUBDIR ... do not remove this comment from thi
 .phony: all clean
 
 all:
-	@for i in $(SUBDIRS); do ( echo "" && echo "Compiling $$i..." && cd $(LARLITE_USERDEVDIR)/argoneut_electrons/$$i && $(MAKE) ) || exit $$?; done
+	@for i in $(SUBDIRS); do ( echo "" && echo "Compiling $$i..."); $(MAKE) -C $(LARLITE_USERDEVDIR)/argoneut_electrons/$$i  || exit $$?; done
 #####################################################################################
 #
 # CLEANs...
