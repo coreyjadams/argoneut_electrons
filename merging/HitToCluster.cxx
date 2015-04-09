@@ -42,7 +42,7 @@ namespace larlite {
   
     // Holder for new clusters:
     auto out_cluster_v = storage->get_data<event_cluster>(Form("%sWithSingles",producer.c_str()));
-    std::cout << "Initial id is " << out_cluster_v -> event_id() << std::endl;
+    // std::cout << "Initial id is " << out_cluster_v -> event_id() << std::endl;
 
     // Get all of the clusters from this event:
     auto ev_clus = storage->get_data<event_cluster>(producer);
@@ -53,7 +53,7 @@ namespace larlite {
     out_cluster_v->set_event_id(ev_clus->event_id());
     out_cluster_v->set_run(ev_clus->run());
     out_cluster_v->set_subrun(ev_clus->subrun());
-    std::cout << "reset  id is " << out_cluster_v -> event_id() << std::endl;
+    // std::cout << "reset  id is " << out_cluster_v -> event_id() << std::endl;
     
     if(!ev_clus->size()) {
 

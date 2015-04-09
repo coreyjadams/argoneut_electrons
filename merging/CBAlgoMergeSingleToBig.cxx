@@ -17,7 +17,7 @@ namespace cmtool {
     // // >-7 means EP > 0.99908
     // SetMinPrincipal(-6.);
 
-    _max_distance = 0.5;
+    _max_distance = 0.45;
   }
 
 
@@ -29,19 +29,19 @@ namespace cmtool {
 
     // Determine if this combination is exactly one cluster with 
     // multiple hits and one cluster with a single hit:
-    if (cluster1.GetNHits() != 1 && cluster2.GetNHits() != 1){
-      return false;
-    }
-    if (cluster1.GetNHits() == 1 && cluster2.GetNHits() == 1){
-      return false;
-    }
+    // if (cluster1.GetNHits() > 1 && cluster2.GetNHits() > 1){
+    //   return false;
+    // }
+    // if (cluster1.GetNHits() == 1 && cluster2.GetNHits() == 1){
+    //   return false;
+    // }
     // Now left with one cluster that's one hit, and one that isn't.
 
     if (cluster1.GetNHits() == 1){
       if (isContainedBy(cluster1, cluster2))
         return true;
     }
-    else{
+    else if (cluster2.GetNHits() == 1 ){
       if (isContainedBy(cluster2, cluster1))
         return true;      
     }

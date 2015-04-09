@@ -36,7 +36,7 @@ merger = larlite.ClusterMerger()
 ########################################
 # PROHIBIT ALGORITHMS
 ########################################
-# prohib_array = cmtool.CBAlgoArray()
+prohib_array = cmtool.CBAlgoArray()
 
 # tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
 # tracksep_prohibit.SetDebug(False)
@@ -50,16 +50,16 @@ merger = larlite.ClusterMerger()
 # outofcone_prohibit.SetMaxAngleSep(20.)
 # prohib_array.AddAlgo(outofcone_prohibit,False)
 
-# angle_prohibit = cmtool.CBAlgoAngleIncompat()
-# #this only applies if both clusters have >50 hits
-# angle_prohibit.SetMinHits(50)
+angle_prohibit = cmtool.CBAlgoProhibitBigToBig()
+#this only applies if both clusters have >15 hits
+# angle_prohibit.SetMinHits(10)
 # angle_prohibit.SetAllow180Ambig(True)
 # angle_prohibit.SetUseOpeningAngle(False)
 # #this prohibits clusters w/ angles different than 10 degrees
-# angle_prohibit.SetAngleCut(10.)
-# angle_prohibit.SetMinLength(20.)
+# angle_prohibit.SetAngleCut(5.)
+# angle_prohibit.SetMinLength(10.)
 # angle_prohibit.SetDebug(False)
-# prohib_array.AddAlgo(angle_prohibit,False)
+prohib_array.AddAlgo(angle_prohibit,False)
 
 # merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
 
@@ -86,6 +86,8 @@ algo_array = cmtool.CBAlgoArray()
 algo_array.AddAlgo(cmtool.CBAlgoMergeSingleToBig())
 
 merger.GetManager().AddMergeAlgo(algo_array)
+merger.GetManager().AddSeparateAlgo(prohib_array)
+
 # done attaching merge algos
 ########################################
 # merger.GetManager().MergeTillConverge(True)
