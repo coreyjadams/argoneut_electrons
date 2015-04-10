@@ -12,17 +12,17 @@ namespace cmtool {
 
     // Set parameters for track-like clusters
     SetMinHits(15);
-    SetMinModHitDens(0.5);
+    SetMinModHitDens(1.4);
     SetMinMHitWires(3.5);
     SetMaxWidth(5);
-    SetMinLength(5);
-    SetMinPrincipal(5);
+    SetMinLength(10);
+    SetMinPrincipal(10);
     
     // Set parameters for small clusters
     SetMaxCharge(10000);
-    SetMaxLength(15);
-    SetMaxWidth(5);
-    SetMaxHit(8);
+    SetMaxLength(10);
+    SetMaxWidth(10);
+    SetMaxHit(15);
 
     // Set merging criteria
     SetMaxClosestDist(10);

@@ -85,6 +85,11 @@ my_proc.add_process(merger2)
 ####TODO
 
 # Peter, add your algorithm here!
+merger3 = getSmallToTrackMerger()
+merger3.SetInputProducer("ccMerged2")
+merger3.SetOutputProducer("ccMerged3")
+merger3.SaveOutputCluster()
+my_proc.add_process(merger3)
 
 
 my_proc.run()

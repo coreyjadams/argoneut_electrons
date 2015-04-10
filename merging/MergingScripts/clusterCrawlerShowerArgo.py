@@ -50,23 +50,6 @@ def getMedClustMerger():
 
   algo_array.AddAlgo(singleToBig)
 
-
-  # smallToTrack = cmtool.CBAlgoMergeSmallToTrack()
-  # smallToTrack.SetMinHits()
-  # smallToTrack.SetMinModHitDens()
-  # smallToTrack.SetMinMHitWires()
-  # smallToTrack.SetMinPrincipal()
-  # smallToTrack.SetMinCharge()
-  # smallToTrack.SetMinLength()
-  # smallToTrack.SetMaxHit()
-  # smallToTrack.SetMaxCharge()
-  # smallToTrack.SetMaxLength()
-  # smallToTrack.SetMaxWidth()
-  # smallToTrack.SetMaxClosestDist()
-  # smallToTrack.SetMinDistToStart()
-  # smallToTrack.SetMinDistToEnd()
-
-  # algo_array.AddAlgo(smallToTrack)
   
   merger.GetManager().AddMergeAlgo(algo_array)
   merger.GetManager().AddSeparateAlgo(prohib_array)
@@ -74,3 +57,45 @@ def getMedClustMerger():
   merger.GetManager().SetMinNHits(1)
   return merger
 
+def getSmallToTrackMerger():
+  merger = larlite.ClusterMerger()
+  ########################################
+  # PROHIBIT ALGORITHMS
+  ########################################
+  prohib_array = cmtool.CBAlgoArray()
+  big_prohibit = cmtool.CBAlgoProhibitBigToBig()
+  big_prohibit.SetMaxHits(10)
+  prohib_array.AddAlgo(big_prohibit,False)
+
+  tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
+  tracksep_prohibit.SetDebug(False)
+  tracksep_prohibit.SetVerbose(False)
+  tracksep_prohibit.SetMinAngleDiff(5)
+  tracksep_prohibit.SetUseEP(False)
+  prohib_array.AddAlgo(tracksep_prohibit,False)
+
+
+  ########################################
+  # MERGE ALGORITHMS
+  ########################################
+  algo_array = cmtool.CBAlgoArray()
+  smallToTrack = cmtool.CBAlgoMergeSmallToTrack()
+  smallToTrack.SetDebug(False)
+  # smallToTrack.SetMinHits()
+  smallToTrack.SetMinModHitDens(0.5)
+  # smallToTrack.SetMinMHitWires()
+  smallToTrack.SetMinPrincipal(10)
+  # smallToTrack.SetMinCharge()
+  # smallToTrack.SetMinLength()
+  smallToTrack.SetMaxHit(8)
+  # smallToTrack.SetMaxCharge()
+  # smallToTrack.SetMaxLength()
+  smallToTrack.SetMaxWidth(5)
+  # smallToTrack.SetMaxClosestDist()
+  # smallToTrack.SetMinDistToStart()
+  # smallToTrack.SetMinDistToEnd()
+  algo_array.AddAlgo(smallToTrack)
+
+  merger.GetManager().AddMergeAlgo(algo_array)
+  merger.GetManager().AddSeparateAlgo(prohib_array)
+  return merger

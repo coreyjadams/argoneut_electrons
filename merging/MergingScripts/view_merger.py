@@ -50,8 +50,8 @@ merge_viewer.SetDrawPolygon(False)
 prohib_array = cmtool.CBAlgoArray()
 
 tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
-# tracksep_prohibit.SetDebug(False)
-# tracksep_prohibit.SetVerbose(False)
+tracksep_prohibit.SetDebug(False)
+tracksep_prohibit.SetVerbose(False)
 tracksep_prohibit.SetMinAngleDiff(5)
 tracksep_prohibit.SetUseEP(False)
 prohib_array.AddAlgo(tracksep_prohibit,False)
@@ -80,20 +80,17 @@ merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
 ########################################
 algo_array = cmtool.CBAlgoArray()
 
-# COM_algo = cmtool.CBAlgoCenterOfMassSmall()
-# COM_algo.SetDebug(False)
-# COM_algo.SetVerbose(False)
-# COM_algo.UseCOMInPoly(True)
-# COM_algo.UseCOMClose(True)
-# COM_algo.UseCOMNearClus(True)
-# COM_algo.SetMaxDistance(20.)
-# COM_algo.SetMaxCOMDistance(20.)
-# COM_algo.SetMaxHitsSmallClus(40)
-# algo_array.AddAlgo(COM_algo,False)
 
 ALL_algo = cmtool.CBAlgoMergeSmallToTrack()
 ALL_algo.SetDebug(False)
+ALL_algo.SetMinModHitDens(0.5)
+# ALL_algo.SetMinPrincipal(10)
+ALL_algo.SetMaxHit(15)
+# ALL_algo.SetMaxWidth(5)
+ALL_algo.SetMaxLength(15)
+ALL_algo.SetMaxClosestDist(15);
 algo_array.AddAlgo(ALL_algo)
+
 
 merge_viewer.GetManager().AddMergeAlgo(algo_array)
 # done attaching merge algos
