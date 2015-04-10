@@ -47,13 +47,14 @@ merge_viewer.SetDrawPolygon(False)
 ########################################
 # PROHIBIT ALGORITHMS
 ########################################
-# prohib_array = cmtool.CBAlgoArray()
+prohib_array = cmtool.CBAlgoArray()
 
-# tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
+tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
 # tracksep_prohibit.SetDebug(False)
 # tracksep_prohibit.SetVerbose(False)
-# tracksep_prohibit.SetUseEP(True)
-# prohib_array.AddAlgo(tracksep_prohibit,False)
+tracksep_prohibit.SetMinAngleDiff(5)
+tracksep_prohibit.SetUseEP(False)
+prohib_array.AddAlgo(tracksep_prohibit,False)
 
 # outofcone_prohibit = cmtool.CBAlgoOutOfConeSeparate()
 # outofcone_prohibit.SetDebug(False)
@@ -72,7 +73,7 @@ merge_viewer.SetDrawPolygon(False)
 # angle_prohibit.SetDebug(False)
 # prohib_array.AddAlgo(angle_prohibit,False)
 
-# merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
+merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
 
 ########################################
 # MERGE ALGORITHMS
@@ -91,6 +92,7 @@ algo_array = cmtool.CBAlgoArray()
 # algo_array.AddAlgo(COM_algo,False)
 
 ALL_algo = cmtool.CBAlgoMergeSmallToTrack()
+ALL_algo.SetDebug(False)
 algo_array.AddAlgo(ALL_algo)
 
 merge_viewer.GetManager().AddMergeAlgo(algo_array)

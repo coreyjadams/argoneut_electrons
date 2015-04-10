@@ -8,28 +8,29 @@ namespace cmtool {
   CBAlgoMergeSmallToTrack::CBAlgoMergeSmallToTrack() : CBoolAlgoBase()
   {
     // Nothing to be done in the base class
-    SetDebug(false);
+    SetDebug(true);
 
     // Set parameters for track-like clusters
-    SetMinHits(10);
-    SetMinModHitDens(1.4);
+    SetMinHits(15);
+    SetMinModHitDens(0.5);
     SetMinMHitWires(3.5);
-    SetMaxWidth(10);
+    SetMaxWidth(5);
     SetMinLength(5);
+    SetMinPrincipal(5);
     
     // Set parameters for small clusters
     SetMaxCharge(10000);
-    SetMaxLength(5);
+    SetMaxLength(15);
     SetMaxWidth(5);
-    SetMaxHit(10);
+    SetMaxHit(8);
 
     // Set merging criteria
-    SetMaxClosestDist(5);
+    SetMaxClosestDist(10);
 
     SetMinCharge(100);
     //"fPrincipal" is log(1-eigenvalue_principal)
     // >-7 means EP > 0.99908
-    SetMinPrincipal(-6.);
+    SetMinPrincipal(0.99);
 
   }
 
@@ -112,10 +113,13 @@ namespace cmtool {
       double start_y = cluster.GetParams().start_point.t;
       double end_x = cluster.GetParams().end_point.w;
       double end_y = cluster.GetParams().end_point.t;
+      double ep = cluster.GetParams().eigenvalue_principal;
+      double hit_density = cluster.GetParams().modified_hit_density;
 
       if( (N_Hits > _min_hits) &&
           // (width < _max_width) &&
-          (length > _min_length) ){
+          (length > _min_length)  ){
+          // (ep > _min_principal) ){
 
           if(_debug){
 
@@ -123,9 +127,11 @@ namespace cmtool {
             std::cout<<"cluster plane: "<<plane<<"  cluster start: ("<<start_x<<","<<start_y<<")"<<
             " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;
             std::cout<<"N_Hits: "<<N_Hits<<"  min_hits: "<<_min_hits<<std::endl;
+            std::cout<<"EP: "<<ep<<"  min_ep: "<<_min_principal<<std::endl;
             std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
             std::cout<<"length: "<<length<<"  min_length: "<<_min_length<<std::endl;
-            std::cout<<" This is a track!"<<std::endl;
+            std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;
+            std::cout<<"This is a track!"<<std::endl;
 
           }
           return true;
@@ -136,8 +142,10 @@ namespace cmtool {
         std::cout<<"------------------------------------------------------------------------------"<<std::endl;
         std::cout<<"cluster plane: "<<plane<<"  cluster start: ("<<start_x<<","<<start_y<<")"<<
         " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;        std::cout<<"N_Hits: "<<N_Hits<<"  min_hits: "<<_min_hits<<std::endl;
+        std::cout<<"EP: "<<ep<<"  min_ep: "<<_min_principal<<std::endl;
         std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
         std::cout<<"length: "<<length<<"  min_length: "<<_min_length<<std::endl;
+        std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;
         std::cout<<"This is not a track"<<std::endl;
       }
 
@@ -158,17 +166,19 @@ namespace cmtool {
       Polygon2D PolyObject = cluster.GetParams().PolyObject;
       double length = cluster.GetParams().length;
       double width = cluster.GetParams().width;
-      double charge = cluster.GetParams().sum_charge;
+      // double charge = cluster.GetParams().sum_charge;
       double plane = cluster.GetParams().start_point.plane;
       double start_x = cluster.GetParams().start_point.w;
       double start_y = cluster.GetParams().start_point.t;
       double end_x = cluster.GetParams().end_point.w;
       double end_y = cluster.GetParams().end_point.t;
+      double hit_density = cluster.GetParams().modified_hit_density;
+
 
       if( (N_Hits < _max_hits) &&
-          // (charge < _max_charge) &&
+          // (hit_density < _min_mod_hit_dens) &&
           // (width < _max_width) &&
-          (length < _max_length)      ){
+          (length < _max_length)        ){
 
           if(_debug){
 
@@ -178,8 +188,9 @@ namespace cmtool {
             std::cout<<"N_Hits: "<<N_Hits<<"  max_hits: "<<_max_hits<<std::endl;
             std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
             std::cout<<"length: "<<length<<"  max_length: "<<_max_length<<std::endl;
-            std::cout<<"charge: "<<length<<"  max_charge: "<<_max_charge<<std::endl;
-            std::cout<<" This is a small!"<<std::endl;
+            // std::cout<<"charge: "<<length<<"  max_charge: "<<_max_charge<<std::endl;
+            std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;
+            std::cout<<"This is a small!"<<std::endl;
 
           }
 
@@ -194,7 +205,8 @@ namespace cmtool {
         std::cout<<"N_Hits: "<<N_Hits<<"  max_hits: "<<_max_hits<<std::endl;
         std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
         std::cout<<"length: "<<length<<"  max_length: "<<_max_length<<std::endl;
-        std::cout<<"charge: "<<charge<<"  max_charge: "<<_max_charge<<std::endl;
+        // std::cout<<"charge: "<<charge<<"  max_charge: "<<_max_charge<<std::endl;
+        std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;
         std::cout<<"This is not a small"<<std::endl;
       }
 
