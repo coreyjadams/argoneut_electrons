@@ -63,18 +63,29 @@ for x in args.source:
 my_proc.set_output_file(args.data_output)
 larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
+# Add the HitsToCLuster module:
+htc = larlite.HitToCluster()
+my_proc.add_process(htc)
+
+# Merger to get the single hits attached to nearby clusters
 merger1 = getOneHitMerger()
 merger1.SetInputProducer("ccclusterWithSingles")
-merger1.SetOutputProducer("ccclusterMerged1")
+merger1.SetOutputProducer("ccMerged1")
 merger1.SaveOutputCluster()
-
-merger2 = getMedClustMerger()
-merger2.SetInputProducer("ccclusterMerged1")
-merger2.SetOutputProducer("ccclusterMerged2")
-merger2.SaveOutputCluster()
-
 my_proc.add_process(merger1)
+
+# Merger to make small clusters from even smaller clusters
+merger2 = getMedClustMerger()
+merger2.SetInputProducer("ccMerged1")
+merger2.SetOutputProducer("ccMerged2")
+merger2.SaveOutputCluster()
 my_proc.add_process(merger2)
+
+# Add a DropSingles module:
+####TODO
+
+# Peter, add your algorithm here!
+
 
 my_proc.run()
 
