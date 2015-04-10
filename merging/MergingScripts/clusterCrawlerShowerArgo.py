@@ -43,10 +43,8 @@ def getMedClustMerger():
   # MERGE ALGORITHMS
   ########################################
   algo_array = cmtool.CBAlgoArray()
-
-  algo_array = cmtool.CBAlgoArray()
   singleToBig = cmtool.CBAlgoMergeSingleToBig()
-  singleToBig.SetMaxDistance(1.0)
+  singleToBig.SetMaxDistance(1.5)
   singleToBig.SetMaxAverageDistance(2.5)
   singleToBig.SetMaxSmallClustHits(5)
 
@@ -75,3 +73,4 @@ def getMedClustMerger():
   merger.GetManager().MergeTillConverge(True)
   merger.GetManager().SetMinNHits(1)
   return merger
+
