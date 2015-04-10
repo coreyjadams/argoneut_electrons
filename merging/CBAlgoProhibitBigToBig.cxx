@@ -17,7 +17,7 @@ namespace cmtool {
     // // >-7 means EP > 0.99908
     // SetMinPrincipal(-6.);
 
-    _min_hits = 1;
+    _max_hits = 1;
   }
 
 
@@ -29,11 +29,9 @@ namespace cmtool {
 
     // Determine if this combination is exactly one cluster with 
     // multiple hits and one cluster with a single hit:
-    if (cluster1.GetNHits() > _min_hits && cluster2.GetNHits() > _min_hits){
+    if (cluster1.GetNHits() > _max_hits && cluster2.GetNHits() > _max_hits){
       return true;
     }
-
-
     return false;
   }
 

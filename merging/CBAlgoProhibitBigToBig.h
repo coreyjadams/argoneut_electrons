@@ -41,10 +41,11 @@ namespace cmtool {
     virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
                       const ::cluster::ClusterParamsAlg &cluster2);
 
+    void SetMaxHits(unsigned int n){_max_hits = n;}
 
   private:
     
-    float _min_hits;
+    float _max_hits;
 
   };
 }

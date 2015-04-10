@@ -1,142 +1,84 @@
 # Load libraries
 import ROOT, sys, os
 from ROOT import *
+from clusterCrawlerShowerArgo import *
+import argparse
 
-
+parser = argparse.ArgumentParser(description="Python script to process and merge showers.")
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-v", "--verbose", help="Turn on verbose output",
+                    action="store_true")
+group.add_argument("-q", "--quiet", help="Turn off most output",
+                    action="store_true")
+parser.add_argument("-s","--source",nargs='*',help="Name of input file")
+parser.add_argument("-o","--data-output",help="Output data file, if event is changed")
+parser.add_argument("-a","--ana-output",help="Analysis output file")
+parser.add_argument("-n","--num-events",help="Number of events to process")
+parser.add_argument("-d","--display",help="Turn on the display to see each view before and after." )
+args = parser.parse_args()
 
 my_proc = larlite.ana_processor()
-my_proc.set_verbosity(larlite.msg.kDEBUG)
+
+
+if len(sys.argv) == 1:
+    print "\n-------You forgot to include a source file!-------\n"
+    parser.print_help()
+
+if args.verbose:
+    print "Verbose mode turned on."
+    if args.source != None:
+        print "\tSource file is " + args.source
+    if args.data_output != None:
+        print "\tData output file is " + args.data_output
+    if args.ana_output != None:
+        print "\tAna output file is " + args.ana_output
+    my_proc.set_verbosity(larlite.msg.kDEBUG)
+
+if args.source == None:
+    print "Error: please specificy an input file with -s or --source."
+    quit()
+
+if args.num_events == None:
+    args.num_events = -1
+
+if args.data_output == None:
+    args.data_output = "default_event_output.root"
+    if args.verbose:
+      print "No event output file selected.  If necessary, output will go to:"
+      print "\t"+args.data_output
+
+if args.ana_output == None:
+    args.ana_output = "default_ana_output.root"
+    if  args.verbose:
+      print "No ana output file selected.  If necessary, output will go to:"
+      print "\t"+args.ana_output
+
+
 
 my_proc.set_io_mode(larlite.storage_manager.kBOTH)
 
-for x in xrange(len(sys.argv)-1):
-    print "adding ", sys.argv[x+1]
-    my_proc.add_input_file(sys.argv[x+1])
+for x in args.source:
+    my_proc.add_input_file(x)
 
-my_proc.set_output_file("out2.root")
+my_proc.set_output_file(args.data_output)
 larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
-merger = larlite.ClusterMerger()
+merger1 = getOneHitMerger()
+merger1.SetInputProducer("ccclusterWithSingles")
+merger1.SetOutputProducer("ccclusterMerged1")
+merger1.SaveOutputCluster()
 
-########################################
-# attach merge algos here
-########################################
+merger2 = getMedClustMerger()
+merger2.SetInputProducer("ccclusterMerged1")
+merger2.SetOutputProducer("ccclusterMerged2")
+merger2.SaveOutputCluster()
 
-
-########################################
-# Remove tracks with priority algo!
-########################################
-# priority_alg = cmtool.CPAlgoIgnoreTracks()
-# priority_alg.SetMinCharge(10000)
-# priority_alg.SetMinHits(10)
-# merge_viewer.GetManager().AddPriorityAlgo(priority_alg)
-
-
-
-########################################
-# PROHIBIT ALGORITHMS
-########################################
-prohib_array = cmtool.CBAlgoArray()
-
-# tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
-# tracksep_prohibit.SetDebug(False)
-# tracksep_prohibit.SetVerbose(False)
-# tracksep_prohibit.SetUseEP(True)
-# prohib_array.AddAlgo(tracksep_prohibit,False)
-
-# outofcone_prohibit = cmtool.CBAlgoOutOfConeSeparate()
-# outofcone_prohibit.SetDebug(False)
-# outofcone_prohibit.SetVerbose(False)
-# outofcone_prohibit.SetMaxAngleSep(20.)
-# prohib_array.AddAlgo(outofcone_prohibit,False)
-
-angle_prohibit = cmtool.CBAlgoProhibitBigToBig()
-#this only applies if both clusters have >15 hits
-# angle_prohibit.SetMinHits(10)
-# angle_prohibit.SetAllow180Ambig(True)
-# angle_prohibit.SetUseOpeningAngle(False)
-# #this prohibits clusters w/ angles different than 10 degrees
-# angle_prohibit.SetAngleCut(5.)
-# angle_prohibit.SetMinLength(10.)
-# angle_prohibit.SetDebug(False)
-prohib_array.AddAlgo(angle_prohibit,False)
-
-# merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
-
-########################################
-# MERGE ALGORITHMS
-########################################
-algo_array = cmtool.CBAlgoArray()
-
-# COM_algo = cmtool.CBAlgoCenterOfMassSmall()
-# COM_algo.SetDebug(False)
-# COM_algo.SetVerbose(False)
-# COM_algo.UseCOMInPoly(True)
-# COM_algo.UseCOMClose(True)
-# COM_algo.UseCOMNearClus(True)
-# COM_algo.SetMaxDistance(20.)
-# COM_algo.SetMaxCOMDistance(20.)
-# COM_algo.SetMaxHitsSmallClus(40)
-# algo_array.AddAlgo(COM_algo,False)
-
-# ALL_algo = cmtool.CBAlgoMergeSmallToTrack()
-# algo_array.AddAlgo(ALL_algo)
-# POLY_algo = cmtool.CBAlgoPolyOverlap()
-# algo_array.AddAlgo(POLY_algo)
-algo_array.AddAlgo(cmtool.CBAlgoMergeSingleToBig())
-
-merger.GetManager().AddMergeAlgo(algo_array)
-merger.GetManager().AddSeparateAlgo(prohib_array)
-
-# done attaching merge algos
-########################################
-# merger.GetManager().MergeTillConverge(True)
-
-
-
-my_proc.add_process(merger)
-
-merger.SetInputProducer("ccclusterWithSingles")
-merger.SetOutputProducer("ccclusterMerged1")
-merger.SaveOutputCluster()
-
+my_proc.add_process(merger1)
+my_proc.add_process(merger2)
 
 my_proc.run()
 
+
 # my_proc.process_event(0)
-
-# gStyle.SetOptStat(0)
-
-# #start on first event always
-# user_input_evt_no = -1;
-
-# while true:
-
-#     try:
-#         user_input_evt_no = input('Hit Enter to continue to next evt, or type in an event number to jump to that event:')
-#     except SyntaxError:
-#         user_input_evt_no = user_input_evt_no + 1
-
-#     my_proc.process_event(user_input_evt_no)
-
-#     raw_viewer.DrawAllClusters();
-
-#     merge_viewer.DrawAllClusters();
-
-
-# #    for plane in xrange(larutil.Geometry.GetME().Nplanes()):
-# #
-# #        print "    Plane:", plane
-# #        
-# #        for cindex in xrange(merge_viewer.ClusterCount(plane)):
-# #
-# #            print "        Cluster:",cindex
-# #            merge_viewer.DrawOneCluster(plane,cindex)
-# #            sys.stdin.readline()
-# #    
-
-#     print "    Hit enter to go next event..."
-#     sys.stdin.readline()
-
 
 # done!
