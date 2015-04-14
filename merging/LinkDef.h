@@ -14,6 +14,7 @@
 #pragma link C++ class cmtool::CBAlgoProhibitBigToBig+;
 
 #pragma link C++ class larlite::HitToCluster+;
+#pragma link C++ class larlite::DropSingles+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 

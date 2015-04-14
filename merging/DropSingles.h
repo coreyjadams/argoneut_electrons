@@ -1,9 +1,9 @@
 /**
- * \file HitToCluster.h
+ * \file DropSingles.h
  *
  * \ingroup merging
  * 
- * \brief Class def header for a class HitToCluster
+ * \brief Class def header for a class DropSingles
  *
  * @author cadams
  */
@@ -12,37 +12,37 @@
 
     @{*/
 
-#ifndef LARLITE_HITTOCLUSTER_H
-#define LARLITE_HITTOCLUSTER_H
+#ifndef LARLITE_DROPSINGLES_H
+#define LARLITE_DROPSINGLES_H
 
 #include "Analysis/ana_base.h"
 
 namespace larlite {
   /**
-     \class HitToCluster
+     \class DropSingles
      User custom analysis class made by SHELL_USER_NAME
    */
-  class HitToCluster : public ana_base{
+  class DropSingles : public ana_base{
   
   public:
 
     /// Default constructor
-    HitToCluster(){ _name="HitToCluster"; _fout=0;}
+    DropSingles(){ _name="DropSingles"; _fout=0;}
 
     /// Default destructor
-    virtual ~HitToCluster(){}
+    virtual ~DropSingles(){}
 
-    /** IMPLEMENT in HitToCluster.cc!
+    /** IMPLEMENT in DropSingles.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in HitToCluster.cc! 
+    /** IMPLEMENT in DropSingles.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in HitToCluster.cc! 
+    /** IMPLEMENT in DropSingles.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
