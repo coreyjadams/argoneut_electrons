@@ -12,25 +12,24 @@ namespace cmtool {
 
     // Set parameters for track-like clusters
     SetMinHits(15);
-    SetMinModHitDens(1.4);
+    SetMinModHitDens(15);
     SetMinMHitWires(3.5);
     SetMaxWidth(5);
-    SetMinLength(10);
-    SetMinPrincipal(10);
-    
-    // Set parameters for small clusters
-    SetMaxCharge(10000);
-    SetMaxLength(10);
-    SetMaxWidth(10);
-    SetMaxHit(15);
-
-    // Set merging criteria
-    SetMaxClosestDist(10);
-
+    SetMinLength(8);
+        
     SetMinCharge(100);
     //"fPrincipal" is log(1-eigenvalue_principal)
     // >-7 means EP > 0.99908
-    SetMinPrincipal(0.99);
+    SetMinPrincipal(0.993);
+    
+    // Set parameters for small clusters
+    SetMaxCharge(100);
+    SetMaxLength(9);
+    SetMaxWidth(9);
+    SetMaxHit(16);
+
+    // Set merging criteria
+    SetMaxClosestDist(2.5);
 
   }
 
@@ -115,11 +114,12 @@ namespace cmtool {
       double end_y = cluster.GetParams().end_point.t;
       double ep = cluster.GetParams().eigenvalue_principal;
       double hit_density = cluster.GetParams().modified_hit_density;
+      double mhit_wire = cluster.GetParams().multi_hit_wires;
 
-      if( (N_Hits > _min_hits) &&
-          // (width < _max_width) &&
-          (length > _min_length)  ){
-          // (ep > _min_principal) ){
+      if( ((N_Hits > _min_hits) &&
+          (length > _min_length)  &&
+          (ep > _min_principal))  ||
+          (ep > (_min_principal+0.006)) ){
 
           if(_debug){
 
@@ -128,9 +128,10 @@ namespace cmtool {
             " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;
             std::cout<<"N_Hits: "<<N_Hits<<"  min_hits: "<<_min_hits<<std::endl;
             std::cout<<"EP: "<<ep<<"  min_ep: "<<_min_principal<<std::endl;
-            std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
+            // std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
             std::cout<<"length: "<<length<<"  min_length: "<<_min_length<<std::endl;
             std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;
+            // std::cout<<"Multi_hit wire: "<<mhit_wire<<"  min_multihit_wires: "<<_min_multihit_wires<<std::endl;
             std::cout<<"This is a track!"<<std::endl;
 
           }
@@ -141,11 +142,13 @@ namespace cmtool {
 
         std::cout<<"------------------------------------------------------------------------------"<<std::endl;
         std::cout<<"cluster plane: "<<plane<<"  cluster start: ("<<start_x<<","<<start_y<<")"<<
-        " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;        std::cout<<"N_Hits: "<<N_Hits<<"  min_hits: "<<_min_hits<<std::endl;
+        " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;
+        std::cout<<"N_Hits: "<<N_Hits<<"  min_hits: "<<_min_hits<<std::endl;
         std::cout<<"EP: "<<ep<<"  min_ep: "<<_min_principal<<std::endl;
-        std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
+        // std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
         std::cout<<"length: "<<length<<"  min_length: "<<_min_length<<std::endl;
         std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;
+        // std::cout<<"Multi_hit wire: "<<mhit_wire<<"  min_multihit_wires: "<<_min_multihit_wires<<std::endl;
         std::cout<<"This is not a track"<<std::endl;
       }
 
@@ -176,8 +179,7 @@ namespace cmtool {
 
 
       if( (N_Hits < _max_hits) &&
-          // (hit_density < _min_mod_hit_dens) &&
-          // (width < _max_width) &&
+          (hit_density < _min_mod_hit_dens) &&
           (length < _max_length)        ){
 
           if(_debug){
@@ -186,7 +188,7 @@ namespace cmtool {
             std::cout<<"cluster plane: "<<plane<<"  cluster start: ("<<start_x<<","<<start_y<<")"<<
             " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;
             std::cout<<"N_Hits: "<<N_Hits<<"  max_hits: "<<_max_hits<<std::endl;
-            std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
+            // std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
             std::cout<<"length: "<<length<<"  max_length: "<<_max_length<<std::endl;
             // std::cout<<"charge: "<<length<<"  max_charge: "<<_max_charge<<std::endl;
             std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;
@@ -203,7 +205,7 @@ namespace cmtool {
         std::cout<<"cluster plane: "<<plane<<"  cluster start: ("<<start_x<<","<<start_y<<")"<<
         " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;  
         std::cout<<"N_Hits: "<<N_Hits<<"  max_hits: "<<_max_hits<<std::endl;
-        std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
+        // std::cout<<"width: "<<width<<"  max_width: "<<_max_width<<std::endl;
         std::cout<<"length: "<<length<<"  max_length: "<<_max_length<<std::endl;
         // std::cout<<"charge: "<<charge<<"  max_charge: "<<_max_charge<<std::endl;
         std::cout<<"density: "<<hit_density<<" mod_hit_density: "<<_min_mod_hit_dens<<std::endl;

@@ -65,6 +65,8 @@ larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
 # Add the HitsToCLuster module:
 htc = larlite.HitToCluster()
+htc.SetInputProducer("cccluster")
+htc.SetOutputProducer("ccclusterWithSingles")
 my_proc.add_process(htc)
 
 # Merger to get the single hits attached to nearby clusters
@@ -85,12 +87,32 @@ my_proc.add_process(merger2)
 ####TODO
 
 # Peter, add your algorithm here!
-merger3 = getSmallToTrackMerger()
+merger3 = getSmallToTrackMerger(0.5)
 merger3.SetInputProducer("ccMerged2")
 merger3.SetOutputProducer("ccMerged3")
 merger3.SaveOutputCluster()
 my_proc.add_process(merger3)
 
+# Second iteration
+merger4 = getSmallToTrackMerger(1.0)
+merger4.SetInputProducer("ccMerged3")
+merger4.SetOutputProducer("ccMerged4")
+merger4.SaveOutputCluster()
+my_proc.add_process(merger4)
+
+#Third iteration
+merger5 = getSmallToTrackMerger(1.5)
+merger5.SetInputProducer("ccMerged4")
+merger5.SetOutputProducer("ccMerged5")
+merger5.SaveOutputCluster()
+my_proc.add_process(merger5)
+
+#Fourth iteration
+merger6 = getSmallToTrackMerger(2.5)
+merger6.SetInputProducer("ccMerged5")
+merger6.SetOutputProducer("ccMerged6")
+merger6.SaveOutputCluster()
+my_proc.add_process(merger6)
 
 my_proc.run()
 

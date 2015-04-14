@@ -57,7 +57,7 @@ def getMedClustMerger():
   merger.GetManager().SetMinNHits(1)
   return merger
 
-def getSmallToTrackMerger():
+def getSmallToTrackMerger(dist):
   merger = larlite.ClusterMerger()
   ########################################
   # PROHIBIT ALGORITHMS
@@ -67,12 +67,12 @@ def getSmallToTrackMerger():
   big_prohibit.SetMaxHits(10)
   prohib_array.AddAlgo(big_prohibit,False)
 
-  tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
-  tracksep_prohibit.SetDebug(False)
-  tracksep_prohibit.SetVerbose(False)
-  tracksep_prohibit.SetMinAngleDiff(5)
-  tracksep_prohibit.SetUseEP(False)
-  prohib_array.AddAlgo(tracksep_prohibit,False)
+  # tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
+  # tracksep_prohibit.SetDebug(False)
+  # tracksep_prohibit.SetVerbose(False)
+  # tracksep_prohibit.SetMinAngleDiff(5)
+  # tracksep_prohibit.SetUseEP(False)
+  # prohib_array.AddAlgo(tracksep_prohibit,False)
 
 
   ########################################
@@ -82,16 +82,16 @@ def getSmallToTrackMerger():
   smallToTrack = cmtool.CBAlgoMergeSmallToTrack()
   smallToTrack.SetDebug(False)
   # smallToTrack.SetMinHits()
-  smallToTrack.SetMinModHitDens(0.5)
+  # smallToTrack.SetMinModHitDens(0.5)
   # smallToTrack.SetMinMHitWires()
-  smallToTrack.SetMinPrincipal(10)
+  # smallToTrack.SetMinPrincipal(10)
   # smallToTrack.SetMinCharge()
   # smallToTrack.SetMinLength()
-  smallToTrack.SetMaxHit(8)
+  # smallToTrack.SetMaxHit(8)
   # smallToTrack.SetMaxCharge()
   # smallToTrack.SetMaxLength()
-  smallToTrack.SetMaxWidth(5)
-  # smallToTrack.SetMaxClosestDist()
+  # smallToTrack.SetMaxWidth(5)
+  smallToTrack.SetMaxClosestDist(dist)
   # smallToTrack.SetMinDistToStart()
   # smallToTrack.SetMinDistToEnd()
   algo_array.AddAlgo(smallToTrack)
