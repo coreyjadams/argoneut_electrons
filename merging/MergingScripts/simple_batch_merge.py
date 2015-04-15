@@ -77,7 +77,7 @@ merger1.SaveOutputCluster()
 my_proc.add_process(merger1)
 
 # Merger to make small clusters from even smaller clusters
-merger2 = getMedClustMerger()
+# merger2 = getMedClustMerger()
 merger2.SetInputProducer("ccMerged1")
 merger2.SetOutputProducer("ccMerged2")
 merger2.SaveOutputCluster()
@@ -87,6 +87,7 @@ my_proc.add_process(merger2)
 ####TODO
 
 # Peter, add your algorithm here!
+merger3 = larlite.HitToCluster()
 merger3 = getSmallToTrackMerger(0.5)
 merger3.SetInputProducer("ccMerged2")
 merger3.SetOutputProducer("ccMerged3")
