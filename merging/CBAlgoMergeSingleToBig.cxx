@@ -8,7 +8,7 @@ namespace cmtool {
   CBAlgoMergeSingleToBig::CBAlgoMergeSingleToBig() : CBoolAlgoBase()
   {
     _max_distance = 0.4;
-    _max_average_distance = 9999;
+    _max_average_distance = 99999;
     _max_small_clust_hits = 1;
   }
 
