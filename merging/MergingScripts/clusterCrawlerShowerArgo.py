@@ -6,28 +6,6 @@ from ROOT import *
 # Define all of the steps to merging for ClusterCrawlerShower
 # each function returns an instance of ClusterMerger()
 
-def getOneHitMerger(maxHits=1, maxDist=0.5):
-  'This merger takes single hits and merges them into nearby clusters'
-  merger = larlite.ClusterMerger()
-  ########################################
-  # PROHIBIT ALGORITHMS
-  ########################################
-  prohib_array = cmtool.CBAlgoArray()
-  big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(maxHits)
-  prohib_array.AddAlgo(big_prohibit,False)
-  
-  ########################################
-  # MERGE ALGORITHMS
-  ########################################
-  algo_array = cmtool.CBAlgoArray()
-  singleToBig = cmtool.CBAlgoMergeSingleToBig()
-  singleToBig.SetMaxDistance(maxDist)
-  algo_array.AddAlgo(singleToBig)
-  
-  merger.GetManager().AddMergeAlgo(algo_array)
-  merger.GetManager().AddSeparateAlgo(prohib_array)
-  return merger
 
 def getSmallClustMerger(maxHitsProhib=5, maxHitsSmall=1, maxDist=0.5,maxDistAv=2.4, minHits = 1):
   merger = larlite.ClusterMerger()
@@ -57,72 +35,8 @@ def getSmallClustMerger(maxHitsProhib=5, maxHitsSmall=1, maxDist=0.5,maxDistAv=2
   merger.GetManager().SetMinNHits(minHits)
   return merger
 
-def getMedClustMerger():
-  merger = larlite.ClusterMerger()
-  ########################################
-  # PROHIBIT ALGORITHMS
-  ########################################
-  prohib_array = cmtool.CBAlgoArray()
-  big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(10)
-  prohib_array.AddAlgo(big_prohibit,False)
-  
-  ########################################
-  # MERGE ALGORITHMS
-  ########################################
-  algo_array = cmtool.CBAlgoArray()
-  singleToBig = cmtool.CBAlgoMergeSingleToBig()
-  singleToBig.SetMaxDistance(1.5)
-  singleToBig.SetMaxAverageDistance(2.5)
-  singleToBig.SetMaxSmallClustHits(10)
 
-  algo_array.AddAlgo(singleToBig)
-
-  
-  merger.GetManager().AddMergeAlgo(algo_array)
-  merger.GetManager().AddSeparateAlgo(prohib_array)
-  merger.GetManager().MergeTillConverge(False)
-  merger.GetManager().SetMinNHits(1)
-  return merger
-
-def getBigClustMerger():
-  merger = larlite.ClusterMerger()
-  ########################################
-  # PROHIBIT ALGORITHMS
-  ########################################
-  prohib_array = cmtool.CBAlgoArray()
-  # big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  # big_prohibit.SetMaxHits(1)
-  # prohib_array.AddAlgo(big_prohibit,False)
-  
-  # tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
-  # tracksep_prohibit.SetDebug(False)
-  # tracksep_prohibit.SetVerbose(False)
-  # tracksep_prohibit.SetMinAngleDiff(1)
-  # tracksep_prohibit.SetUseEP(False)
-  # prohib_array.AddAlgo(tracksep_prohibit,True)
-
-  ########################################
-  # MERGE ALGORITHMS
-  ########################################
-  algo_array = cmtool.CBAlgoArray()
-  # polySD = cmtool.CBAlgoPolyShortestDist()
-  # polySD.SetMinDistSquared(0.5)
-  # polySD.SetMinNumHits(10)
-  # polySD.SetMaxNumHits(10)
-
-
-  # algo_array.AddAlgo(polySD)
-
-  
-  merger.GetManager().AddMergeAlgo(algo_array)
-  merger.GetManager().AddSeparateAlgo(prohib_array)
-  merger.GetManager().MergeTillConverge(False)
-  merger.GetManager().SetMinNHits(50)
-  return merger
-
-
-def getSmallToTrackMerger():
+def getSmallToTrackMerger(dist):
   merger = larlite.ClusterMerger()
   ########################################
   # PROHIBIT ALGORITHMS
@@ -150,7 +64,7 @@ def getSmallToTrackMerger():
   # smallToTrack.SetMinHits()
   smallToTrack.SetMinModHitDens(0.8)
   # smallToTrack.SetMinMHitWires()
-  smallToTrack.SetMinPrincipal(10)
+  # smallToTrack.SetMinPrincipal(10)
   # smallToTrack.SetMinCharge()
   # smallToTrack.SetMinLength()
 
@@ -161,7 +75,7 @@ def getSmallToTrackMerger():
   smallToTrack.SetMaxWidth(5)
 
   # Setter for merging parameters
-  smallToTrack.SetMaxClosestDist(3)
+  smallToTrack.SetMaxClosestDist(dist)
   # smallToTrack.SetMinDistToStart()
   # smallToTrack.SetMinDistToEnd()
   algo_array.AddAlgo(smallToTrack)

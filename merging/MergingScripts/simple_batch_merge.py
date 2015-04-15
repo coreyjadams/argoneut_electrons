@@ -104,52 +104,37 @@ def main(**args):
   drop.SetOutputProducer("ccMergedNoSingles")
   my_proc.add_process(drop)
 
-  # # Merger to get the single hits attached to nearby clusters
-  # merger1 = getOneHitMerger()
-  # merger1.SetInputProducer("ccclusterWithSingles")
-  # merger1.SetOutputProducer("ccMerged1")
-  # merger1.SaveOutputCluster()
-  # my_proc.add_process(merger1)
 
-  # # Merger to make small clusters from even smaller clusters
-  # merger2 = getSmallClustMerger()
-  # merger2.SetInputProducer("ccMerged1")
-  # merger2.SetOutputProducer("ccMerged2")
-  # merger2.SaveOutputCluster()
-  # my_proc.add_process(merger2)
+  # Peter, add your algorithm here!
+  merger3 = getSmallToTrackMerger(0.5)
+  merger3.SetInputProducer("ccMergedNoSingles")
+  merger3.SetOutputProducer("ccMergedStage21")
+  merger3.SaveOutputCluster()
+  my_proc.add_process(merger3)
 
-  # # Merger to make small clusters from even smaller clusters
-  # merger3 = getMedClustMerger()
-  # merger3.SetInputProducer("ccMerged2")
-  # merger3.SetOutputProducer("ccMerged3")
-  # merger3.SaveOutputCluster()
-  # my_proc.add_process(merger3)
+  # Second iteration
+  merger4 = getSmallToTrackMerger(1.0)
+  merger4.SetInputProducer("ccMergedStage21")
+  merger4.SetOutputProducer("ccMergedStage22")
+  merger4.SaveOutputCluster()
+  my_proc.add_process(merger4)
 
+  #Third iteration
+  merger5 = getSmallToTrackMerger(1.5)
+  merger5.SetInputProducer("ccMergedStage22")
+  merger5.SetOutputProducer("ccMergedStage23")
+  merger5.SaveOutputCluster()
+  my_proc.add_process(merger5)
 
- 
-
-  # Merger to make small clusters from even smaller clusters
-  # merger4 = getBigClustMerger()
-  # merger4.SetInputProducer("ccMerged3")
-  # merger4.SetOutputProducer("ccMerged4")
-  # merger4.SaveOutputCluster()
-  # my_proc.add_process(merger4)
-
-  # # Peter, add your algorithm here!
-  # merger5 = getSmallToTrackMerger()
-  # merger5.SetInputProducer("ccMerged4")
-  # merger5.SetOutputProducer("ccMerged5")
-  # merger5.SaveOutputCluster()
-  # my_proc.add_process(merger5)
-
-
-
-
-
-  my_proc.run()
-
+  #Fourth iteration
+  merger6 = getSmallToTrackMerger(2.5)
+  merger6.SetInputProducer("ccMergedStage23")
+  merger6.SetOutputProducer("ccMergedStage24")
+  merger6.SaveOutputCluster()
+  my_proc.add_process(merger6)
 
   # my_proc.process_event(0)
+  my_proc.run()
 
   # done!
 
@@ -166,6 +151,7 @@ if __name__ == '__main__':
   parser.add_argument("-a","--ana-output",help="Analysis output file")
   parser.add_argument("-n","--num-events",help="Number of events to process")
   parser.add_argument("-d","--display",help="Turn on the display to see each view before and after." )
-  argcomplete.autocomplete(parser)
+  if hasArgC:
+    argcomplete.autocomplete(parser)
   args = parser.parse_args()
   main(**vars(args))

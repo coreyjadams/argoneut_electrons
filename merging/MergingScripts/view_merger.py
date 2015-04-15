@@ -82,17 +82,19 @@ algo_array = cmtool.CBAlgoArray()
 
 
 ALL_algo = cmtool.CBAlgoMergeSmallToTrack()
-ALL_algo.SetDebug(False)
-ALL_algo.SetMinModHitDens(0.5)
+ALL_algo.SetDebug(True)
+# ALL_algo.SetMinModHitDens(1.5)
 # ALL_algo.SetMinPrincipal(10)
-ALL_algo.SetMaxHit(15)
+# ALL_algo.SetMaxHit(13)
 # ALL_algo.SetMaxWidth(5)
-ALL_algo.SetMaxLength(15)
-ALL_algo.SetMaxClosestDist(15);
+# ALL_algo.SetMaxLength(15)
+ALL_algo.SetMaxClosestDist(2.5);
 algo_array.AddAlgo(ALL_algo)
 
 
 merge_viewer.GetManager().AddMergeAlgo(algo_array)
+merge_viewer.GetManager().MergeTillConverge(True)
+
 # done attaching merge algos
 ########################################
 merge_viewer.GetManager().MergeTillConverge(False)
