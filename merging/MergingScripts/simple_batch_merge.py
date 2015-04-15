@@ -6,25 +6,12 @@ from ROOT import *
 from clusterCrawlerShowerArgo import *
 import argparse
 
-hasArgC = True
-
-try:
-  import argcomplete
-except ImportError, e:
-  hasArgC = False
-  pass
-
 
 def main(**args):
   
 
   my_proc = larlite.ana_processor()
 
-  print args
-
-  if len(sys.argv) == 1:
-      print "\n-------You forgot to include a source file!-------\n"
-      parser.print_help()
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -36,14 +23,11 @@ def main(**args):
           print "\tAna output file is " + args['ana_output'] 
       # my_proc.set_verbosity(larlite.msg.kDEBUG)
   # else:
-    # my_proc.set_verbosity(larlite.msg.kNORMAL)
+  my_proc.set_verbosity(larlite.msg.kERROR)
 
   if args['source'] == None:
       print "Error: please specificy an input file with -s or --source."
       quit()
-
-  if args['num_events'] == None:
-      args['num_events'] = -1
 
   if args['data_output'] == None:
       args['data_output'] = "default_event_output.root"
@@ -76,7 +60,7 @@ def main(**args):
   # Trying an iterative merging approach:
 
   maxClosestDistances = [0.5,   0.65, 1.0, 1.5]
-  maxAverageDistances = [99999, 1.5,  1.5, 2.5]
+  maxAverageDistances = [100,   1.5,  1.5, 2.5]
   maxHitsSmall        = [1,     3,    5,   10 ]
   maxHitsProhibit     = [1,     3,    5,   10 ]
   minHitsInCluster    = [1,     1,    2,   5  ]
@@ -99,39 +83,39 @@ def main(**args):
     my_proc.add_process(mergers[-1])
 
   # Add a DropSingles module:
-  drop = larlite.DropSingles()
-  drop.SetInputProducer(prevProducer)
-  drop.SetOutputProducer("ccMergedNoSingles")
-  my_proc.add_process(drop)
+  # drop = larlite.DropSingles()
+  # drop.SetInputProducer(prevProducer)
+  # drop.SetOutputProducer("ccMergedNoSingles")
+  # my_proc.add_process(drop)
 
 
   # Peter, add your algorithm here!
   merger3 = getSmallToTrackMerger(0.5)
-  merger3.SetInputProducer("ccMergedNoSingles")
+  merger3.SetInputProducer(prevProducer)
   merger3.SetOutputProducer("ccMergedStage21")
   merger3.SaveOutputCluster()
   my_proc.add_process(merger3)
 
-  # Second iteration
-  merger4 = getSmallToTrackMerger(1.0)
-  merger4.SetInputProducer("ccMergedStage21")
-  merger4.SetOutputProducer("ccMergedStage22")
-  merger4.SaveOutputCluster()
-  my_proc.add_process(merger4)
+  # # Second iteration
+  # merger4 = getSmallToTrackMerger(1.0)
+  # merger4.SetInputProducer("ccMergedStage21")
+  # merger4.SetOutputProducer("ccMergedStage22")
+  # merger4.SaveOutputCluster()
+  # my_proc.add_process(merger4)
 
-  #Third iteration
-  merger5 = getSmallToTrackMerger(1.5)
-  merger5.SetInputProducer("ccMergedStage22")
-  merger5.SetOutputProducer("ccMergedStage23")
-  merger5.SaveOutputCluster()
-  my_proc.add_process(merger5)
+  # #Third iteration
+  # merger5 = getSmallToTrackMerger(1.5)
+  # merger5.SetInputProducer("ccMergedStage22")
+  # merger5.SetOutputProducer("ccMergedStage23")
+  # merger5.SaveOutputCluster()
+  # my_proc.add_process(merger5)
 
-  #Fourth iteration
-  merger6 = getSmallToTrackMerger(2.5)
-  merger6.SetInputProducer("ccMergedStage23")
-  merger6.SetOutputProducer("ccMergedStage24")
-  merger6.SaveOutputCluster()
-  my_proc.add_process(merger6)
+  # #Fourth iteration
+  # merger6 = getSmallToTrackMerger(2.5)
+  # merger6.SetInputProducer("ccMergedStage23")
+  # merger6.SetOutputProducer("ccMergedStage24")
+  # merger6.SaveOutputCluster()
+  # my_proc.add_process(merger6)
 
   # my_proc.process_event(0)
   my_proc.run()
@@ -149,9 +133,11 @@ if __name__ == '__main__':
   parser.add_argument("-s","--source",nargs='*',help="Name of input file")
   parser.add_argument("-o","--data-output",help="Output data file, if event is changed")
   parser.add_argument("-a","--ana-output",help="Analysis output file")
-  parser.add_argument("-n","--num-events",help="Number of events to process")
-  parser.add_argument("-d","--display",help="Turn on the display to see each view before and after." )
-  if hasArgC:
-    argcomplete.autocomplete(parser)
+
   args = parser.parse_args()
+
+  if len(sys.argv) == 1:
+      print "\n-------You forgot to include a source file!-------\n"
+      parser.print_help()
+
   main(**vars(args))
