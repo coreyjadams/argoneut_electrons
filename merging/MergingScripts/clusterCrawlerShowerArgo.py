@@ -6,15 +6,15 @@ from ROOT import *
 # Define all of the steps to merging for ClusterCrawlerShower
 # each function returns an instance of ClusterMerger()
 
-def getOneHitMerger():
-  'This merger takes single hits and merges them into nearby clusters'
+
+def getSmallClustMerger(maxHitsProhib=5, maxHitsSmall=1, maxDist=0.5,maxDistAv=2.4, minHits = 1):
   merger = larlite.ClusterMerger()
   ########################################
   # PROHIBIT ALGORITHMS
   ########################################
   prohib_array = cmtool.CBAlgoArray()
   big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(1)
+  big_prohibit.SetMaxHits(maxHitsProhib)
   prohib_array.AddAlgo(big_prohibit,False)
   
   ########################################
@@ -22,40 +22,19 @@ def getOneHitMerger():
   ########################################
   algo_array = cmtool.CBAlgoArray()
   singleToBig = cmtool.CBAlgoMergeSingleToBig()
-  singleToBig.SetMaxDistance(0.45)
-  algo_array.AddAlgo(singleToBig)
-  
-  merger.GetManager().AddMergeAlgo(algo_array)
-  merger.GetManager().AddSeparateAlgo(prohib_array)
-  return merger
-
-def getMedClustMerger():
-  merger = larlite.ClusterMerger()
-  ########################################
-  # PROHIBIT ALGORITHMS
-  ########################################
-  prohib_array = cmtool.CBAlgoArray()
-  big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(10)
-  prohib_array.AddAlgo(big_prohibit,False)
-  
-  ########################################
-  # MERGE ALGORITHMS
-  ########################################
-  algo_array = cmtool.CBAlgoArray()
-  singleToBig = cmtool.CBAlgoMergeSingleToBig()
-  singleToBig.SetMaxDistance(1.5)
-  singleToBig.SetMaxAverageDistance(2.5)
-  singleToBig.SetMaxSmallClustHits(5)
+  singleToBig.SetMaxDistance(maxDist)
+  singleToBig.SetMaxAverageDistance(maxDistAv)
+  singleToBig.SetMaxSmallClustHits(maxHitsSmall)
 
   algo_array.AddAlgo(singleToBig)
 
   
   merger.GetManager().AddMergeAlgo(algo_array)
   merger.GetManager().AddSeparateAlgo(prohib_array)
-  merger.GetManager().MergeTillConverge(True)
-  merger.GetManager().SetMinNHits(1)
+  merger.GetManager().MergeTillConverge(False)
+  merger.GetManager().SetMinNHits(minHits)
   return merger
+
 
 def getSmallToTrackMerger(dist):
   merger = larlite.ClusterMerger()
@@ -64,7 +43,7 @@ def getSmallToTrackMerger(dist):
   ########################################
   prohib_array = cmtool.CBAlgoArray()
   big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(10)
+  big_prohibit.SetMaxHits(15)
   prohib_array.AddAlgo(big_prohibit,False)
 
   # tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
@@ -81,16 +60,21 @@ def getSmallToTrackMerger(dist):
   algo_array = cmtool.CBAlgoArray()
   smallToTrack = cmtool.CBAlgoMergeSmallToTrack()
   smallToTrack.SetDebug(False)
+  # Setters for track-like parameters
   # smallToTrack.SetMinHits()
-  # smallToTrack.SetMinModHitDens(0.5)
+  smallToTrack.SetMinModHitDens(0.8)
   # smallToTrack.SetMinMHitWires()
   # smallToTrack.SetMinPrincipal(10)
   # smallToTrack.SetMinCharge()
   # smallToTrack.SetMinLength()
-  # smallToTrack.SetMaxHit(8)
+
+  # Setter for small like parameters
+  smallToTrack.SetMaxHit(8)
   # smallToTrack.SetMaxCharge()
   # smallToTrack.SetMaxLength()
-  # smallToTrack.SetMaxWidth(5)
+  smallToTrack.SetMaxWidth(5)
+
+  # Setter for merging parameters
   smallToTrack.SetMaxClosestDist(dist)
   # smallToTrack.SetMinDistToStart()
   # smallToTrack.SetMinDistToEnd()
