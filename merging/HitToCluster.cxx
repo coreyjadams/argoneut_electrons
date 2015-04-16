@@ -87,13 +87,12 @@ namespace larlite {
     // std::cout << "Number of starting hits: "  << ev_hit -> size() << std::endl;
     int found_hits = 0;
     auto ass_info = ev_clus->association(ev_hit->id());
-    std::vector<int>  nullIntVec;
-    std::vector<float>  nullFltVec;
+
     for(auto const& hit_indices : ass_info) {
       for(auto const& hit_index : hit_indices){
         // std::cout << "Hit index is " << hit_index << std::endl;
+
         hit_index_vec[hit_index] = -1;  
-        // ev_hit -> erase(hit_index);
         found_hits ++;
       }
     }
@@ -123,13 +122,13 @@ namespace larlite {
     // Include the old clusters and associations into the new clusters
     // and associations:
     // std::cout << "original_hit_ass size: " << original_hit_ass.size() << std::endl;
-    // std::cout << "ev_clus size: " << ev_clus -> size() << std::endl;
 
     // hit_ass = original_hit_ass;
     // out_cluster_v = ev_clus;
 
     for (auto index : leftoverHitIndices){
       AssUnit_t new_association;
+      // std::cout << "Getting the hit at index " << index << std::endl;
       auto hit = ev_hit->at(index);
       out_cluster_v -> push_back(larlite::cluster());
       out_cluster_v -> back().set_charge(hit.Charge());
@@ -143,7 +142,19 @@ namespace larlite {
     // std::cout << "output id is: " << out_cluster_v -> event_id() << std::endl;
     out_cluster_v->set_association(data::kHit,_input_producer,hit_ass);
 
+    // // Print out all the hits in the new clusters on one plane:
+    // for(auto const& hit_indices : hit_ass) {
+    //   if (ev_hit -> at(hit_indices[0]).View() == 1) continue;
+    //   for(auto const& hit_index : hit_indices){
+    //       std::cout << "This hit is at " << ev_hit -> at(hit_index).Wire()
+    //                 << ", " << ev_hit -> at(hit_index).PeakTime() << std::endl;
+    //   }
+    //   std::cout << std::endl;
+    // }
+    // std::cout << "ev_clus size: " << ev_clus -> size() << std::endl;
+    // std::cout << "original_hit_ass size is " << original_hit_ass.size() << std::endl;
     // std::cout << "Cluster size is " << out_cluster_v -> size() << std::endl;
+    // std::cout << "Assoc size is " << hit_ass.size() << std::endl;
 
     return true;
   }

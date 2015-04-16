@@ -51,25 +51,30 @@ def main(**args):
   my_proc.set_output_file(args['data_output'])
   larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
+  mergers = []
+  prevProducer = "cccluster"
+
+  ##################################
+  # Stage 1:
+  ##################################
+
   # Module to turn all the single hits into one hit clusters
   htc = larlite.HitToCluster()
-  htc.SetInputProducer("cccluster")
+  htc.SetInputProducer(prevProducer)
   htc.SetOutputProducer("ccclusterWithSingles")
   my_proc.add_process(htc)
 
   # Trying an iterative merging approach:
 
-  maxClosestDistances = [0.5,   0.65, 1.0, 1.5]
-  maxAverageDistances = [100,   1.5,  1.5, 2.5]
-  maxHitsSmall        = [1,     3,    5,   10 ]
-  maxHitsProhibit     = [1,     3,    5,   10 ]
-  minHitsInCluster    = [1,     1,    2,   5  ]
+  maxClosestDistances = [0.5,   0.8,  1.0,  1.2 ]
+  maxAverageDistances = [9999,  9999, 9999, 9999]
+  maxHitsSmall        = [1,     1,    3,    3   ]
+  maxHitsProhibit     = [1,     1,    3,    3   ]
+  minHitsInCluster    = [1,     1,    1,    3   ]
 
   prevProducer="ccclusterWithSingles"
 
-  mergers = []
-
-  for i in range(0, 4):
+  for i in range(0, len(maxClosestDistances)):
     mergers.append(getSmallClustMerger(
         maxHitsSmall  = maxHitsSmall[i],
         maxHitsProhib = maxHitsProhibit[i],
@@ -82,19 +87,52 @@ def main(**args):
     prevProducer = "ccMerged" + str(i)
     my_proc.add_process(mergers[-1])
 
-  # Add a DropSingles module:
+  # Add the inline merger:
+  inlineMerger = getInlineMerger(maxInlineDist=0.5)
+  inlineMerger.SetInputProducer(prevProducer)
+  inlineMerger.SetOutputProducer("ccMergedInline")
+  prevProducer = "ccMergedInline"
+  inlineMerger.SaveOutputCluster()
+  my_proc.add_process(inlineMerger)
+
+  ##################################
+  # Stage 2:
+  ##################################
+
+  overlapFraction    = [0.9, 0.8, 0.7, 0.5 ]
+  minHitsForConsid   = [5,   10,  15,  15  ]
+  maxHitsProhibit    = [15,  30,  50,  50 ]
+
+  for i in range(0, len(overlapFraction)):
+    mergers.append(getOverlapMerger(
+        overlapFrac = overlapFraction[i],
+        minHits     = minHitsForConsid[i],
+        maxHits     = maxHitsProhibit[i]))
+    mergers[-1].SetInputProducer(prevProducer)
+    mergers[-1].SetOutputProducer("ccMergedPoly" + str(i))
+    mergers[-1].SaveOutputCluster()
+    prevProducer = "ccMergedPoly" + str(i)
+    my_proc.add_process(mergers[-1])
+
+
+  ##################################
+  # Stage 3:
+  ##################################
+
+
+  # # Add a DropSingles module:
   # drop = larlite.DropSingles()
   # drop.SetInputProducer(prevProducer)
   # drop.SetOutputProducer("ccMergedNoSingles")
   # my_proc.add_process(drop)
 
 
-  # Peter, add your algorithm here!
-  merger3 = getSmallToTrackMerger(0.5)
-  merger3.SetInputProducer(prevProducer)
-  merger3.SetOutputProducer("ccMergedStage21")
-  merger3.SaveOutputCluster()
-  my_proc.add_process(merger3)
+  # # Peter, add your algorithm here!
+  # merger3 = getSmallToTrackMerger(0.5)
+  # merger3.SetInputProducer(prevProducer)
+  # merger3.SetOutputProducer("ccMergedStage21")
+  # merger3.SaveOutputCluster()
+  # my_proc.add_process(merger3)
 
   # # Second iteration
   # merger4 = getSmallToTrackMerger(1.0)
@@ -117,7 +155,7 @@ def main(**args):
   # merger6.SaveOutputCluster()
   # my_proc.add_process(merger6)
 
-  # my_proc.process_event(0)
+  # my_proc.process_event(8)
   my_proc.run()
 
   # done!

@@ -4,6 +4,9 @@
  * \ingroup CMTool
  * 
  * \brief Class def header for a class CBAlgoMergeSingleToBig
+ * This algorithm will merge small hits into nearby large clusters
+ * You can set the minimum distance, which will be the closest approach
+ * as well as the average distance between all hits.
  *
  * @author Corey Adams
  */
