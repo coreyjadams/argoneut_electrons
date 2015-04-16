@@ -17,18 +17,25 @@ for x in xrange(len(sys.argv)-1):
     my_proc.add_input_file(sys.argv[x+1])
 
 # Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kREAD)
+my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
+
+my_proc.set_output_file("out.root")
 
 # Specify output root file name
 my_proc.set_ana_output_file("from_test_ana_you_can_remove_me.root");
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-my_proc.add_process(fmwk.ana_base())
+my_proc.add_process(fmwk.HitToCluster())
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
+# my_proc.process_event(0)
+# my_proc.process_event(1)
+# my_proc.process_event(2)
+# while my_proc.process_event():
+  # pass
 
 # Let's run it.
 my_proc.run();

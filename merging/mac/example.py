@@ -1,11 +1,11 @@
 import sys
 from ROOT import gSystem
 gSystem.Load("libargoneut_electrons_merging")
-from ROOT import sample
+from ROOT import larlite
 
 try:
 
-    print "PyROOT recognized your class %s" % str(sample)
+    print "PyROOT recognized your class %s" % str(HitToCluster)
 
 except NameError:
 

@@ -2,34 +2,21 @@
 import ROOT, sys, os
 from ROOT import *
 
-# Now import ana_processor & your class. For this example, ana_base.
-gSystem.Load("libCMTool")
-from ROOT import *
-if len(sys.argv) != 2:
-    print
-    print "*** Improper usage. Usage: python viewclusters.py /path/to/input/file.root ***"
-    print
 
-
-filename = sys.argv[1]
 #filename = "/Users/davidkaleko/Data/ShowerStudy/PDGID_11/shower_larlight_11.root"
-my_proc = larlight.ana_processor()
-my_proc.set_verbosity(larlight.MSG.DEBUG)
+my_proc = larlite.ana_processor()
+my_proc.set_verbosity(larlite.msg.kDEBUG)
 
-my_proc.set_io_mode(larlight.storage_manager.READ)
+my_proc.set_io_mode(larlite.storage_manager.kREAD)
 
-my_proc.add_input_file(filename)
-
-larlight.storage_manager.get().set_in_rootdir("scanner")
-larlight.storage_manager.get().set_data_to_read(larlight.DATA.MCTruth,False)
-larlight.storage_manager.get().set_data_to_read(larlight.DATA.Shower,False)
-larlight.storage_manager.get().set_data_to_read(larlight.DATA.Calorimetry,False)
-larlight.storage_manager.get().set_data_to_read(larlight.DATA.UserInfo,False)
+for x in xrange(len(sys.argv)-1):
+    my_proc.add_input_file(sys.argv[x+1])
 
 my_proc.set_ana_output_file("")
+larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
-raw_viewer   = larlight.ClusterViewer()
-merge_viewer = larlight.MergeViewer()
+raw_viewer   = larlite.ClusterViewer()
+merge_viewer = larlite.MergeViewer()
 
 ########################################
 # decide what to show on display
@@ -50,7 +37,10 @@ merge_viewer.SetDrawPolygon(False)
 ########################################
 # Remove tracks with priority algo!
 ########################################
-merge_viewer.GetManager().AddPriorityAlgo(cmtool.CPAlgoIgnoreTracks())
+# priority_alg = cmtool.CPAlgoIgnoreTracks()
+# priority_alg.SetMinCharge(10000)
+# priority_alg.SetMinHits(10)
+# merge_viewer.GetManager().AddPriorityAlgo(priority_alg)
 
 
 
@@ -62,25 +52,26 @@ prohib_array = cmtool.CBAlgoArray()
 tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
 tracksep_prohibit.SetDebug(False)
 tracksep_prohibit.SetVerbose(False)
-tracksep_prohibit.SetUseEP(True)
+tracksep_prohibit.SetMinAngleDiff(5)
+tracksep_prohibit.SetUseEP(False)
 prohib_array.AddAlgo(tracksep_prohibit,False)
 
-outofcone_prohibit = cmtool.CBAlgoOutOfConeSeparate()
-outofcone_prohibit.SetDebug(False)
-outofcone_prohibit.SetVerbose(False)
-outofcone_prohibit.SetMaxAngleSep(20.)
-prohib_array.AddAlgo(outofcone_prohibit,False)
+# outofcone_prohibit = cmtool.CBAlgoOutOfConeSeparate()
+# outofcone_prohibit.SetDebug(False)
+# outofcone_prohibit.SetVerbose(False)
+# outofcone_prohibit.SetMaxAngleSep(20.)
+# prohib_array.AddAlgo(outofcone_prohibit,False)
 
-angle_prohibit = cmtool.CBAlgoAngleIncompat()
-#this only applies if both clusters have >50 hits
-angle_prohibit.SetMinHits(50)
-angle_prohibit.SetAllow180Ambig(True)
-angle_prohibit.SetUseOpeningAngle(False)
-#this prohibits clusters w/ angles different than 10 degrees
-angle_prohibit.SetAngleCut(10.)
-angle_prohibit.SetMinLength(20.)
-angle_prohibit.SetDebug(False)
-prohib_array.AddAlgo(angle_prohibit,False)
+# angle_prohibit = cmtool.CBAlgoAngleIncompat()
+# #this only applies if both clusters have >50 hits
+# angle_prohibit.SetMinHits(50)
+# angle_prohibit.SetAllow180Ambig(True)
+# angle_prohibit.SetUseOpeningAngle(False)
+# #this prohibits clusters w/ angles different than 10 degrees
+# angle_prohibit.SetAngleCut(10.)
+# angle_prohibit.SetMinLength(20.)
+# angle_prohibit.SetDebug(False)
+# prohib_array.AddAlgo(angle_prohibit,False)
 
 merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
 
@@ -89,29 +80,32 @@ merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
 ########################################
 algo_array = cmtool.CBAlgoArray()
 
-COM_algo = cmtool.CBAlgoCenterOfMassSmall()
-COM_algo.SetDebug(False)
-COM_algo.SetVerbose(False)
-COM_algo.UseCOMInPoly(True)
-COM_algo.UseCOMClose(True)
-COM_algo.UseCOMNearClus(True)
-COM_algo.SetMaxDistance(20.)
-COM_algo.SetMaxCOMDistance(20.)
-COM_algo.SetMaxHitsSmallClus(40)
-algo_array.AddAlgo(COM_algo,False)
+
+ALL_algo = cmtool.CBAlgoMergeSmallToTrack()
+ALL_algo.SetDebug(True)
+# ALL_algo.SetMinModHitDens(1.5)
+# ALL_algo.SetMinPrincipal(10)
+# ALL_algo.SetMaxHit(13)
+# ALL_algo.SetMaxWidth(5)
+# ALL_algo.SetMaxLength(15)
+ALL_algo.SetMaxClosestDist(2.5);
+algo_array.AddAlgo(ALL_algo)
+
 
 merge_viewer.GetManager().AddMergeAlgo(algo_array)
+merge_viewer.GetManager().MergeTillConverge(True)
+
 # done attaching merge algos
 ########################################
-merge_viewer.GetManager().MergeTillConverge(True)
+merge_viewer.GetManager().MergeTillConverge(False)
 
 
 my_proc.add_process(raw_viewer)
 
 my_proc.add_process(merge_viewer)
 
-raw_viewer.SetClusterType(larlight.DATA.FuzzyCluster)
-merge_viewer.SetClusterType(larlight.DATA.FuzzyCluster)
+raw_viewer.SetClusterProducer("cccluster")
+merge_viewer.SetInputProducer("cccluster")
 
 gStyle.SetOptStat(0)
 
