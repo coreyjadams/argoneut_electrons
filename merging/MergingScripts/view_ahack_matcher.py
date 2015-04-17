@@ -3,7 +3,7 @@ import ROOT, sys, os
 from ROOT import *
 
 # Now import ana_processor & your class. For this example, ana_base.
-gSystem.Load("libCMTool")
+#gSystem.Load("libCMTool")
 from ROOT import *
 if len(sys.argv) != 2:
     print
@@ -13,20 +13,22 @@ if len(sys.argv) != 2:
 
 filename = sys.argv[1]
 #filename = "/Users/davidkaleko/Data/ShowerStudy/PDGID_11/shower_larlight_11.root"
-my_proc = larlight.ana_processor()
-my_proc.set_verbosity(larlight.MSG.DEBUG)
+my_proc = larlite.ana_processor()
+#my_proc.set_verbosity(larlite.MSG.kDEBUG)
 
-my_proc.set_io_mode(larlight.storage_manager.READ)
+my_proc.set_io_mode(larlite.storage_manager.kREAD)
 
 my_proc.add_input_file(filename)
 
-larlight.storage_manager.get().set_in_rootdir("scanner")
+larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
+
+larlite.storage_manager.get().set_in_rootdir("scanner")
 
 my_proc.set_ana_output_file("")
 
-raw_viewer   = larlight.ClusterViewer()
-match_viewer = larlight.MatchViewer()
-#mc_viewer    = larlight.MCShowerClusterViewer()
+raw_viewer   = larlite.ClusterViewer()
+match_viewer = larlite.MatchViewer()
+#mc_viewer    = larlite.MCShowerClusterViewer()
 clusterz = cluster.CRUHelper()
 
 match_viewer.SetPrintClusterInfo(True)
@@ -43,16 +45,11 @@ match_viewer.GetManager().AddPriorityAlgo(priority_algo)
 
 algo_array = cmtool.CFAlgoArray()
 
-angleAlg = cmtool.CFAlgo3DAngle()
-angleAlg.SetRatio(0.1)
-angleAlg.SetDebug(True)
-
 timeAlg = cmtool.CFAlgoTimeOverlap()
 timeAlg.SetDebug(True)
 
-volAlg = cmtool.CFAlgoVolumeOverlap()
+#volAlg = cmtool.CFAlgoVolumeOverlap()
 
-algo_array.AddAlgo(angleAlg)
 algo_array.AddAlgo(timeAlg)
 #algo_array.AddAlgo(volAlg)
 
@@ -68,11 +65,14 @@ my_proc.add_process(match_viewer)
 
 #my_proc.add_process(mc_viewer)
 
-raw_viewer.SetClusterType(larlight.DATA.Cluster)
-#raw_viewer.SetClusterType(larlight.DATA.MCShowerCluster)
+producer="cccluster"
+#producer="ccMergedPoly3"
 
-match_viewer.SetClusterType(larlight.DATA.Cluster)
-#match_viewer.SetClusterType(larlight.DATA.MCShowerCluster)
+raw_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
+#raw_viewer.SetClusterProducer(larlite.DATA.MCShowerCluster)
+
+match_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
+#match_viewer.SetClusterProducer(larlite.DATA.MCShowerCluster)
 
 gStyle.SetOptStat(0)
 
