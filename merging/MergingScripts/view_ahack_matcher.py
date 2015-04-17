@@ -47,6 +47,7 @@ algo_array = cmtool.CFAlgoArray()
 
 timeAlg = cmtool.CFAlgoTimeOverlap()
 timeAlg.SetDebug(True)
+timeAlg.RequireThreePlanes(False)
 
 #volAlg = cmtool.CFAlgoVolumeOverlap()
 
@@ -65,7 +66,7 @@ my_proc.add_process(match_viewer)
 
 #my_proc.add_process(mc_viewer)
 
-producer="cccluster"
+producer="ccMergedStT4"
 #producer="ccMergedPoly3"
 
 raw_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
