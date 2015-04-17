@@ -90,11 +90,17 @@ def main(**args):
 
 
   # Peter, add your algorithm here!
-  merger3 = getSmallToTrackMerger(0.5)
-  merger3.SetInputProducer(prevProducer)
-  merger3.SetOutputProducer("ccMergedStage21")
-  merger3.SaveOutputCluster()
-  my_proc.add_process(merger3)
+
+  maxClosestDistances = [0.5, 1.0, 1.5, 2.0, 2.5]
+  stt_mergers = []
+
+  for i in range(0,5):
+    stt_mergers.append(getSmallToTrackMerger(maxClosestDistances[i]))
+    stt_mergers[-1].SetInputProducer(prevProducer)
+    stt_mergers[-1].SetOutputProducer("ccMergedStT"+str(i))
+    stt_mergers[-1].SaveOutputCluster()
+    prevProducer = "ccMergedStT"+str(i)
+    my_proc.add_process(stt_mergers[-1])
 
   # # Second iteration
   # merger4 = getSmallToTrackMerger(1.0)
