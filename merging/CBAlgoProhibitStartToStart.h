@@ -45,9 +45,11 @@ namespace cmtool {
     void SetMinHits(int n){_min_hits = n;}
 
     float getDistance(larutil::PxPoint p1, larutil::PxPoint p2);
+    void SetDebug(bool b){debug = b;}
 
   private:
     
+    bool debug;
     float _min_separation;
     int _min_hits;
   };

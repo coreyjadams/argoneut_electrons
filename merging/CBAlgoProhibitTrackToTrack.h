@@ -28,6 +28,12 @@ namespace cmtool {
     
   public:
     
+    enum mode
+    {
+      kBOTH,
+      kEITHER      
+    };
+
     /// Default constructor
     CBAlgoProhibitTrackToTrack();
     
@@ -52,6 +58,9 @@ namespace cmtool {
     void SetMinCharge(Double_t charge)  { _min_charge         = charge;}
     void SetMinLengthWidthRatio(Double_t length)  
         { _min_length_width_ratio = length;}
+    void SetDebug(bool b){debug = b;}
+
+    void SetMode(mode m);
 
   private:
     
@@ -62,7 +71,9 @@ namespace cmtool {
     float _min_principal;
     float _min_charge;
     float _min_length_width_ratio;
+    bool debug;
 
+    mode _mode;
   };
 }
 

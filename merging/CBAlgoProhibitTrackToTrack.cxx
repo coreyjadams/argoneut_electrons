@@ -13,6 +13,8 @@ namespace cmtool {
     SetMinPrincipal(9999);
     SetMinCharge(00);
     SetMinLengthWidthRatio(99999);
+    debug = false;
+    _mode = kBOTH;
   }
 
 
@@ -29,10 +31,20 @@ namespace cmtool {
       return true;
     }
 
-    if (isTrack(cluster1) && isTrack(cluster2)) return true;
+    if (_mode == kBOTH){
+      if (isTrack(cluster1) && isTrack(cluster2)) return true;
+    }
+
+    else if (_mode == kEITHER){
+      if (isTrack(cluster1) || isTrack(cluster2)) return true;
+    }
 
     return false;
 
+  }
+
+  void CBAlgoProhibitTrackToTrack::SetMode(mode m){
+    _mode = m;
   }
 
 /*---------------------------------------------------------------------*/
@@ -53,16 +65,6 @@ namespace cmtool {
       length = params.length / params.width;    
 
 
-    // // Printing out debug information:
-    // std::cout << "This cluster starts at "
-    //           << params.start_point.w << ", "
-    //           << params.start_point.t << " and stops at "
-    //           << params.end_point.w << ", "
-    //           << params.end_point.t << ".\n"
-    //           << "\tN Hits : " << N_Hits << "\n"
-    //           << "\tMHW ratio: " << multi_hit_wiresRat << "\n"
-    //           << "\tEP: " << eigenvalue_principal << "\n"
-    //           << "\tL/W: " << length  << "\n";
 
 
 
@@ -73,11 +75,24 @@ namespace cmtool {
        && (length > _min_length_width_ratio)
       )
     {
-        // std::cout << "\t TRACK\n";
-        return true;
+      // Printing out debug information:
+      if (debug){
+        std::cout << "This cluster starts at "
+                  << params.start_point.w << ", "
+                  << params.start_point.t << " and stops at "
+                  << params.end_point.w << ", "
+                  << params.end_point.t << ".\n"
+                  << "\tPlane: " << cluster.Plane() << "\n"
+                  << "\tN Hits : " << N_Hits << "\n"
+                  << "\tMHW ratio: " << multi_hit_wiresRat << "\n"
+                  << "\tEP: " << eigenvalue_principal << "\n"
+                  << "\tL/W: " << length  << "\n";
+        std::cout << "\t TRACK\n";
+      }
+      return true;
     }
 
-    // std::cout << "\t NOT TRACK\n";
+    // if (debug) std::cout << "\t NOT TRACK\n";
 
     return false;
   }
