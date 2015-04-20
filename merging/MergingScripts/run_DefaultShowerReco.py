@@ -17,6 +17,8 @@ from recotool.showerDef import DefaultShowerReco3D, PandoraShowerReco3D
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
 
+larutil.LArUtilManager.Reconfigure(fmwk.geo.kArgoNeuT)
+
 # Set input root file
 for x in xrange(len(sys.argv)-1):
     my_proc.add_input_file(sys.argv[x+1])
