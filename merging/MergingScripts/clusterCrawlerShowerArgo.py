@@ -126,17 +126,18 @@ def getOverlapMerger(overlapFrac = 0.4, minHits = 10, maxHits = 50):
   t2t_prohibit.SetMinMHitWiresFraction(0.05)
   t2t_prohibit.SetMinPrincipal(0.995)
   t2t_prohibit.SetMinLengthWidthRatio(10)
+  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kEITHER)
   prohib_array.AddAlgo(t2t_prohibit, False)
 
 
-  big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(maxHits)
-  prohib_array.AddAlgo(big_prohibit, False)
+  # big_prohibit = cmtool.CBAlgoProhibitBigToBig()
+  # big_prohibit.SetMaxHits(maxHits)
+  # prohib_array.AddAlgo(big_prohibit, False)
 
   # Want to add a prohibit function that stops if 
   # start to start point distance is too close
   s2s_prohibit = cmtool.CBAlgoProhibitStartToStart()
-  s2s_prohibit.SetMinSeparation(1.5)
+  s2s_prohibit.SetMinSeparation(1.0)
   prohib_array.AddAlgo(s2s_prohibit, False)
 
 

@@ -58,42 +58,42 @@ def main(**args):
   # Stage 1:
   ##################################
 
-  # Module to turn all the single hits into one hit clusters
-  htc = larlite.HitToCluster()
-  htc.SetInputProducer(prevProducer)
-  htc.SetOutputProducer("ccclusterWithSingles")
-  my_proc.add_process(htc)
+  # # Module to turn all the single hits into one hit clusters
+  # htc = larlite.HitToCluster()
+  # htc.SetInputProducer(prevProducer)
+  # htc.SetOutputProducer("ccclusterWithSingles")
+  # my_proc.add_process(htc)
 
-  # Trying an iterative merging approach:
+  # # Trying an iterative merging approach:
 
-  maxClosestDistances = [0.5,   0.8,  1.0,  1.2 ]
-  maxAverageDistances = [9999,  9999, 9999, 9999]
-  maxHitsSmall        = [1,     1,    3,    3   ]
-  maxHitsProhibit     = [1,     1,    3,    3   ]
-  minHitsInCluster    = [1,     1,    1,    3   ]
+  # maxClosestDistances = [0.5,   0.8,  1.0,  1.2 ]
+  # maxAverageDistances = [9999,  9999, 9999, 9999]
+  # maxHitsSmall        = [1,     1,    3,    3   ]
+  # maxHitsProhibit     = [1,     1,    3,    3   ]
+  # minHitsInCluster    = [1,     1,    1,    3   ]
 
-  prevProducer="ccclusterWithSingles"
+  # prevProducer="ccclusterWithSingles"
 
-  for i in range(0, len(maxClosestDistances)):
-    mergers.append(getSmallClustMerger(
-        maxHitsSmall  = maxHitsSmall[i],
-        maxHitsProhib = maxHitsProhibit[i],
-        maxDist       = maxClosestDistances[i],
-        maxDistAv     = maxAverageDistances[i],
-        minHits       = minHitsInCluster[i]))
-    mergers[-1].SetInputProducer(prevProducer)
-    mergers[-1].SetOutputProducer("ccMerged" + str(i))
-    mergers[-1].SaveOutputCluster()
-    prevProducer = "ccMerged" + str(i)
-    my_proc.add_process(mergers[-1])
+  # for i in range(0, len(maxClosestDistances)):
+  #   mergers.append(getSmallClustMerger(
+  #       maxHitsSmall  = maxHitsSmall[i],
+  #       maxHitsProhib = maxHitsProhibit[i],
+  #       maxDist       = maxClosestDistances[i],
+  #       maxDistAv     = maxAverageDistances[i],
+  #       minHits       = minHitsInCluster[i]))
+  #   mergers[-1].SetInputProducer(prevProducer)
+  #   mergers[-1].SetOutputProducer("ccMerged" + str(i))
+  #   mergers[-1].SaveOutputCluster()
+  #   prevProducer = "ccMerged" + str(i)
+  #   my_proc.add_process(mergers[-1])
 
-  # Add the inline merger:
-  inlineMerger = getInlineMerger(maxInlineDist=0.5)
-  inlineMerger.SetInputProducer(prevProducer)
-  inlineMerger.SetOutputProducer("ccMergedInline")
-  prevProducer = "ccMergedInline"
-  inlineMerger.SaveOutputCluster()
-  my_proc.add_process(inlineMerger)
+  # # Add the inline merger:
+  # inlineMerger = getInlineMerger(maxInlineDist=0.5)
+  # inlineMerger.SetInputProducer(prevProducer)
+  # inlineMerger.SetOutputProducer("ccMergedInline")
+  # prevProducer = "ccMergedInline"
+  # inlineMerger.SaveOutputCluster()
+  # my_proc.add_process(inlineMerger)
 
   #################################
   # Stage 2:
@@ -150,10 +150,10 @@ def main(**args):
 
 
   # # Add a DropSingles module:
-  # drop = larlite.DropSingles()
-  # drop.SetInputProducer(prevProducer)
-  # drop.SetOutputProducer("ccMergedNoSingles")
-  # my_proc.add_process(drop)
+  drop = larlite.DropSingles()
+  drop.SetInputProducer(prevProducer)
+  drop.SetOutputProducer("ccMergedNoSingles")
+  my_proc.add_process(drop)
 
   # my_proc.process_event(5)
   my_proc.run()
