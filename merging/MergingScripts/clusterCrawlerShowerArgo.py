@@ -36,14 +36,14 @@ def getSmallClustMerger(maxHitsProhib=5, maxHitsSmall=1, maxDist=0.5,maxDistAv=2
   return merger
 
 
-def getSmallToTrackMerger(dist):
+def getSmallToTrackMerger( maxClosestDist=2.5, maxSmallLength=10, maxSmallHit=8):
   merger = larlite.ClusterMerger()
   ########################################
   # PROHIBIT ALGORITHMS
   ########################################
   prohib_array = cmtool.CBAlgoArray()
   big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(15)
+  big_prohibit.SetMaxHits(maxSmallHit)
   prohib_array.AddAlgo(big_prohibit,False)
 
   # tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
@@ -69,13 +69,13 @@ def getSmallToTrackMerger(dist):
   # smallToTrack.SetMinLength()
 
   # Setter for small like parameters
-  smallToTrack.SetMaxHit(8)
+  smallToTrack.SetMaxHit(maxSmallHit)
   # smallToTrack.SetMaxCharge()
-  # smallToTrack.SetMaxLength()
-  smallToTrack.SetMaxWidth(5)
+  smallToTrack.SetMaxLength(maxSmallLength)
+  # smallToTrack.SetMaxWidth(5)
 
   # Setter for merging parameters
-  smallToTrack.SetMaxClosestDist(dist)
+  smallToTrack.SetMaxClosestDist(maxClosestDist)
   # smallToTrack.SetMinDistToStart()
   # smallToTrack.SetMinDistToEnd()
   algo_array.AddAlgo(smallToTrack)
@@ -153,4 +153,32 @@ def getOverlapMerger(overlapFrac = 0.4, minHits = 10, maxHits = 50):
   merger.GetManager().AddSeparateAlgo(prohib_array)
   merger.GetManager().MergeTillConverge(False)
   merger.GetManager().SetMinNHits(minHits)
+  return merger
+
+def getWithinMerger():
+  merger = larlite.ClusterMerger()
+  ########################################
+  # PROHIBIT ALGORITHMS
+  ########################################
+  # prohib_array = cmtool.CBAlgoArray()
+  # big_prohibit = cmtool.CBAlgoProhibitBigToBig()
+  # big_prohibit.SetMaxHits(maxHits)
+  # prohib_array.AddAlgo(big_prohibit,False)
+  # Want to add a prohibit function that stops if 
+  # start to start point distance is too close
+
+  # No prohibitions - this is meant to be very restrictive anyways
+
+
+  ########################################
+  # MERGE ALGORITHMS
+  ########################################
+  algo_array = cmtool.CBAlgoArray()
+  within = cmtool.CBAlgoMergeWithinBoundary()
+  algo_array.AddAlgo(within)
+
+  merger.GetManager().AddMergeAlgo(algo_array)
+  # merger.GetManager().AddSeparateAlgo(prohib_array)
+  merger.GetManager().MergeTillConverge(False)
+  merger.GetManager().SetMinNHits(3)
   return merger
