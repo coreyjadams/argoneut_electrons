@@ -19,6 +19,7 @@ namespace cmtool {
 
     _min_separation = 0;
     _min_hits = 10;
+    debug = false;
   }
 
 
@@ -54,20 +55,22 @@ namespace cmtool {
                            cluster2.GetParams().end_point);
     if (dist > tempDist) dist = tempDist;
 
-    // // Debug printouts:
-    // std::cout << "Cluster1: \n\tstart:" 
-    //           << cluster1.GetParams().start_point.w << ", "
-    //           << cluster1.GetParams().start_point.t << "\tend:"
-    //           << cluster1.GetParams().end_point.w << ", "
-    //           << cluster1.GetParams().end_point.t << "\n"
-    //           << "Cluster2: \n\tstart:" 
-    //           << cluster2.GetParams().start_point.w << ", "
-    //           << cluster2.GetParams().start_point.t << "\tend:"
-    //           << cluster2.GetParams().end_point.w << ", "
-    //           << cluster2.GetParams().end_point.t << "\n";
-    // std::cout << "MinDist is " << dist <<"\n\n";
+    // Debug printouts:
+    if (debug && dist < _min_separation){
+      std::cout << "Cluster1 (Plane " << cluster1.Plane() << "): \n\tstart:" 
+                << cluster1.GetParams().start_point.w << ", "
+                << cluster1.GetParams().start_point.t << "\tend:"
+                << cluster1.GetParams().end_point.w << ", "
+                << cluster1.GetParams().end_point.t << "\n"
+                << "Cluster2 (Plane " << cluster1.Plane() << "): \n\tstart:" 
+                << cluster2.GetParams().start_point.w << ", "
+                << cluster2.GetParams().start_point.t << "\tend:"
+                << cluster2.GetParams().end_point.w << ", "
+                << cluster2.GetParams().end_point.t << "\n";
+      std::cout << "MinDist is " << dist <<"\n\n";
+    }
 
-    if (dist > _min_separation) return true;
+    if (dist < _min_separation) return true;
 
     else return false;
 

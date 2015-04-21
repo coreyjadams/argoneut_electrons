@@ -40,13 +40,13 @@ match_viewer.SetPrintClusterInfo(True)
 
 
 priority_algo = cmtool.CPAlgoNHits()
-priority_algo.SetMinHits(22)
+priority_algo.SetMinHits(25)
 match_viewer.GetManager().AddPriorityAlgo(priority_algo)
 
 algo_array = cmtool.CFAlgoArray()
 
 timeAlg = cmtool.CFAlgoTimeOverlap()
-timeAlg.SetDebug(True)
+timeAlg.SetDebug(False)
 timeAlg.RequireThreePlanes(False)
 
 #volAlg = cmtool.CFAlgoVolumeOverlap()
@@ -66,10 +66,11 @@ my_proc.add_process(match_viewer)
 
 #my_proc.add_process(mc_viewer)
 
-producer="ccMergedStT4"
+#producer="ccMergedCone"
+producer="ccMergedSD3"
 #producer="ccMergedPoly3"
 
-raw_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
+raw_viewer.SetClusterProducer("cccluster") #larlite.DATA.Cluster)
 #raw_viewer.SetClusterProducer(larlite.DATA.MCShowerCluster)
 
 match_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)

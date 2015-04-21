@@ -160,6 +160,14 @@ def getWithinMerger():
   ########################################
   # PROHIBIT ALGORITHMS
   ########################################
+  prohib_array = cmtool.CBAlgoArray()
+
+  t2t_prohibit = cmtool.CBAlgoProhibitTrackToTrack()
+  t2t_prohibit.SetMinHits(10)
+  t2t_prohibit.SetMinMHitWiresFraction(0.1)
+  t2t_prohibit.SetMinPrincipal(0.99)
+  t2t_prohibit.SetMinLengthWidthRatio(5)
+  prohib_array.AddAlgo(t2t_prohibit, False)
   # prohib_array = cmtool.CBAlgoArray()
   # big_prohibit = cmtool.CBAlgoProhibitBigToBig()
   # big_prohibit.SetMaxHits(maxHits)
