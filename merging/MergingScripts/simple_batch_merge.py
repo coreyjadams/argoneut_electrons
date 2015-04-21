@@ -88,24 +88,53 @@ def main(**args):
     my_proc.add_process(mergers[-1])
 
   # Add the inline merger:
-  inlineMerger = getInlineMerger(maxInlineDist=0.5)
+  inlineMerger = getInlineMerger()
   inlineMerger.SetInputProducer(prevProducer)
   inlineMerger.SetOutputProducer("ccMergedInline")
   prevProducer = "ccMergedInline"
   inlineMerger.SaveOutputCluster()
   my_proc.add_process(inlineMerger)
 
-  #################################
+  ##################################
+  # Stage 3:
+  ##################################
+
+
+  # # Add a DropSingles module:
+  # drop = larlite.DropSingles()
+  # drop.SetInputProducer(prevProducer)
+  # drop.SetOutputProducer("ccMergedNoSingles")
+  # my_proc.add_process(drop)
+
+
+  # Peter, add your algorithm here!
+
+  maxClosestDistances = [0.5, 1.0, 1.5, 2.0, 2.5]
+  maxSmallHits = [8.0, 20.0, 40.0, 60.0, 60.0]
+  maxSmallLength = [10, 30, 50, 70, 100]
+
+  stt_mergers = []
+
+  for i in range(0,len(maxClosestDistances)):
+    stt_mergers.append(getSmallToTrackMerger(
+      maxClosestDistances[i],
+      maxSmallHits[i],
+      maxSmallLength[i]
+      ))
+    stt_mergers[-1].SetInputProducer(prevProducer)
+    stt_mergers[-1].SetOutputProducer("ccMergedStT"+str(i))
+    stt_mergers[-1].SaveOutputCluster()
+    prevProducer = "ccMergedStT"+str(i)
+    my_proc.add_process(stt_mergers[-1])
+
+
+  ##################################
   # Stage 2:
-  #################################
+  ##################################
 
-  prevProducer = "ccMergedInline"
-
-  overlapFraction    = [0.9, 0.8, 0.4, 0.3 ]
-  minHitsForConsid   = [5,   10,  10,  10  ]
-  maxHitsProhibit    = [15,  30,  50,  80 ]
-
-  maxClosestDistances = [0.5, 1.5, 2.5, 2.5]
+  overlapFraction    = [0.9, 0.8, 0.7, 0.5 ]
+  minHitsForConsid   = [5,   10,  15,  15  ]
+  maxHitsProhibit    = [15,  30,  50,  50 ]
 
   for i in range(0, len(overlapFraction)):
     mergers.append(getOverlapMerger(
@@ -118,46 +147,13 @@ def main(**args):
     prevProducer = "ccMergedPoly" + str(i)
     my_proc.add_process(mergers[-1])
 
-    mergers.append(getShortestDistMerger(
-      shortestDist = maxClosestDistances[i]))
-    mergers[-1].SetInputProducer(prevProducer)
-    mergers[-1].SetOutputProducer("ccMergedSD" + str(i))
-    mergers[-1].SaveOutputCluster()
-    prevProducer = "ccMergedSD" + str(i)
-    my_proc.add_process(mergers[-1])
+  withinMerger = getWithinMerger()
+  withinMerger.SetInputProducer(prevProducer)
+  withinMerger.SetOutputProducer("ccMergedWithinBoundary")
+  withinMerger.SaveOutputCluster()
+  my_proc.add_process(withinMerger)
 
-
-  ##################################
-  # Stage 3:
-  ##################################
-
-
-  # Peter, add your algorithm here!
-
-  # maxClosestDistances = [0.5, 1.0, 1.5, 2.0, 2.5]
-  # stt_mergers = []
-
-  # for i in range(0,5):
-  #   stt_mergers.append(getSmallToTrackMerger(maxClosestDistances[i]))
-  #   stt_mergers[-1].SetInputProducer(prevProducer)
-  #   stt_mergers[-1].SetOutputProducer("ccMergedStT"+str(i))
-  #   stt_mergers[-1].SaveOutputCluster()
-  #   prevProducer = "ccMergedStT"+str(i)
-  #   my_proc.add_process(stt_mergers[-1])
-
-
-
-
-
-  # # Add a DropSingles module:
-  drop = larlite.DropSingles()
-  drop.SetInputProducer(prevProducer)
-  drop.SetOutputProducer("ccMergedNoSingles")
-  my_proc.add_process(drop)
-
-  # my_proc.process_event(5)
   my_proc.run()
-
   # done!
 
 
