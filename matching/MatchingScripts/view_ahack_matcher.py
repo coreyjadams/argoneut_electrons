@@ -49,10 +49,13 @@ timeAlg = cmtool.CFAlgoTimeOverlap()
 timeAlg.SetDebug(False)
 timeAlg.RequireThreePlanes(False)
 
+showerAlg = cmtool.CFAlgoShowerTimeMatch()
+
+
 #volAlg = cmtool.CFAlgoVolumeOverlap()
 
 algo_array.AddAlgo(timeAlg)
-#algo_array.AddAlgo(volAlg)
+algo_array.AddAlgo(showerAlg)
 
 match_viewer.GetManager().AddMatchAlgo(algo_array)
 
@@ -67,10 +70,10 @@ my_proc.add_process(match_viewer)
 #my_proc.add_process(mc_viewer)
 
 #producer="ccMergedCone"
-producer="ccMergedSD3"
+producer="ccMergedNoSingles"
 #producer="ccMergedPoly3"
 
-raw_viewer.SetClusterProducer("cccluster") #larlite.DATA.Cluster)
+raw_viewer.SetClusterProducer("ccMergedNoSingles") #larlite.DATA.Cluster)
 #raw_viewer.SetClusterProducer(larlite.DATA.MCShowerCluster)
 
 match_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
