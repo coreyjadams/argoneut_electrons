@@ -10,5 +10,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class cmtool::CFAlgoREPLACENAME+;
+#pragma link C++ class cmtool::CFAlgoShowerTimeMatch+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
