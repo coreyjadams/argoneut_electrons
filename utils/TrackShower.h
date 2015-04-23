@@ -54,6 +54,10 @@ namespace argo{
     bool _debug;
 
     // Parameters that might define trackness:
+    unsigned int   _min_hits;
+    // float _min_multihit_wires;
+    float _min_principal;
+    float _min_length;
 
     // Parameter that might define showerness:
     int _shower_nhits;

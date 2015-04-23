@@ -13,10 +13,48 @@ namespace argo {
     _shower_min_h_c_h = 0.3;
     _shower_nhits = 50;
 
+    // Track parameters
+    _min_hits = 15.0;
+    _min_principal = 0.993;
+    _min_length = 12.0;
+
     SetDebug(true);
   }
 
   bool TrackShower::isTrack(const ::cluster::ClusterParamsAlg & cluster){
+
+      size_t N_Hits = cluster.GetHitVector().size();
+      auto start_point = cluster.GetParams().start_point;
+      double length = cluster.GetParams().length;
+      double plane = cluster.GetParams().start_point.plane;
+      double start_x = cluster.GetParams().start_point.w;
+      double start_y = cluster.GetParams().start_point.t;
+      double end_x = cluster.GetParams().end_point.w;
+      double end_y = cluster.GetParams().end_point.t;
+      double ep = cluster.GetParams().eigenvalue_principal;
+
+      if(_debug){
+
+            std::cout<<"------------------------------------------------------------------------------"<<std::endl;
+            std::cout<<"cluster plane: "<<plane<<"  cluster start: ("<<start_x<<","<<start_y<<")"<<
+            " cluster end: ("<<end_x<<","<<end_y<<")"<<std::endl;
+            std::cout<<"N_Hits: "<<N_Hits<<"  min_hits: "<<_min_hits<<std::endl;
+            std::cout<<"EP: "<<ep<<"  min_ep: "<<_min_principal<<std::endl;
+            std::cout<<"length: "<<length<<"  min_length: "<<_min_length<<std::endl;
+        }
+
+      if( ((N_Hits > _min_hits) &&
+          (length > _min_length)  &&
+          (ep > _min_principal))  ||
+          (ep > (_min_principal+0.006)) ){
+
+          if(_debug) std::cout<<"This is a track!"<<std::endl;
+
+          return true;
+      }
+
+      if (_debug) std::cout<<"This is not a track"<<std::endl;
+
     return false;
   }
 
