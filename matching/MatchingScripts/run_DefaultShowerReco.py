@@ -12,7 +12,59 @@ from ROOT import gSystem,TMath
 from larlite import larlite as fmwk
 from larlite import larutil
 from recotool import cmtool, showerreco
-from recotool.showerDef import DefaultShowerReco3D, PandoraShowerReco3D
+from ROOT import calo
+# from recotool.showerDef import DefaultShowerReco3D
+
+
+
+def DefaultMatch():
+
+    palgo_array = cmtool.CPAlgoArray()
+    
+    palgo1 = cmtool.CPAlgoNHits()
+    palgo1.SetMinHits(25)
+    
+    palgo2 = cmtool.CPAlgoIgnoreTracks()
+    
+    palgo_array.AddAlgo(palgo1)
+    palgo_array.AddAlgo(palgo2)
+
+    algo_array = cmtool.CFAlgoArray()
+    #algo_array.SetMode(cmtool.CFAlgoArray.kPositiveAddition)
+    algo_array.AddAlgo(cmtool.CFAlgoShowerTimeMatch())
+    #algo_array.AddAlgo(cmtool.CFAlgoTimeProf())
+    #algo_array.AddAlgo(cmtool.CFAlgo3DAngle())
+    #algo_array.AddAlgo(cmtool.CFAlgoStartPointMatch())
+
+    return palgo_array, algo_array
+
+
+def DefaultShowerReco3D():
+    # Create analysis unit
+    ana_unit = fmwk.ShowerReco3D()
+    
+    # Attach shower reco alg
+    sralg = showerreco.ShowerRecoAlg()
+    sralg.Verbose(False)
+    # sralg.Verbose(True)
+    sralg.SetUseArea(True)
+    # Attach calo alg
+    calg = calo.CalorimetryAlg()
+    sralg.CaloAlgo(calg)
+    #sralg.SetUseModBox(True)
+    ana_unit.SetShowerAlgo(sralg)
+
+    # 
+    # Attach Matching algorithm
+    #
+    palgo_array, algo_array = DefaultMatch()
+    ana_unit.GetManager().AddPriorityAlgo(palgo_array)
+    ana_unit.GetManager().AddMatchAlgo(algo_array)
+
+    return ana_unit
+
+
+
 
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
@@ -30,11 +82,11 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("");
 
 # Specify data output root file name
-my_proc.set_output_file("showerreco_batch_out.root")
+my_proc.set_output_file("beamShowers.root")
 
 ana_unit=DefaultShowerReco3D()
 
-ana_unit.SetInputProducer("ccMergedStT4")
+ana_unit.SetInputProducer("ccMergedFinal")
 ana_unit.SetOutputProducer("showerreco")
 
 my_proc.set_data_to_write(fmwk.data.kShower,"showerreco")

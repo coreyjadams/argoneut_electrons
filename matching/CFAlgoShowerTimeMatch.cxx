@@ -34,7 +34,7 @@ namespace cmtool {
     if(_require_3planes && clusters.size()==2) return -1;
     // Code-block by Kazu ends
 
-    std::cout << "This pair has " << clusters.size() << " clusters.\n";
+    // std::cout << "This pair has " << clusters.size() << " clusters.\n";
 
 
     
@@ -44,7 +44,7 @@ namespace cmtool {
     // Look for showers on the collection plane:
     for(auto const& c : clusters){
       if (ts.isShower(*c) && c -> Plane() == 1){
-        std::cout << "found a collection shower!\n";
+        // std::cout << "found a collection shower!\n";
         shower = c;
         nshowers++;
       }
@@ -62,7 +62,7 @@ namespace cmtool {
     }
 
     float score = getScore(showerRange,otherRange);
-    std::cout << "Score is " << score << std::endl;
+    // std::cout << "Score is " << score << std::endl;
     return score;
 
       
@@ -97,10 +97,10 @@ namespace cmtool {
     // Find out how much these two intervals overlap, and normalize 
     // it to the shower range
     float overlap = -1.0;
-    std::cout << "Ranges are: shower - (" << showerRange.front()
-              << " -> " << showerRange.back() << "), other - ("
-              << otherRange.front() 
-              << " -> " << otherRange.back() << ").\n";
+    // std::cout << "Ranges are: shower - (" << showerRange.front()
+    //           << " -> " << showerRange.back() << "), other - ("
+    //           << otherRange.front() 
+    //           << " -> " << otherRange.back() << ").\n";
 
     if (otherRange.front()  - showerRange.back() >= 0 && 
         showerRange.front() - otherRange.back()  >= 0 ) 
