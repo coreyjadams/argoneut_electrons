@@ -39,6 +39,14 @@ namespace cmtool {
         }
       }
     }
+    // std::cout << "(Plane " << cluster1.Plane() << ", start pos 1: "
+    //           << cluster1.GetParams().start_point.w << ", " 
+    //           << cluster1.GetParams().start_point.t << "), "
+    //           << "start pos 2: "
+    //           << cluster2.GetParams().start_point.w << ", " 
+    //           << cluster2.GetParams().start_point.t << "), "
+    //           << "dist " << minDist << "\n";
+
     return minDist;
   }
 
