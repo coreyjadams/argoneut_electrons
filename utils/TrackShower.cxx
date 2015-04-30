@@ -47,23 +47,23 @@ namespace argo {
     // Require a minimum number of hits
     if (cluster.GetParams().N_Hits < _shower_nhits) return false;
 
-    if (_debug && cluster.Plane() == 1){
-      std::cout << "(" << cluster.GetParams().start_point.w << ", " 
-                << cluster.GetParams().start_point.t << ") -> ("
-                << cluster.GetParams().end_point.w << ", "
-                << cluster.GetParams().end_point.t << "), Plane " 
-                << cluster.Plane() << "\n"
-                << "\tPrincipal Eigenvalue  ....." << data[4] 
-                << "\t( < " << _shower_prin_eig << ")\n"
-                // << "\tSecondary Eigenvalue  ....." << data[5] 
-                // << "\t( > " << _shower_secd_eig << ")\n"
-                << "\tWidth / Length  ..........." << data[6] 
-                << "\t( > " << _shower_wid_len_rat << ")\n"
-                << "\tPercent MultiHit Wires  ..." << data[8] 
-                << "\t( > " << _shower_min_mul_hit_w << ")\n"
-                << "\tPercent High Charge Hits  ." << data[9] 
-                << "\t( > " << _shower_min_h_c_h << ")\n";
-    }
+    // if (_debug && cluster.Plane() == 1){
+    //   std::cout << "(" << cluster.GetParams().start_point.w << ", " 
+    //             << cluster.GetParams().start_point.t << ") -> ("
+    //             << cluster.GetParams().end_point.w << ", "
+    //             << cluster.GetParams().end_point.t << "), Plane " 
+    //             << cluster.Plane() << "\n"
+    //             << "\tPrincipal Eigenvalue  ....." << data[4] 
+    //             << "\t( < " << _shower_prin_eig << ")\n"
+    //             // << "\tSecondary Eigenvalue  ....." << data[5] 
+    //             // << "\t( > " << _shower_secd_eig << ")\n"
+    //             << "\tWidth / Length  ..........." << data[6] 
+    //             << "\t( > " << _shower_wid_len_rat << ")\n"
+    //             << "\tPercent MultiHit Wires  ..." << data[8] 
+    //             << "\t( > " << _shower_min_mul_hit_w << ")\n"
+    //             << "\tPercent High Charge Hits  ." << data[9] 
+    //             << "\t( > " << _shower_min_h_c_h << ")\n";
+    // }
 
     // Cut on showerness variables:
     if (
