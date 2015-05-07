@@ -295,7 +295,7 @@ def getMergeToTrunk(shortestDist,prohibitBig=False):
 
   if (prohibitBig):
     big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-    big_prohibit.SetMaxHits(15)
+    big_prohibit.SetMaxHits(10)
     prohib_array.AddAlgo(big_prohibit, False)
 
   # Want to add a prohibit function that stops if 
