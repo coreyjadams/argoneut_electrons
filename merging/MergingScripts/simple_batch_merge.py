@@ -65,7 +65,6 @@ def main(**args):
   my_proc.add_process(htc)
 
   # Trying an iterative merging approach:
-
   maxClosestDistances = [0.5,   0.8,  1.0,  1.2 ]
   maxAverageDistances = [9999,  9999, 9999, 9999]
   maxHitsSmall        = [1,     1,    3,    3   ]
