@@ -10,6 +10,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class argo::TrackShower+;
+#pragma link C++ class larlite::GenFANNTrainingData+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 

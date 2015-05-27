@@ -17,6 +17,7 @@
 #include <iostream>
 #include "LArUtil/GeometryUtilities.h"
 #include "ClusterRecoUtil/ClusterParamsAlg.h"
+#include "FANN/FANNModule.h"
 
 /**
    \class TrackShower
@@ -49,9 +50,15 @@ namespace argo{
 
     void SetDebug(bool b){_debug = b;}
 
+    void setFannFileName(std::string s){_fann_file_name = s;}
+    void init();
+
   private:
 
     bool _debug;
+
+    cluster::FANNModule _fann;
+    std::string _fann_file_name;
 
     // Parameters that might define trackness:
     unsigned int   _min_hits;
