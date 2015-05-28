@@ -18,7 +18,15 @@ namespace argo {
     _min_principal = 0.993;
     _min_length = 12.0;
 
+    // default filename:
+    _fann_file_name = "/home/cadams/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat";
+
     SetDebug(true);
+  }
+
+  void TrackShower::init(){
+    _fann.setFANNFileName(_fann_file_name);
+    _fann.LoadFromFile();
   }
 
   bool TrackShower::isTrack(const ::cluster::ClusterParamsAlg & cluster){
@@ -120,6 +128,27 @@ namespace argo {
   }
 
   TrackShower::Topology TrackShower::trackOrShower(const ::cluster::ClusterParamsAlg & cluster){
+    
+    if (cluster.GetNHits() < 40) return kUnknown;
+
+    // get the data used to make the separation:
+    std::vector<float> input_data;
+    cluster.GetFANNVector(input_data);
+
+    // run the separation network:
+    std::vector<float> output_data;
+    _fann.run(input_data,output_data);
+
+    // Make the classification:
+    float _classification = output_data[0] - output_data[1];
+
+    if (_classification > 0.9){
+      return kShower;
+    }
+    else if (_classification < -0.9){
+      return kTrack;
+    }
+
     return kUnknown;
   }
 
