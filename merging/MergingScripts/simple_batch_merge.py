@@ -11,7 +11,7 @@ def main(**args):
   
 
   my_proc = larlite.ana_processor()
-
+  # my_proc.enable_event_alignment(False)
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -94,17 +94,16 @@ def main(**args):
   inlineMerger.SaveOutputCluster()
   my_proc.add_process(inlineMerger)
 
-  #################################
-  # Stage 2:
-  #################################
+  # #################################
+  # # Stage 2:
+  # #################################
 
   prevProducer = "ccMergedInline"
 
-  overlapFraction    = [0.9, 0.8, ]
-  minHitsForConsid   = [5,   10,  ]
+  overlapFraction    = [0.9, 0.8,]
+  minHitsForConsid   = [5,   10, ]
   maxHitsProhibit    = [15,  30, ]
 
-  maxClosestDistances = [0.5, 0.85,]
 
   for i in range(0, len(overlapFraction)):
     mergers.append(getOverlapMerger(
@@ -117,40 +116,21 @@ def main(**args):
     prevProducer = "ccMergedPoly" + str(i)
     my_proc.add_process(mergers[-1])
 
-    mergers.append(getShortestDistMerger(
-      shortestDist = maxClosestDistances[i]))
-    mergers[-1].SetInputProducer(prevProducer)
-    mergers[-1].SetOutputProducer("ccMergedSD" + str(i))
-    mergers[-1].SaveOutputCluster()
-    prevProducer = "ccMergedSD" + str(i)
-    my_proc.add_process(mergers[-1])
+
 
 
   ##################################
   # Stage 3:
   ##################################
 
-
-  # Peter, add your algorithm here!
-
-  # maxClosestDistances = [0.5, 1.0, 1.5, 2.0, 2.5]
-  # stt_mergers = []
-
-  # for i in range(0,5):
-  #   stt_mergers.append(getSmallToTrackMerger(maxClosestDistances[i]))
-  #   stt_mergers[-1].SetInputProducer(prevProducer)
-  #   stt_mergers[-1].SetOutputProducer("ccMergedStT"+str(i))
-  #   stt_mergers[-1].SaveOutputCluster()
-  #   prevProducer = "ccMergedStT"+str(i)
-  #   my_proc.add_process(stt_mergers[-1])
+  prevProducer = "ccMergedPoly1"
 
 
+  _maxInlineDist   = [0.8, 0.8,  1.2]
+  _hitFraction     = [.50, 0.40, 0.4]
 
-  _maxInlineDist   = [0.8, 0.8, ]
-  _hitFraction     = [.50, 0.40,]
-
-  _maxDiffuseDist   = [1.2, 1.2,]
-  _hitFractionDif   = [.3,  .2, ]
+  _maxDiffuseDist   = [1.2, 1.2, 1.2]
+  _hitFractionDif   = [.3,  .2,  .2 ]
 
   # Add the inline merger:
   for i in range(0, len(_maxInlineDist)):
@@ -173,11 +153,33 @@ def main(**args):
     my_proc.add_process(mergers[-1])
 
 
-  maxClosestDistances = [1.0, 1.5,]
+
+
+  ##################################
+  # Stage 4:
+  ##################################
+
+
+  prevProducer = "ccMergedDiffuse1"
+  merger = getStartTrackMerger()
+  merger.SetInputProducer(prevProducer)
+  merger.SetOutputProducer("ccMergedStartTrack")
+  merger.SaveOutputCluster()
+  my_proc.add_process(merger)
+
+  ##################################
+  # Stage 5:
+  ##################################
+
+  prevProducer = "ccMergedStartTrack"
+
+  maxClosestDistances = [0.8, 1.0, 1.2, 1.2, 1.6, 1.4, 1.8, 1.4]
+  maxClusterSizes     = [10,  15,  10,  25,  10,  30 , 10 , 40 ]
 
   for i in range(0, len(maxClosestDistances)):
     mergers.append(getMergeToTrunk(
       shortestDist = maxClosestDistances[i],
+      maxClusterSize = maxClusterSizes[i],
       prohibitBig=True))
     mergers[-1].SetInputProducer(prevProducer)
     mergers[-1].SetOutputProducer("ccMergedSDnoBig" + str(i))
@@ -185,6 +187,18 @@ def main(**args):
     prevProducer = "ccMergedSDnoBig" + str(i)
     my_proc.add_process(mergers[-1])
 
+
+  # Add one more inline merger iteration:
+
+  mergers.append(getInlineMerger(
+    maxInlineDist=1.2, 
+    useAllHits=False,
+    hitFraction=0.4))
+  mergers[-1].SetInputProducer(prevProducer)
+  mergers[-1].SetOutputProducer("ccMergedInlineFinal")
+  prevProducer = "ccMergedInlineFinal"
+  mergers[-1].SaveOutputCluster()
+  my_proc.add_process(mergers[-1])
 
   # Add a DropSingles module:
   drop = larlite.DropSingles()
@@ -194,7 +208,7 @@ def main(**args):
 
 
   # my_proc.process_event(102)
-  my_proc.run(0,1000)
+  my_proc.run(0,50)
 
   # done!
 
