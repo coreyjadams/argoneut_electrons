@@ -53,8 +53,11 @@ showerAlg = cmtool.CFAlgoShowerTimeMatch()
 
 wireAlg = cmtool.CFAlgoShowerWireMatch()
 
+qualityAlg = cmtool.CFAlgoMatchStart()
+
 algo_array.AddAlgo(showerAlg)
 algo_array.AddAlgo(wireAlg)
+algo_array.AddAlgo(qualityAlg)
 
 match_viewer.GetManager().AddMatchAlgo(algo_array)
 

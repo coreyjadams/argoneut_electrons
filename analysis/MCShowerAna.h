@@ -17,6 +17,8 @@
 
 #include "Analysis/ana_base.h"
 
+#include "TH1F.h"
+
 namespace larlite {
   /**
      \class MCShowerAna
@@ -49,6 +51,18 @@ namespace larlite {
 
   protected:
     
+    // Histograms to compare vertex information, dE/dx, direction:
+    TH1F * vertex_X;
+    TH1F * vertex_Y;
+    TH1F * vertex_Z;
+    TH1F * vertex_abs;
+
+    TH1F * direction_X;
+    TH1F * direction_Y;
+    TH1F * direction_Z;
+    TH1F * direction_abs;
+
+    TH1F * dEdx;
   };
 }
 #endif
