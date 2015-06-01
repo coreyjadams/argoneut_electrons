@@ -19,6 +19,10 @@ namespace cmtool {
     _w2cm = larutil::GeometryUtilities::GetME()->WireToCm();
     _t2cm = larutil::GeometryUtilities::GetME()->TimeToCm();
 
+    ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/Argoneut/utils/fann_training/trackShowerAnn.dat") ;                      
+    ts.init();
+
+
   }
 
   //-----------------------------
@@ -45,14 +49,17 @@ namespace cmtool {
 //    cluster::ClusterParamsAlg const *  shower;
     int nshowers = 0;
     // Look for showers on the collection plane:
-    for(auto const& c : clusters){
-      if (ts.isShower(*c) && c -> Plane() == 1){
-   //     shower = c;
-        nshowers++;
-	}
-      }
+// Look for showers on the collection plane:
+     for(auto const& c : clusters){
+       if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> Plane() == 1){
+         // std::cout << "found a collection shower!\n";
+         nshowers++;
+       }
+     }
 
+ //   std::cout<<"Found nshowers! "<<nshowers<<std::endl; 
     if (nshowers != 1) return -1.0;
+
 
     //Planes: U == 0; V == 1
     //Get hits for both clusters
@@ -83,6 +90,7 @@ namespace cmtool {
         else{
           if ( int(hit.w / _w2cm) < StartWires.at(h) ) { StartWires.at(h) = int(hit.w / _w2cm)  ; }
           if ( int(hit.w / _w2cm) > EndWires.at(h)   ) { EndWires.at(h)   = int(hit.w / _w2cm)  ; }
+//	std::cout<<"hit.w and _w2cm: "<<hit.w<<", "<<_w2cm<<std::endl ;
 
 	  if ( hit.t < StartTime.at(h)  ) { StartTime.at(h)  = hit.t  ; }
 	  if ( hit.t > EndTime.at(h)    ) { EndTime.at(h)    = hit.t  ; }
@@ -92,17 +100,29 @@ namespace cmtool {
       }//for all hits in range
     }//for all hit-lists (i.e. for all clusters)
 
-    double * UWorldStart(0) ;
-    double * UWorldEnd(0) ;
-    double * VWorldStart(0) ;
-    double * VWorldEnd(0) ;
+  //  std::cout<<"\n\nPLANE 0: "<<std::endl ; 
+  //  std::cout<<"Start and end Times: "<<StartTime.at(0)<<", "<<EndTime.at(0)<<std::endl;
+  //  std::cout<<"Start and end Wires: "<<StartWires.at(0)<<", "<<EndWires.at(0)<<std::endl;
+  //  std::cout<<"PLANE 1: "<<std::endl ; 
+  //  std::cout<<"Start and end Times: "<<StartTime.at(1)<<", "<<EndTime.at(1)<<std::endl;
+  //  std::cout<<"Start and end Wires: "<<StartWires.at(1)<<", "<<EndWires.at(1)<<std::endl;
+
+    std::vector<double> UWorldStart(2,0) ;
+    std::vector<double> UWorldEnd(2,0) ;
+    std::vector<double> VWorldStart(2,0) ;
+    std::vector<double> VWorldEnd(2,0) ;
+
+    const double PI = std::atan(1.0)*4;
 
     //Get world coordinates of both clusters' start, end points. Remember shower is in plane V
-    WireIDtoWorld(StartWires.at(0), StartTime.at(0), 30., UWorldStart); 
-    WireIDtoWorld(EndWires.at(0), EndTime.at(0), 30., UWorldEnd); 
-    WireIDtoWorld(StartWires.at(1), StartTime.at(1), 150., VWorldStart); 
-    WireIDtoWorld(EndWires.at(1), EndTime.at(1), 150., VWorldEnd); 
+    WireIDtoWorld(StartWires.at(0), StartTime.at(0), (30.*PI/180), UWorldStart); 
+    WireIDtoWorld(EndWires.at(0), EndTime.at(0), (30.*PI/180), UWorldEnd); 
+    WireIDtoWorld(StartWires.at(1), StartTime.at(1),(150.*PI/180), VWorldStart); 
+    WireIDtoWorld(EndWires.at(1), EndTime.at(1), (150.*PI/180), VWorldEnd); 
 
+//    std::cout<<"World start and end in :"
+//	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
+//	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
     double wireDistU =0;
     double wireDistV =0;
 
@@ -127,6 +147,10 @@ namespace cmtool {
 	    } 
     
 	}
+
+//    std::cout<<"World start and end in :"
+//	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
+//	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
 
     //Compare Z world coordinates of start and end of V plane shower and U cluster   
     std::vector<float> showerRange(2,0), otherRange(2,0) ;
@@ -158,7 +182,11 @@ namespace cmtool {
       overlap = fmax(showerRange.front(), otherRange.front())
               - fmin(showerRange.back(), otherRange.back());
     }
-    return overlap / (showerRange.back() - showerRange.front());
+
+//    std::cout<<"overlap: "<<overlap<<std::endl ;
+//    std::cout<<"normalized overlap: "<<overlap/ (showerRange.back() - showerRange.front()) <<std::endl ;
+
+    return overlap / (showerRange.front() - showerRange.back());
   }
 
   //------------------------------
@@ -168,13 +196,12 @@ namespace cmtool {
   }
     
   //------------------------------------------------------------------------------------
-  void CFAlgoShowerWireMatch::WireIDtoWorld(int wireID, double time, int angle, double * yz)
+  void CFAlgoShowerWireMatch::WireIDtoWorld(int wireID, double time, double angle, std::vector<double>& yz)
   //------------------------------------------------------------------------------------
   {
     //So far we've assumed that both planes are seen in wire and time space where time is vert and wire is horizontal.
     //Here we use wireID to calculate the center of that wire in world coordinates. Then, to calculate the 
     //actual location of the start/end of cluster in world coordinates, need to add in the time offset. 
-
     double h = larutil::Geometry::GetME()->DetHalfHeight() * 2 ;   //40 cm
     double l = larutil::Geometry::GetME()->DetLength() ;	   //90 cm
     float p = 0.4 ; //Pitch of wires is 4mm
@@ -224,6 +251,7 @@ namespace cmtool {
 	  offsetZ = time*sin(angle) ; 
 	  }
 	length = h / sin(angle) ;
+//	std::cout<<"All the things: "<<offsetZ<<", "<<N<<", "<<p<<", "<<sin(angle)<<", "<<wireID<<std::endl ;
 	yz[0] = offsetZ + -(N-1)/2*p/sin(angle) + p*wireID/sin(angle) ;
 	yz[1] = offsetY + 0. ;
 	}

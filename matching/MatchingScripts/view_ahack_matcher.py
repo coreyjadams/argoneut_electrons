@@ -40,7 +40,7 @@ match_viewer.SetPrintClusterInfo(True)
 
 
 priority_algo = cmtool.CPAlgoNHits()
-priority_algo.SetMinHits(25)
+priority_algo.SetMinHits(20)
 match_viewer.GetManager().AddPriorityAlgo(priority_algo)
 
 algo_array = cmtool.CFAlgoArray()
@@ -53,6 +53,7 @@ showerAlg = cmtool.CFAlgoShowerTimeMatch()
 
 wireAlg = cmtool.CFAlgoShowerWireMatch()
 
+algo_array.AddAlgo(showerAlg)
 algo_array.AddAlgo(wireAlg)
 
 match_viewer.GetManager().AddMatchAlgo(algo_array)
@@ -99,7 +100,7 @@ while true:
     except SyntaxError:
         user_input_evt_no = user_input_evt_no + 1
 
-    print 'we get here'
+    print 'Next Event: '
     my_proc.process_event(user_input_evt_no)
 
     raw_viewer.DrawAllClusters();

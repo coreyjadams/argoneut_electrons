@@ -208,7 +208,7 @@ def main(**args):
 
 
   # my_proc.process_event(102)
-  my_proc.run(0,50)
+  my_proc.run(0,200)
 
   # done!
 

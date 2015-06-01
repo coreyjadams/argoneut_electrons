@@ -50,7 +50,7 @@ namespace cmtool {
     virtual void Reset();
 
     //Calculate the world coords in yz given the wire number in each plane, angle (angle indicates plane; 30 deg from z = U, 150 = V )
-    void WireIDtoWorld(int wireID, double time, int angle, double * yz) ;
+    void WireIDtoWorld(int wireID, double time, double angle, std::vector<double> & yz) ;
 
     float getScore( std::vector<float> showerRange, std::vector<float> otherRange);
 
