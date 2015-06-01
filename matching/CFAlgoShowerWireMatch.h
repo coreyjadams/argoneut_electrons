@@ -1,9 +1,9 @@
 /**
- * \file CFAlgoWireOverlap.h
+ * \file CFAlgoShowerWireMatch.h
  *
  * \ingroup CMTool
  * 
- * \brief Class def header for a class CFAlgoWireOverlap
+ * \brief Class def header for a class CFAlgoShowerWireMatch
  *
  * @author ariana hackenburg
  */
@@ -11,8 +11,8 @@
 /** \addtogroup CMTool
 
     @{*/
-#ifndef RECOTOOL_CFALGOWIREOVERLAP_H
-#define RECOTOOL_CFALGOWIREOVERLAP_H
+#ifndef RECOTOOL_CFALGOSHOWERWIREMATCH_H
+#define RECOTOOL_CFALGOSHOWERWIREMATCH_H
 
 #include "CMTool/CMToolBase/CFloatAlgoBase.h"
 
@@ -20,19 +20,19 @@
 
 namespace cmtool {
   /**
-     \class CFAlgoWireOverlap
+     \class CFAlgoShowerWireMatch
      User implementation for CFloatAlgoBase class
      doxygen documentation!
   */
-  class CFAlgoWireOverlap : public CFloatAlgoBase {
+  class CFAlgoShowerWireMatch : public CFloatAlgoBase {
     
   public:
     
     /// Default constructor
-    CFAlgoWireOverlap();
+    CFAlgoShowerWireMatch();
     
     /// Default destructor
-    virtual ~CFAlgoWireOverlap(){};
+    virtual ~CFAlgoShowerWireMatch(){};
 
     /**This algorithm calculates the difference between start and end times for merged clusters,
 		and compares across planes to form matches. 
