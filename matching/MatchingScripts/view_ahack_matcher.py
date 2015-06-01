@@ -45,17 +45,15 @@ match_viewer.GetManager().AddPriorityAlgo(priority_algo)
 
 algo_array = cmtool.CFAlgoArray()
 
-timeAlg = cmtool.CFAlgoTimeOverlap()
-timeAlg.SetDebug(False)
-timeAlg.RequireThreePlanes(False)
+#timeAlg = cmtool.CFAlgoTimeOverlap()
+#timeAlg.SetDebug(False)
+#timeAlg.RequireThreePlanes(False)
 
 showerAlg = cmtool.CFAlgoShowerTimeMatch()
 
+wireAlg = cmtool.CFAlgoShowerWireMatch()
 
-#volAlg = cmtool.CFAlgoVolumeOverlap()
-
-algo_array.AddAlgo(timeAlg)
-algo_array.AddAlgo(showerAlg)
+algo_array.AddAlgo(wireAlg)
 
 match_viewer.GetManager().AddMatchAlgo(algo_array)
 
@@ -70,10 +68,10 @@ my_proc.add_process(match_viewer)
 #my_proc.add_process(mc_viewer)
 
 #producer="ccMergedCone"
-producer="ccMergedNoSingles"
+producer="ccMergedFinal"
 #producer="ccMergedPoly3"
 
-raw_viewer.SetClusterProducer("ccMergedNoSingles") #larlite.DATA.Cluster)
+raw_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
 #raw_viewer.SetClusterProducer(larlite.DATA.MCShowerCluster)
 
 match_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
@@ -101,6 +99,7 @@ while true:
     except SyntaxError:
         user_input_evt_no = user_input_evt_no + 1
 
+    print 'we get here'
     my_proc.process_event(user_input_evt_no)
 
     raw_viewer.DrawAllClusters();

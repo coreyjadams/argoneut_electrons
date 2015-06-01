@@ -1,39 +1,46 @@
-#ifndef RECOTOOL_CFALGOWIREOVERLAP_CXX
-#define RECOTOOL_CFALGOWIREOVERLAP_CXX
+#ifndef RECOTOOL_CFALGOSHOWERWIREMATCH_CXX
+#define RECOTOOL_CFALGOSHOWERWIREMATCH_CXX
 
-#include "CFAlgoWireOverlap.h"
+#include "CFAlgoShowerWireMatch.h"
+#include "LArUtil/GeometryUtilities.h"
 
 namespace cmtool {
 
   //-------------------------------------------------------
-  CFAlgoWireOverlap::CFAlgoWireOverlap() : CFloatAlgoBase()
+  CFAlgoShowerWireMatch::CFAlgoShowerWireMatch() : CFloatAlgoBase()
   //-------------------------------------------------------
   {
-    _w2cm = larutil::GeometryUtilities::GetME()->WireToCm();
-    _t2cm = larutil::GeometryUtilities::GetME()->TimeToCm();
+    std::cout<<"INITIALIZE Wire Alg "<<std::endl; 
 
     SetDebug(false) ;
     SetVerbose(false) ;
     RequireThreePlanes(false) ;
+
+    _w2cm = larutil::GeometryUtilities::GetME()->WireToCm();
+    _t2cm = larutil::GeometryUtilities::GetME()->TimeToCm();
+
   }
 
   //-----------------------------
-  void CFAlgoWireOverlap::Reset()
+  void CFAlgoShowerWireMatch::Reset()
   //-----------------------------
   {
 
   }
 
   //----------------------------------------------------------------------------------------------
-  float CFAlgoWireOverlap::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
+  float CFAlgoShowerWireMatch::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
   //----------------------------------------------------------------------------------------------
   {
+
     
     // This ensures the algorithm works only if # clusters is > 2 (and not =2)
     // You may take out this block if you want to allow matching using clusters from only 2 planes.
-    if(_require_3planes && clusters.size()==2) return -1;
+    //if(_require_3planes && clusters.size()==2) return -1;
+    //std::cout<<"We get here: "<<std::endl; 
+
     if( clusters.size() != 2 ) return -1; 
-    
+
     // First, find the showers on the collection plane:
 //    cluster::ClusterParamsAlg const *  shower;
     int nshowers = 0;
@@ -138,7 +145,7 @@ namespace cmtool {
 
 
   //-----------------------------------------------------------------------------------------------
-  float CFAlgoWireOverlap::getScore( std::vector<float> showerRange, std::vector<float> otherRange)
+  float CFAlgoShowerWireMatch::getScore( std::vector<float> showerRange, std::vector<float> otherRange)
   //-----------------------------------------------------------------------------------------------
   {
     // Find out how much these two intervals overlap, and normalize 
@@ -155,13 +162,13 @@ namespace cmtool {
   }
 
   //------------------------------
-  void CFAlgoWireOverlap::Report()
+  void CFAlgoShowerWireMatch::Report()
   //------------------------------
   {
   }
     
   //------------------------------------------------------------------------------------
-  void CFAlgoWireOverlap::WireIDtoWorld(int wireID, double time, int angle, double * yz)
+  void CFAlgoShowerWireMatch::WireIDtoWorld(int wireID, double time, int angle, double * yz)
   //------------------------------------------------------------------------------------
   {
     //So far we've assumed that both planes are seen in wire and time space where time is vert and wire is horizontal.
