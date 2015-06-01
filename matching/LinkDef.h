@@ -12,5 +12,6 @@
 #pragma link C++ class cmtool::CFAlgoREPLACENAME+;
 #pragma link C++ class cmtool::CFAlgoShowerTimeMatch+;
 #pragma link C++ class cmtool::CFAlgoWireOverlap+;
+#pragma link C++ class cmtool::CFAlgoMatchStart+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
