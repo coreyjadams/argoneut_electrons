@@ -4,6 +4,7 @@
 #include "MCShowerAna.h"
 #include "DataFormat/mctruth.h"
 #include "DataFormat/mcshower.h"
+#include "DataFormat/shower.h"
 
 namespace larlite {
 
@@ -15,6 +16,19 @@ namespace larlite {
     // If you have a histogram to fill in the event loop, for example,
     // here is a good place to create one on the heap (i.e. "new TH1D"). 
     //
+
+    // Histograms to compare vertex information, dE/dx, direction:
+    vertex_X = new TH1F("vertex_x","X vertex True - reco",100,-25,25);
+    vertex_Y = new TH1F("vertex_y","Y vertex True - reco",100,-25,25);
+    vertex_Z = new TH1F("vertex_z","Z vertex True - reco",100,-25,25);
+    vertex_abs = new TH1F("vertex_abs","Abs vertex True - reco",100,-25,25);
+
+    direction_X = new TH1F("direction_x","X direction True - reco",100,-25,25);
+    direction_Y = new TH1F("direction_y","Y direction True - reco",100,-25,25);
+    direction_Z = new TH1F("direction_z","Z direction True - reco",100,-25,25);
+    direction_abs = new TH1F("direction_abs","Abs direction True - reco",100,-25,25);
+
+    dEdx = new TH1F("dEdx","Reconstructed dEdx",50,-2,20);
 
     return true;
   }
@@ -49,22 +63,60 @@ namespace larlite {
     auto neutrino = truth.GetNeutrino().Nu();
     auto lep = truth.GetNeutrino().Lepton();
   
-
+    TLorentzVector trueVertex = neutrino.Trajectory().front().Position();
+    TLorentzVector trueDirection = lep.Trajectory().front().Momentum();
 
     // Only look at electron neutrino events?
 
     // get the mc showers:
     event_mcshower * ev_shower = storage -> get_data<event_mcshower>("mcreco");
+    event_shower * reco_shower = storage -> get_data<event_shower>("showerreco");
     
-    std::cout << "This event has " << ev_shower->size() << " showers.\n";
+    if (reco_shower -> size() == 0) return false;
+
+    // Normalize the direction:
+    TVector3 trueDirNorm = trueDirection.Vect();
+    trueDirNorm *= 1.0/trueDirNorm.Mag(); 
+
+    std::cout << "This event has " << ev_shower->size() << " mc showers.\n";
     for (auto & shower : * ev_shower){
-      if (shower.DetProfile().E() < 10) continue;
+      if (shower.DetProfile().E() < 100) continue;
         std::cout << "\tPDG: ........ " << shower.PdgCode() << "\n"
                   << "\tTrack ID: ... " << shower.TrackID() << "\n"
                   << "\tMother ID: .. " << shower.MotherTrackID() << "\n"
                   << "\tTotal E: .... " << shower.MotherStart().E() << "\n"
-                  << "\tDep E: ...... " << shower.DetProfile().E() << "\n"
-                  << std::endl;
+                  << "\tDep E: ...... " << shower.DetProfile().E() << "\n";
+        if (abs(shower.PdgCode()) == 11){
+          std::cout << "\tvertex: (" << trueVertex.X() << ", " << trueVertex.Y() << ", " << trueVertex.Z() << ")\n"
+                    << "\tdirection: (" << trueDirNorm.X() << ", " << trueDirNorm.Y() << ", " << trueDirNorm.Z() << ")\n";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "This event has " << reco_shower->size() << " reco showers.\n";
+
+    for (auto & shower : * reco_shower){
+      TVector3 start = shower.ShowerStart();
+      TVector3 dir   = shower.Direction();
+      std::vector<double> dedx = shower.dEdx();
+      std::vector<double> energy = shower.Energy();
+      std::cout << "Start point of the shower: ("
+                << start.X() << ", " << start.Y() << ", " << start.Z() << ")\n"
+                << "Direction: "
+                << dir.X() << ", " << dir.Y() << ", " << dir.Z() << ")\n"
+                << "dEdx: " << dedx[1] << "\n"
+                << "energy: " << energy[1] << "\n";
+
+      // Fill in the histograms:
+      vertex_X      -> Fill(trueVertex.X() - start.X());
+      vertex_Y      -> Fill(trueVertex.Y() - start.Y());
+      vertex_Z      -> Fill(trueVertex.Z() - start.Z());
+      // vertex_abs    -> Fill();
+      direction_X   -> Fill(trueDirNorm.X() - dir.X());
+      direction_Y   -> Fill(trueDirNorm.Y() - dir.Y());
+      direction_Z   -> Fill(trueDirNorm.Z() - dir.Z());
+      // direction_abs -> Fill();
+      dEdx          -> Fill(dedx[1]);       
     }
 
     return true;
@@ -85,6 +137,20 @@ namespace larlite {
     //   print(MSG::ERROR,__FUNCTION__,"Did not find an output file pointer!!! File not opened?");
     //
   
+    if (_fout){
+      _fout -> cd();
+      vertex_X      -> Write();
+      vertex_Y      -> Write();
+      vertex_Z      -> Write();
+      vertex_abs    -> Write();
+      direction_X   -> Write();
+      direction_Y   -> Write();
+      direction_Z   -> Write();
+      direction_abs -> Write();
+      dEdx          -> Write() ;
+    }
+
+
     return true;
   }
 

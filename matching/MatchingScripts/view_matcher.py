@@ -3,7 +3,7 @@ import ROOT, sys, os
 from ROOT import *
 
 # Now import ana_processor & your class. For this example, ana_base.
-gSystem.Load("libCMTool")
+#gSystem.Load("libCMTool")
 from ROOT import *
 if len(sys.argv) != 2:
     print
@@ -13,39 +13,49 @@ if len(sys.argv) != 2:
 
 filename = sys.argv[1]
 #filename = "/Users/davidkaleko/Data/ShowerStudy/PDGID_11/shower_larlight_11.root"
-my_proc = larlight.ana_processor()
-my_proc.set_verbosity(larlight.MSG.DEBUG)
+my_proc = larlite.ana_processor()
+#my_proc.set_verbosity(larlite.MSG.kDEBUG)
 
-my_proc.set_io_mode(larlight.storage_manager.READ)
+my_proc.set_io_mode(larlite.storage_manager.kREAD)
 
 my_proc.add_input_file(filename)
 
-larlight.storage_manager.get().set_in_rootdir("scanner")
+larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
+
+larlite.storage_manager.get().set_in_rootdir("scanner")
 
 my_proc.set_ana_output_file("")
 
-raw_viewer   = larlight.ClusterViewer()
-match_viewer = larlight.MatchViewer()
-
-
-########################################
-# decide what to show on display
-########################################
-raw_viewer.SetDrawShowers(False)
-raw_viewer.SetDrawStartEnd(False)
+raw_viewer   = larlite.ClusterViewer()
+match_viewer = larlite.MatchViewer()
+#mc_viewer    = larlite.MCShowerClusterViewer()
+clusterz = cluster.CRUHelper()
 
 match_viewer.SetPrintClusterInfo(True)
-#Show Showers: requires MC info in hadded files
-match_viewer.SetDrawShowers(False)
-
+#match_viewer.ShowShowers(False)
+#match_viewer.SetDrawShowers(True)
 ########################################
 # attach match algos here
 ########################################
 
-myalg = cmtool.CFAlgoWireOverlap()
-myalg.SetVerbose(True)
 
-match_viewer.GetManager().AddMatchAlgo(myalg)
+priority_algo = cmtool.CPAlgoNHits()
+priority_algo.SetMinHits(25)
+match_viewer.GetManager().AddPriorityAlgo(priority_algo)
+
+algo_array = cmtool.CFAlgoArray()
+
+#timeAlg = cmtool.CFAlgoTimeOverlap()
+#timeAlg.SetDebug(False)
+#timeAlg.RequireThreePlanes(False)
+
+showerAlg = cmtool.CFAlgoShowerTimeMatch()
+startAlg = cmtool.CFAlgoMatchStart()
+wireAlg = cmtool.CFAlgoShowerWireMatch()
+
+algo_array.AddAlgo(startAlg)
+
+match_viewer.GetManager().AddMatchAlgo(algo_array)
 
 ########################################
 # done attaching match algos
@@ -55,14 +65,32 @@ my_proc.add_process(raw_viewer)
 
 my_proc.add_process(match_viewer)
 
-raw_viewer.SetClusterType(larlight.DATA.Cluster)
+#my_proc.add_process(mc_viewer)
 
-match_viewer.SetClusterType(larlight.DATA.Cluster)
+#producer="ccMergedCone"
+producer="ccMergedFinal"
+#producer="ccMergedPoly3"
+
+raw_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
+#raw_viewer.SetClusterProducer(larlite.DATA.MCShowerCluster)
+
+match_viewer.SetClusterProducer(producer) #larlite.DATA.Cluster)
+#match_viewer.SetClusterProducer(larlite.DATA.MCShowerCluster)
 
 gStyle.SetOptStat(0)
 
+####
+# want to mark begin points
+####
+#algo = cluster.ClusterParamsExecutor()
+#result = algo.GetParams()
+
+
+
 #start on first event always
 user_input_evt_no = -1;
+
+counter = 0
 
 while true:
 
@@ -71,12 +99,17 @@ while true:
     except SyntaxError:
         user_input_evt_no = user_input_evt_no + 1
 
+    print 'we get here'
     my_proc.process_event(user_input_evt_no)
 
     raw_viewer.DrawAllClusters();
 
     match_viewer.DrawAllClusters();
 
+    #mc_viewer.DrawAllClusters();
+
+    print "Event ID is: " ,counter
+    counter+=1
     print "    Hit enter to go next event..."
     sys.stdin.readline()
 
