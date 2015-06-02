@@ -50,8 +50,8 @@ algo_array = cmtool.CFAlgoArray()
 #timeAlg.RequireThreePlanes(False)
 
 showerAlg = cmtool.CFAlgoShowerTimeMatch()
-
 wireAlg = cmtool.CFAlgoShowerWireMatch()
+wireAlg.SetDebug(False)
 
 algo_array.AddAlgo(showerAlg)
 algo_array.AddAlgo(wireAlg)
