@@ -18,6 +18,7 @@
 #include "Analysis/ana_base.h"
 
 #include "TH1F.h"
+#include "TVector3.h"
 
 namespace larlite {
   /**
@@ -49,6 +50,9 @@ namespace larlite {
     */
     virtual bool finalize();
 
+    bool isFiducial(const TVector3 & vertex);
+
+
   protected:
     
     // Histograms to compare vertex information, dE/dx, direction:
@@ -63,6 +67,9 @@ namespace larlite {
     TH1F * direction_abs;
 
     TH1F * dEdx;
+    TH1F * dEdx_fid;
+
+    std::vector<int> _good_event_list;
   };
 }
 #endif
