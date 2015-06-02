@@ -17,10 +17,12 @@
 #pragma link C++ class cmtool::CBAlgoProhibitBigToBig+;
 #pragma link C++ class cmtool::CBAlgoProhibitStartToStart+;
 #pragma link C++ class cmtool::CBAlgoProhibitTrackToTrack+;
+#pragma link C++ class cmtool::CBAlgoProhibitBigStart+;
 #pragma link C++ class cmtool::CBAlgoMergeWithinBoundary+;
 
 #pragma link C++ class larlite::HitToCluster+;
 #pragma link C++ class larlite::DropSingles+;
+#pragma link C++ class larlite::DropBadVertClusters+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 

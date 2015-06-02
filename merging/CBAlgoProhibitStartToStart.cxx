@@ -33,7 +33,7 @@ namespace cmtool {
     if (cluster1.GetParams().N_Hits < _min_hits ||
         cluster2.GetParams().N_Hits < _min_hits)
     {
-      return true;
+      return false;
     }
 
     // Each cluster has a start point and an end point

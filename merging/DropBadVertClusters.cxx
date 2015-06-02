@@ -1,15 +1,15 @@
-#ifndef LARLITE_DROPSINGLES_CXX
-#define LARLITE_DROPSINGLES_CXX
+#ifndef LARLITE_DROPBADVERTCLUSTERS_CXX
+#define LARLITE_DROPBADVERTCLUSTERS_CXX
 
 #include <list>
 
-#include "DropSingles.h"
+#include "DropBadVertClusters.h"
 #include "DataFormat/hit.h"
 #include "DataFormat/cluster.h"
 
 namespace larlite {
 
-  bool DropSingles::initialize() {
+  bool DropBadVertClusters::initialize() {
 
     //
     // This function is called in the beginning of event loop
@@ -21,7 +21,7 @@ namespace larlite {
     return true;
   }
   
-  bool DropSingles::analyze(storage_manager* storage) {
+  bool DropBadVertClusters::analyze(storage_manager* storage) {
   
     //
     // Do your event-by-event analysis here. This function is called for 
@@ -93,9 +93,19 @@ namespace larlite {
 
     unsigned int i = 0;
     for(auto const& hit_indices : hit_index_v) {
-      if (hit_indices.size() > 1){
+      // more than 10 hits is automatic retention
+      if (hit_indices.size() > 10){
         hit_ass.push_back(hit_index_v.at(i));
         out_cluster_v -> push_back(ev_clus -> at(i));
+      }
+      else{
+        // make the cluster params object to decide
+        ::cluster::ClusterParamsAlg cpan;
+        helper.GenerateCPAN(hit_indices,ev_hit,cpan);
+        if ( ! isBadVertCluster(cpan) ){
+          hit_ass.push_back(hit_index_v.at(i));
+          out_cluster_v -> push_back(ev_clus -> at(i));
+        }
       }
 
       i++;
@@ -108,7 +118,41 @@ namespace larlite {
     return true;
   }
 
-  bool DropSingles::finalize() {
+  bool DropBadVertClusters::isBadVertCluster( ::cluster::ClusterParamsAlg &clust) {
+    clust.FillParams();
+
+    // Find the hit highest in time and lowest in time, connect them.
+    larutil::PxHit lowHit = clust.GetHitVector().front();
+    larutil::PxHit highHit = clust.GetHitVector().back();
+
+    for (auto & hit : clust.GetHitVector() ){
+      if (hit.t > highHit.t) highHit = hit;
+      if (hit.t < lowHit.t) lowHit = hit;
+    }
+
+
+    float slope = (highHit.t - lowHit.t) / (highHit.w - lowHit.w + 0.001);
+    slope = atan(slope);
+    float length = sqrt(pow(highHit.t - lowHit.t, 2) + pow(highHit.w - lowHit.w, 2));
+
+    // if (clust.Plane() == 1){
+      // std::cout << "slope is: " << slope << std::endl;
+      // std::cout << "length/hit is: " << length/clust.GetParams().N_Hits << std::endl;
+
+      if (fabs(slope) > 1 && length/clust.GetParams().N_Hits -1 > 1){
+        // std::cout << "\thighHit: " << highHit.w << "," << highHit.t << std::endl;
+        // std::cout << "\tlowHit: " << lowHit.w << "," << lowHit.t << std::endl;
+        return true;
+      }
+      // clust.GetParams().Report();
+    // }
+
+
+    return false;
+  }
+
+
+  bool DropBadVertClusters::finalize() {
 
     // This function is called at the end of event loop.
     // Do all variable finalization you wish to do here.
