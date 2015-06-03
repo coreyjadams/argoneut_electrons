@@ -196,44 +196,52 @@ def main(**args):
   # # Stage 5:
   # ##################################
 
-  prevProducer = "ccMergedStartTrack"
+#   prevProducer = "ccMergedStartTrack"
 
-  maxClosestDistances = [0.8, 1.0, 1.2, 0.8, ]
-  maxClusterSizes     = [40,  40,  40,  40,  ]
-# 1.0, 1.2, 1.4, 1.4
-# 15,  25,  30 , 40 
-  for i in range(0, len(maxClosestDistances)):
-    mergers.append(getMergeToTrunk(
-      shortestDist = maxClosestDistances[i],
-      maxClusterSize = maxClusterSizes[i],
-      prohibitBig=True))
-    mergers[-1].SetInputProducer(prevProducer)
-    mergers[-1].SetOutputProducer("ccMergedSDBig" + str(i))
-    mergers[-1].SaveOutputCluster()
-    prevProducer = "ccMergedSDBig" + str(i)
-    my_proc.add_process(mergers[-1])
+#   maxClosestDistances = [0.8, 1.0, 1.2, 0.8, ]
+#   maxClusterSizes     = [40,  40,  40,  40,  ]
+# # 1.0, 1.2, 1.4, 1.4
+# # 15,  25,  30 , 40 
+#   for i in range(0, len(maxClosestDistances)):
+#     mergers.append(getMergeToTrunk(
+#       shortestDist = maxClosestDistances[i],
+#       maxClusterSize = maxClusterSizes[i],
+#       prohibitBig=True))
+#     mergers[-1].SetInputProducer(prevProducer)
+#     mergers[-1].SetOutputProducer("ccMergedSDBig" + str(i))
+#     mergers[-1].SaveOutputCluster()
+#     prevProducer = "ccMergedSDBig" + str(i)
+#     my_proc.add_process(mergers[-1])
 
 
 
 
 
   # # Add one more inline merger iteration:
+  prevProducer = "ccMergedStartTrack"
 
   # mergers.append(getInlineMerger(
-  #   maxInlineDist=1.2, 
+  #   maxInlineDist=0.8, 
   #   useAllHits=False,
-  #   hitFraction=0.4))
+  #   hitFraction=0.2))
   # mergers[-1].SetInputProducer(prevProducer)
   # mergers[-1].SetOutputProducer("ccMergedInlineFinal")
   # prevProducer = "ccMergedInlineFinal"
   # mergers[-1].SaveOutputCluster()
   # my_proc.add_process(mergers[-1])
 
-  # # Add a DropSingles module:
-  # drop = larlite.DropSingles()
-  # drop.SetInputProducer(prevProducer)
-  # drop.SetOutputProducer("ccMergedFinal")
-  # my_proc.add_process(drop)
+  mergers.append(getExtendBlobMerger())
+  mergers[-1].SetInputProducer(prevProducer)
+  mergers[-1].SetOutputProducer("ccMergedExtendBlob")
+  prevProducer = "ccMergedExtendBlob"
+  mergers[-1].SaveOutputCluster()
+  my_proc.add_process(mergers[-1])
+
+  # Add a DropSingles module:
+  drop = larlite.DropSingles()
+  drop.SetInputProducer(prevProducer)
+  drop.SetOutputProducer("ccMergedFinal")
+  my_proc.add_process(drop)
 
 
   # my_proc.process_event(0)

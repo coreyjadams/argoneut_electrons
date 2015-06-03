@@ -14,6 +14,7 @@
 #pragma link C++ class cmtool::CBAlgoMergeInline+;
 #pragma link C++ class cmtool::CBAlgoMergeDiffuse+;
 #pragma link C++ class cmtool::CBAlgoMergeShortestDistance+;
+#pragma link C++ class cmtool::CBAlgoMergeExtendBlob+;
 #pragma link C++ class cmtool::CBAlgoProhibitBigToBig+;
 #pragma link C++ class cmtool::CBAlgoProhibitStartToStart+;
 #pragma link C++ class cmtool::CBAlgoProhibitTrackToTrack+;
