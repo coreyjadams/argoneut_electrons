@@ -29,6 +29,7 @@ namespace larlite {
     direction_abs = new TH1F("direction_abs","Abs direction True - reco",100,-25,25);
 
     dEdx = new TH1F("dEdx","Reconstructed dEdx",50,-2,20);
+    dEdx_fid = new TH1F("dEdx_fid","Reconstructed dEdx",50,-2,20);
 
     return true;
   }
@@ -78,22 +79,22 @@ namespace larlite {
     TVector3 trueDirNorm = trueDirection.Vect();
     trueDirNorm *= 1.0/trueDirNorm.Mag(); 
 
-    std::cout << "This event has " << ev_shower->size() << " mc showers.\n";
+    std::cout << "\n\n\nThis event ("<< storage -> event_id() << ") has " << ev_shower->size() << " mc showers.\n";
     for (auto & shower : * ev_shower){
       if (shower.DetProfile().E() < 100) continue;
+        if (abs(shower.PdgCode()) == 11){
         std::cout << "\tPDG: ........ " << shower.PdgCode() << "\n"
                   << "\tTrack ID: ... " << shower.TrackID() << "\n"
                   << "\tMother ID: .. " << shower.MotherTrackID() << "\n"
                   << "\tTotal E: .... " << shower.MotherStart().E() << "\n"
                   << "\tDep E: ...... " << shower.DetProfile().E() << "\n";
-        if (abs(shower.PdgCode()) == 11){
           std::cout << "\tvertex: (" << trueVertex.X() << ", " << trueVertex.Y() << ", " << trueVertex.Z() << ")\n"
                     << "\tdirection: (" << trueDirNorm.X() << ", " << trueDirNorm.Y() << ", " << trueDirNorm.Z() << ")\n";
-        }
         std::cout << std::endl;
+        }
     }
 
-    std::cout << "This event has " << reco_shower->size() << " reco showers.\n";
+    std::cout << "This event ("<< storage -> event_id() << ") has " << reco_shower->size() << " reco showers.\n";
 
     for (auto & shower : * reco_shower){
       TVector3 start = shower.ShowerStart();
@@ -116,7 +117,11 @@ namespace larlite {
       direction_Y   -> Fill(trueDirNorm.Y() - dir.Y());
       direction_Z   -> Fill(trueDirNorm.Z() - dir.Z());
       // direction_abs -> Fill();
-      dEdx          -> Fill(dedx[1]);       
+      dEdx          -> Fill(dedx[1]);
+      if (isFiducial(start)){
+        dEdx_fid -> Fill(dedx[1]);
+        if (dedx[1] > 1.5 && dedx[1] < 5.0) _good_event_list.push_back(storage->event_id());
+      }
     }
 
     return true;
@@ -148,9 +153,24 @@ namespace larlite {
       direction_Z   -> Write();
       direction_abs -> Write();
       dEdx          -> Write() ;
+      dEdx_fid      -> Write() ;
+    }
+
+    std::cout << "Printing good events: \n";
+    for (auto event : _good_event_list){
+      std::cout << event << '\n';
     }
 
 
+    return true;
+  }
+
+  bool MCShowerAna::isFiducial(const TVector3 & vertex){
+    // Argoneut specific
+    if (vertex.X() > 23.5 || vertex.X() < -23.5) return false;
+    if (vertex.Y() > 20 || vertex.Y() < -20) return false;
+    if (vertex.Z() > 90 || vertex.Z() < 0) return false;
+  
     return true;
   }
 

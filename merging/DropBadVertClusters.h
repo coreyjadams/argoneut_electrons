@@ -1,75 +1,64 @@
 /**
- * \file MCShowerAna.h
+ * \file DropBadVertClusters.h
  *
- * \ingroup analysis
+ * \ingroup merging
  * 
- * \brief Class def header for a class MCShowerAna
+ * \brief Class def header for a class DropBadVertClusters
  *
  * @author cadams
  */
 
-/** \addtogroup analysis
+/** \addtogroup merging
 
     @{*/
 
-#ifndef LARLITE_MCSHOWERANA_H
-#define LARLITE_MCSHOWERANA_H
+#ifndef LARLITE_DROPBADVERTCLUSTERS_H
+#define LARLITE_DROPBADVERTCLUSTERS_H
 
 #include "Analysis/ana_base.h"
-
-#include "TH1F.h"
-#include "TVector3.h"
+#include "ClusterRecoUtil/CRUHelper.h"
 
 namespace larlite {
   /**
-     \class MCShowerAna
+     \class DropBadVertClusters
      User custom analysis class made by SHELL_USER_NAME
    */
-  class MCShowerAna : public ana_base{
+  class DropBadVertClusters : public ana_base{
   
   public:
 
     /// Default constructor
-    MCShowerAna(){ _name="MCShowerAna"; _fout=0;}
+    DropBadVertClusters(){ _name="DropBadVertClusters"; _fout=0;}
 
     /// Default destructor
-    virtual ~MCShowerAna(){}
+    virtual ~DropBadVertClusters(){}
 
-    /** IMPLEMENT in MCShowerAna.cc!
+    /** IMPLEMENT in DropBadVertClusters.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in MCShowerAna.cc! 
+    /** IMPLEMENT in DropBadVertClusters.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in MCShowerAna.cc! 
+    /** IMPLEMENT in DropBadVertClusters.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
-    bool isFiducial(const TVector3 & vertex);
+    void SetInputProducer(std::string s){_input_producer = s;}
+    void SetOutputProducer(std::string s){_output_producer = s;}
 
+    bool isBadVertCluster(::cluster::ClusterParamsAlg &cluster);
 
   protected:
-    
-    // Histograms to compare vertex information, dE/dx, direction:
-    TH1F * vertex_X;
-    TH1F * vertex_Y;
-    TH1F * vertex_Z;
-    TH1F * vertex_abs;
+    std::string _input_producer;
+    std::string _output_producer;
 
-    TH1F * direction_X;
-    TH1F * direction_Y;
-    TH1F * direction_Z;
-    TH1F * direction_abs;
+    ::cluster::CRUHelper helper;
 
-    TH1F * dEdx;
-    TH1F * dEdx_fid;
-
-    std::vector<int> _good_event_list;
   };
 }
 #endif

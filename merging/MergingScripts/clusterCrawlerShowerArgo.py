@@ -128,13 +128,13 @@ def getOverlapMerger(overlapFrac = 0.4, minHits = 10, maxHits = 50):
   t2t_prohibit.SetMinMHitWiresFraction(0.05)
   t2t_prohibit.SetMinPrincipal(0.995)
   t2t_prohibit.SetMinLengthWidthRatio(10)
-  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kEITHER)
+  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kBOTH)
   prohib_array.AddAlgo(t2t_prohibit, False)
 
 
-  # big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  # big_prohibit.SetMaxHits(maxHits)
-  # prohib_array.AddAlgo(big_prohibit, False)
+  big_prohibit = cmtool.CBAlgoProhibitBigToBig()
+  big_prohibit.SetMaxHits(maxHits)
+  prohib_array.AddAlgo(big_prohibit, False)
 
   # Want to add a prohibit function that stops if 
   # start to start point distance is too close
@@ -288,9 +288,9 @@ def getMergeToTrunk(shortestDist,maxClusterSize,prohibitBig=False):
   t2t_prohibit.SetMinMHitWiresFraction(0.5)
   t2t_prohibit.SetMinPrincipal(0.99)
   t2t_prohibit.SetMinLengthWidthRatio(10)
-  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kEITHER)
+  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kBOTH)
   # t2t_prohibit.SetDebug(True)
-  prohib_array.AddAlgo(t2t_prohibit, False)
+  # prohib_array.AddAlgo(t2t_prohibit, False)
 
 
   if (prohibitBig):
@@ -300,8 +300,8 @@ def getMergeToTrunk(shortestDist,maxClusterSize,prohibitBig=False):
 
   # Want to add a prohibit function that stops if 
   # start to start point distance is too close
-  s2s_prohibit = cmtool.CBAlgoProhibitStartToStart()
-  s2s_prohibit.SetMinSeparation(1.5)
+  s2s_prohibit = cmtool.CBAlgoProhibitBigStart()
+  s2s_prohibit.SetMinSeparation(2.0)
   # s2s_prohibit.SetDebug(True)
   prohib_array.AddAlgo(s2s_prohibit, False)
 
@@ -321,7 +321,7 @@ def getMergeToTrunk(shortestDist,maxClusterSize,prohibitBig=False):
   merger.GetManager().AddMergeAlgo(algo_array)
   merger.GetManager().AddSeparateAlgo(prohib_array)
   merger.GetManager().MergeTillConverge(True)
-  merger.GetManager().SetMinNHits(4)
+  merger.GetManager().SetMinNHits(3)
   return merger
 
 def getStartTrackMerger():
@@ -371,4 +371,49 @@ def getStartTrackMerger():
   # merger.GetManager().AddSeparateAlgo(prohib_array)
   merger.GetManager().MergeTillConverge(True)
   merger.GetManager().SetMinNHits(5)
+  return merger
+
+def getExtendBlobMerger(prohibitBig = True):
+  merger = larlite.ClusterMerger()
+  ########################################
+  # PROHIBIT ALGORITHMS
+  ########################################
+  prohib_array = cmtool.CBAlgoArray()
+
+  # Prohibit Merging Track to track:
+  t2t_prohibit = cmtool.CBAlgoProhibitTrackToTrack()
+  t2t_prohibit.SetMinHits(10)
+  t2t_prohibit.SetMinMHitWiresFraction(0.5)
+  t2t_prohibit.SetMinPrincipal(0.99)
+  t2t_prohibit.SetMinLengthWidthRatio(10)
+  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kBOTH)
+  # t2t_prohibit.SetDebug(True)
+  # prohib_array.AddAlgo(t2t_prohibit, False)
+
+
+  # if (prohibitBig):
+  #   big_prohibit = cmtool.CBAlgoProhibitBigToBig()
+  #   big_prohibit.SetMaxHits(25)
+  #   prohib_array.AddAlgo(big_prohibit, False)
+
+  # Want to add a prohibit function that stops if 
+  # start to start point distance is too close
+  # s2s_prohibit = cmtool.CBAlgoProhibitStartToStart()
+  # s2s_prohibit.SetMinSeparation(1.0)
+  # s2s_prohibit.SetDebug(True)
+  # prohib_array.AddAlgo(s2s_prohibit, False)
+
+  ########################################
+  # MERGE ALGORITHMS
+  ########################################
+  algo_array = cmtool.CBAlgoArray()
+
+  blob = cmtool.CBAlgoMergeExtendBlob()
+  # blob.SetDebug(True)
+  # blob.SetMaxDistance(shortestDist)
+  algo_array.AddAlgo(blob) 
+  merger.GetManager().AddMergeAlgo(algo_array)
+  merger.GetManager().AddSeparateAlgo(prohib_array)
+  merger.GetManager().MergeTillConverge(false)
+  merger.GetManager().SetMinNHits(1)
   return merger
