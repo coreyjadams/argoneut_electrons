@@ -14,7 +14,7 @@ OBJECTS = $(SOURCES:.cxx=.o)
 INCFLAGS  = -I.                       #Include itself
 INCFLAGS += $(shell larlite-config --includes)
 INCFLAGS += $(shell recotool-config --includes)
-INCFLAGS += -I$(LARLITE_BASEDIR)/UserDev/Argoneut
+INCFLAGS += -I$(LARLITE_BASEDIR)/UserDev/argoneut_electrons
 
 # platform-specific options
 OSNAME          = $(shell uname -s)

@@ -21,7 +21,7 @@ namespace argo {
     // default filename:
     _fann_file_name = "/home/cadams/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat";
 
-    SetDebug(true);
+    SetDebug(false);
   }
 
   void TrackShower::init(){
