@@ -20,7 +20,7 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := minos merging matching utils analysis #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := merging matching utils analysis #ADD_NEW_SUBDIR ... do not remove this comment from this line
 #####################################################################################
 #
 # COMPILATION...
