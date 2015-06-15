@@ -39,32 +39,34 @@ namespace cmtool {
       return false;
     }
 
+    // std::cout << "min sep is " << _min_separation << std::endl;
+
     // Find the bigger cluster: 
     if (cluster1.GetParams().N_Hits > cluster2.GetParams().N_Hits){
       auto start_point = cluster1.GetParams().start_point;
       larutil::PxPoint alt_start_point = alt_start(cluster1.GetHitVector());
       if (closestApproach(start_point, cluster2) < _min_separation){
         // std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t 
-        //           << "in plane " << cluster1.Plane() << std::endl;
+                  // << "in plane " << cluster1.Plane() << " -- dist " << closestApproach(start_point, cluster1) << std::endl;
         return true;
       }
       if (closestApproach(alt_start_point, cluster2) < _min_separation){
         // std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t 
-        //           << "in plane " << cluster1.Plane() << std::endl;
+                  // << "in plane " << cluster1.Plane() << " -- dist " << closestApproach(alt_start_point, cluster2) << std::endl;
         return true;
       }
     }
     else{
       auto start_point = cluster2.GetParams().start_point;
-      larutil::PxPoint alt_start_point = alt_start(cluster1.GetHitVector());
+      larutil::PxPoint alt_start_point = alt_start(cluster2.GetHitVector());
       if (closestApproach(start_point, cluster1) < _min_separation){
         // std::cout << "Prohibiting around other point " << start_point.w << ", " << start_point.t 
-        //           << "in plane " << cluster1.Plane()<< std::endl;
+                  // << "in plane " << cluster1.Plane() << " -- dist " << closestApproach(start_point, cluster1) << std::endl;
         return true;
       }
-      if (closestApproach(alt_start_point, cluster2) < _min_separation){
+      if (closestApproach(alt_start_point, cluster1) < _min_separation){
         // std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t 
-        //           << "in plane " << cluster1.Plane() << std::endl;
+                  // << "in plane " << cluster1.Plane() << " -- dist " << closestApproach(alt_start_point, cluster2) << std::endl;
         return true;
       }
     }

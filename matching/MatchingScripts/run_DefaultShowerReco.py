@@ -24,17 +24,17 @@ def DefaultMatch():
     palgo1 = cmtool.CPAlgoNHits()
     palgo1.SetMinHits(25)
     
-    palgo2 = cmtool.CPAlgoIgnoreTracks()
+    # palgo2 = cmtool.CPAlgoIgnoreTracks()
     
     palgo_array.AddAlgo(palgo1)
-    palgo_array.AddAlgo(palgo2)
 
     algo_array = cmtool.CFAlgoArray()
-    #algo_array.SetMode(cmtool.CFAlgoArray.kPositiveAddition)
-    algo_array.AddAlgo(cmtool.CFAlgoShowerTimeMatch())
-    #algo_array.AddAlgo(cmtool.CFAlgoTimeProf())
-    #algo_array.AddAlgo(cmtool.CFAlgo3DAngle())
-    #algo_array.AddAlgo(cmtool.CFAlgoStartPointMatch())
+    showerAlg  = cmtool.CFAlgoShowerTimeMatch()
+    wireAlg    = cmtool.CFAlgoShowerWireMatch()
+    qualityAlg = cmtool.CFAlgoMatchStart()
+    algo_array.AddAlgo(showerAlg)
+    algo_array.AddAlgo(wireAlg)
+    algo_array.AddAlgo(qualityAlg)
 
     return palgo_array, algo_array
 
@@ -82,7 +82,7 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("");
 
 # Specify data output root file name
-my_proc.set_output_file("beamShowers.root")
+my_proc.set_output_file("elecShowers.root")
 
 ana_unit=DefaultShowerReco3D()
 
