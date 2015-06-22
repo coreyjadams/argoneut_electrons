@@ -10,7 +10,6 @@ namespace cmtool {
   CFAlgoShowerWireMatch::CFAlgoShowerWireMatch() : CFloatAlgoBase()
   //-------------------------------------------------------
   {
-    std::cout<<"INITIALIZE Wire Alg "<<std::endl; 
 
     SetDebug(false) ;
     SetVerbose(false) ;
@@ -59,7 +58,9 @@ namespace cmtool {
        }
      }
 
- //   std::cout<<"Found nshowers! "<<nshowers<<std::endl; 
+    if( _debug)
+	std::cout<<"\n\nFound nshowers! "<<nshowers<<std::endl; 
+
     if (nshowers != 1) return -1.0;
 
 
@@ -85,6 +86,7 @@ namespace cmtool {
     }   
 
     for (size_t h=0; h < Hits.size(); h++){
+//	std::cout<<"Plane "<<h<<std::endl ;
       for ( auto& hit: Hits.at(h) ){
         if ( Hits.at(h).size() == 0 ){
           std::cout << "Need to insert fake hit ranges...";
@@ -92,7 +94,6 @@ namespace cmtool {
         else{
           if ( int(hit.w / _w2cm) < StartWires.at(h) ) { StartWires.at(h) = int(hit.w / _w2cm)  ; }
           if ( int(hit.w / _w2cm) > EndWires.at(h)   ) { EndWires.at(h)   = int(hit.w / _w2cm)  ; }
-//	std::cout<<"hit.w and _w2cm: "<<hit.w<<", "<<_w2cm<<std::endl ;
 
 	  if ( hit.t < StartTime.at(h)  ) { StartTime.at(h)  = hit.t  ; }
 	  if ( hit.t > EndTime.at(h)    ) { EndTime.at(h)    = hit.t  ; }
@@ -102,12 +103,14 @@ namespace cmtool {
       }//for all hits in range
     }//for all hit-lists (i.e. for all clusters)
 
-  //  std::cout<<"\n\nPLANE 0: "<<std::endl ; 
-  //  std::cout<<"Start and end Times: "<<StartTime.at(0)<<", "<<EndTime.at(0)<<std::endl;
-  //  std::cout<<"Start and end Wires: "<<StartWires.at(0)<<", "<<EndWires.at(0)<<std::endl;
-  //  std::cout<<"PLANE 1: "<<std::endl ; 
-  //  std::cout<<"Start and end Times: "<<StartTime.at(1)<<", "<<EndTime.at(1)<<std::endl;
-  //  std::cout<<"Start and end Wires: "<<StartWires.at(1)<<", "<<EndWires.at(1)<<std::endl;
+    if( _debug ){
+	std::cout<<"PLANE 0: "<<std::endl ; 
+    	std::cout<<"Start and end Times: "<<StartTime.at(0)<<", "<<EndTime.at(0)<<std::endl;
+    	std::cout<<"Start and end Wires: "<<StartWires.at(0)<<", "<<EndWires.at(0)<<std::endl;
+    	std::cout<<"PLANE 1: "<<std::endl ; 
+    	std::cout<<"Start and end Times: "<<StartTime.at(1)<<", "<<EndTime.at(1)<<std::endl;
+    	std::cout<<"Start and end Wires: "<<StartWires.at(1)<<", "<<EndWires.at(1)<<std::endl;
+    }
 
     std::vector<double> UWorldStart(2,0) ;
     std::vector<double> UWorldEnd(2,0) ;
@@ -122,9 +125,12 @@ namespace cmtool {
     WireIDtoWorld(StartWires.at(1), StartTime.at(1),(150.*PI/180), VWorldStart); 
     WireIDtoWorld(EndWires.at(1), EndTime.at(1), (150.*PI/180), VWorldEnd); 
 
-//    std::cout<<"World start and end in :"
-//	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
-//	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
+    if( _debug ){
+	std::cout<<"World start and end in :"
+	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
+	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
+	}
+
     double wireDistU =0;
     double wireDistV =0;
 
@@ -150,9 +156,6 @@ namespace cmtool {
     
 	}
 
-//    std::cout<<"World start and end in :"
-//	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
-//	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
 
     //Compare Z world coordinates of start and end of V plane shower and U cluster   
     std::vector<float> showerRange(2,0), otherRange(2,0) ;
@@ -164,7 +167,8 @@ namespace cmtool {
     otherRange.back() = UWorldEnd[0];
 
     float score = getScore(showerRange,otherRange);
-    // std::cout << "Score is " << score << std::endl;
+
+    if( _debug) std::cout << "Score is " << score << std::endl;
     return score;
 
    }
@@ -177,18 +181,38 @@ namespace cmtool {
     // Find out how much these two intervals overlap, and normalize 
     // it to the shower range
     float overlap = -1.0;
+    float norm = 1.0; 
+
 
     if (otherRange.back()  - showerRange.front() >= 0 && 
          showerRange.back() - otherRange.front()  >= 0)  
-    { // overlap
+    { 
       overlap = fmax(showerRange.front(), otherRange.front())
               - fmin(showerRange.back(), otherRange.back());
     }
 
-//    std::cout<<"overlap: "<<overlap<<std::endl ;
-//    std::cout<<"normalized overlap: "<<overlap/ (showerRange.back() - showerRange.front()) <<std::endl ;
+    if(overlap < 0 && overlap > -1 ) overlap*=-1;
 
-    return overlap / (showerRange.front() - showerRange.back());
+    norm = overlap / (showerRange.front() - showerRange.back());
+
+    //Sometimes overlap is the shower range, giving us a norm of 1.  This isn't very indicative of overlap
+    //so adjust the normalization range in this case
+    if(norm == 1)
+	norm = overlap / abs( fmax(showerRange.back(),otherRange.back()) - fmin(showerRange.front(),otherRange.front())) ; 
+	 
+    //Bias matching against showers with poorly matched fronts AND backs 
+    if( abs( showerRange.front() - otherRange.front() ) > 5 
+	&& abs(showerRange.back() - otherRange.back()) > 5 ) 
+        norm*=0.1 ; 
+
+    if( _debug) { 
+	std::cout<<"\nfmax of fronts: "<<fmax(showerRange.front(), otherRange.front()) ;
+	std::cout<<"\nfmin of backs: "<<fmin(showerRange.back(), otherRange.back()) ;
+	std::cout<<"\noverlap: "<<overlap<<std::endl ;
+	std::cout<<"normalized overlap: "<< norm <<std::endl ;
+    }
+
+    return norm ; 
   }
 
   //------------------------------
@@ -206,13 +230,10 @@ namespace cmtool {
     //actual location of the start/end of cluster in world coordinates, need to add in the time offset. 
     double h = larutil::Geometry::GetME()->DetHalfHeight() * 2 ;   //40 cm
     double l = larutil::Geometry::GetME()->DetLength() ;	   //90 cm
-    float p = 0.4 ; //Pitch of wires is 4mm
+    float p = 0.4 ; //Pitch 
     int N = 240 ;   //Number of wires
-
-    //Time offsets to add back in below.  The minus sign is here to decrease code below. The offset adds to the center
-    //of the wire in world coordinates only when time > length/2; in this case we must also adjust the time so to only add the appropriate offset. Otherwise, it lessens. Hence the minus sign. 
-    double offsetY = -time * cos(angle);  
-    double offsetZ = -time * sin(angle); 
+    double offsetY = 0; 
+    double offsetZ = 0;
 
     int sign = 0 ; 
     if( cos(angle) >= 0 )
@@ -221,39 +242,34 @@ namespace cmtool {
 	sign = -1;  
 
     double length = 0; 
+
     //For variable length wires that terminate on the left.
     //Z coord is 0, Y coord is 1
     if ( wireID <= 86 ) {
-       length = 0.5*h/sin(angle) + 0.5*l*abs(1/cos(angle)) - (N-1)/2*p/sin(angle)*abs(1/cos(angle)) + p*wireID/sin(angle)*abs(1/cos(angle)); 
-       if ( time > length / 2 ){
-	  time -= (length / 2) ;
-	  offsetY = time*cos(angle) ; 
-	  offsetZ = time*sin(angle) ; 
-	  }
+       //length = 0.5*h/sin(angle) + 0.5*l*abs(1/cos(angle)) - (N-1)/2*p/sin(angle)*abs(1/cos(angle)) + p*wireID/sin(angle)*abs(1/cos(angle)) + 18.42785; 
+	offsetY = 0; 
+	offsetZ = 0;
 	  
-       yz[0] = offsetZ + -0.25*l + 0.25*h*abs(1/tan(angle)) - (N-1)/4*p/sin(angle) + 0.5*p*wireID/sin(angle) ;   
+       yz[0] = offsetZ + -0.25*l + 0.25*h*abs(1/tan(angle)) - (N-1)/4*p/sin(angle) + 0.25*p*wireID/sin(angle) + 8;   
        yz[1] = offsetY + 0.25*h*sign - 0.25*l*tan(angle) + (N-1)/4*p/cos(angle) - 0.5*p*wireID/cos(angle) ;   
 	}	
-    //For variable length wires that terminate on the left.
+    //For variable length wires that terminate on the right.
     else if ( wireID > 154) {
-       if ( time > length / 2 ){
-	  time -= (length / 2) ;
-	  offsetY = time*cos(angle) ; 
-	  offsetZ = time*sin(angle) ; 
-	  }
-       length = 0.5*h/sin(angle) + 0.5*l*abs(1/cos(angle)) - (N-1)/2*p/sin(angle)*abs(1/cos(angle)) - p*wireID/sin(angle)*abs(1/cos(angle)); 
-       yz[0] = offsetZ + 0.25*l - 0.25*h*abs(1/tan(angle)) - (N-1)/4*p/sin(angle) + 0.5*p*wireID/sin(angle) ;   
+       //length = 0.5*h/sin(angle) + 0.5*l*abs(1/cos(angle)) + (N-1)/2*p/sin(angle)*abs(1/cos(angle)) - p*wireID/sin(angle)*abs(1/cos(angle))+18.42785; 
+
+ 	offsetY = 0; 
+	offsetZ = 0; 
+
+       yz[0] = offsetZ + 0.25*l - 0.25*h*abs(1/tan(angle)) - (N-1)/4*p/sin(angle) + 0.26471*p*wireID/sin(angle) + 37.008 ;   
        yz[1] = offsetY + -0.25*h*sign + 0.25*l*tan(angle) + (N-1)/4*p/cos(angle) - 0.5*p*wireID/cos(angle) ;   
 	}
-    //For variable length wires that terminate on the left.
+    //For constant length wires 
     else{
-       if ( time > length / 2 ){
-	  time -= (length / 2) ;
-	  offsetY = time*cos(angle) ; 
-	  offsetZ = time*sin(angle) ; 
-	  }
-	length = h / sin(angle) ;
-//	std::cout<<"All the things: "<<offsetZ<<", "<<N<<", "<<p<<", "<<sin(angle)<<", "<<wireID<<std::endl ;
+	//length = h / sin(angle) ;
+
+	offsetY = 0;  
+	offsetZ = 0; 
+
 	yz[0] = offsetZ + -(N-1)/2*p/sin(angle) + p*wireID/sin(angle) ;
 	yz[1] = offsetY + 0. ;
 	}

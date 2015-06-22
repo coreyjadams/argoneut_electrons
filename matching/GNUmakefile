@@ -3,8 +3,8 @@
 #
 
 # specific names for this package
-DICT  = Argoneut_matchingCint
-SHLIB = libArgoneut_matching.so
+DICT  = argoneut_electrons_matchingCint
+SHLIB = libargoneut_electrons_matching.so
 SOURCES = $(filter-out $(DICT).cxx, $(wildcard *.cxx))
 FMWK_HEADERS = LinkDef.h $(DICT).h
 HEADERS = $(filter-out $(FMWK_HEADERS), $(wildcard *.h))
