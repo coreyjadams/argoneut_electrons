@@ -31,7 +31,7 @@ namespace cmtool {
 
 
     float minDist(9999.0);
-    for (auto & hit : cluster2. GetHitVector()){
+    for (auto & hit : cluster2.GetHitVector()){
       for (auto & otherHit : cluster1.GetHitVector()){
         float thisDist = sqrt(pow(hit.w - otherHit.w,2 ) + pow(hit.t - otherHit.t, 2));
         if ( thisDist < minDist){

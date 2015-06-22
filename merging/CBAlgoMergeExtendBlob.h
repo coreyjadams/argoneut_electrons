@@ -46,9 +46,6 @@ namespace cmtool {
 
 
 
-    void SetMaxAverageMinDistance(float d){_max_average_min_distance = d;}
-
-
     bool isInFrontOf(          const ::cluster::ClusterParamsAlg &cluster1,
                                const ::cluster::ClusterParamsAlg &cluster2);
 
@@ -62,10 +59,18 @@ namespace cmtool {
 
     float getRMSAlongAxis(     const ::cluster::ClusterParamsAlg &cluster1);
 
+    void set_principal_ev_cut(float f)      {_principal_ev_cut = f;}
+    void set_rms_scale(float f)             {_rms_scale = f;}
+    void set_length_jump_scale(float f)     {_length_jump_scale = f;}
+    void set_min_hits_to_project_from(int f){_min_hits_to_project_from = f;}
+
   private:
     
-    float _max_average_min_distance;
     int   _min_hits_to_project_from;
+
+    float _principal_ev_cut;
+    float _rms_scale;
+    float _length_jump_scale;
 
     argo::TrackShower ts;
 

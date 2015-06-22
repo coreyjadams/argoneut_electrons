@@ -7,8 +7,10 @@ namespace cmtool {
 
   CBAlgoMergeExtendBlob::CBAlgoMergeExtendBlob() : CBoolAlgoBase()
   {
-    _max_average_min_distance = 0.0;
     _min_hits_to_project_from = 25;
+    _principal_ev_cut = 0.9;
+    _rms_scale = 2.0;
+    _length_jump_scale = 0.5;
   }
 
 
@@ -50,6 +52,11 @@ namespace cmtool {
       // Check on trackness:
     if (! ts.isTrack(*littleCluster) || littleCluster->GetNHits() < 10 ){
       // can continue
+      // Only take events with at least a reasonably strong directionality:
+      if (bigCluster -> GetParams().eigenvalue_principal < _principal_ev_cut){
+        return false;
+      }
+
       // Check that cluster1 is in front of cluster2 
       if (!isInFrontOf(*bigCluster,*littleCluster)){
         return false;
@@ -60,25 +67,25 @@ namespace cmtool {
       // For others, use rms of second cluster compared to offset
 
       float closest_approach = getClosestApproachTo(*bigCluster,*littleCluster);
-      if (littleCluster->GetNHits() <= 4){
-        float rms = 1.0;
-        std::cout << "\trms is " << rms << std::endl;
-        if (closest_approach > 2*rms){
+      // if (littleCluster->GetNHits() <= 4){
+        float rms = fmin(getRMSAlongAxis(*bigCluster),2);
+        // std::cout << "\trms is " << rms << std::endl;
+        if (closest_approach > _rms_scale*rms){
           // reject if offset is more than 2 rms distances away
-          std::cout << "\trejecting by closest approach \n";
+          // std::cout << "\trejecting by closest approach \n";
           return false;           
         }
-      }
-      else{
-        float rms_clust2 = sqrt(pow(littleCluster->GetParams().rms_x, 2) 
-                              + pow(littleCluster->GetParams().rms_y, 2));
-        std::cout << "\trms is " << rms_clust2 << std::endl;
-        if (closest_approach > 3*rms_clust2){
-          // reject if offset is more than 2 rms distances away
-          std::cout << "\trejecting by closest approach \n";
-          return false;
-        }
-      }
+      // }
+      // else{
+      //   float rms_clust2 = sqrt(pow(littleCluster->GetParams().rms_x, 2) 
+      //                         + pow(littleCluster->GetParams().rms_y, 2));
+      //   std::cout << "\trms is " << rms_clust2 << std::endl;
+      //   if (closest_approach > 3*rms_clust2){
+      //     // reject if offset is more than 2 rms distances away
+      //     std::cout << "\trejecting by closest approach \n";
+      //     return false;
+      //   }
+      // }
 
       // Now do the checking:
 
@@ -88,13 +95,15 @@ namespace cmtool {
       float separation = getSeparation(*bigCluster,*littleCluster);
       float clust1_length = getLength(*bigCluster);
       // check this cut:
-      if (separation > clust1_length){
-        std::cout << "\nFailed Separation cut\n";
+      // If the second cluster is only a few hits, greatly reduce the allowed gap
+      if (littleCluster -> GetNHits() <4) clust1_length = 2.0;
+      if (separation > _length_jump_scale*clust1_length){
+        // std::cout << "\nFailed Separation cut\n";
         return false;
       }        
 
       // at this point, all checks are passed
-      std::cout << "Successful merge!\n";
+      // std::cout << "Successful merge!\n";
       return true;
 
     }
@@ -120,7 +129,7 @@ namespace cmtool {
 
     // Project along this direction from the start of cluster1 to the start of cluster2
     TVector2 start1, start2, direction;
-    start1.Set(cluster1.GetParams().mean_x, cluster1.GetParams().mean_y);
+    start1.Set(cluster1.GetParams().start_point.w, cluster1.GetParams().start_point.t);
     start2.Set(cluster2.GetParams().start_point.w, cluster2.GetParams().start_point.t);
     direction.Set(displacement_w,displacement_t);
 
@@ -131,15 +140,17 @@ namespace cmtool {
 
     float t = (start2 - start1)*direction;
     if (t > 0) {
-      std::cout << "("<<start1.X() << ", " << start1.Y() << ") ";
-      std::cout << "is in front of ";
-      std::cout << "("<<start2.X() << ", " << start2.Y() << ")\n";
+      // std::cout << "("<<start1.X() << ", " << start1.Y() << ") ";
+      // std::cout << "is in front of ";
+      // std::cout << "("<<start2.X() << ", " << start2.Y() << ")";
+      // std::cout << " -- Plane " << cluster1.Plane() << ", strength " << cluster1.GetParams().eigenvalue_principal << std::endl;
       return true;
     }
     else{
-      std::cout << "("<<start1.X() << ", " << start1.Y() << ")";
-      std::cout << "is behind ";
-      std::cout << "("<<start2.X() << ", " << start2.Y() << ")\n";
+      // std::cout << "("<<start1.X() << ", " << start1.Y() << ")";
+      // std::cout << "is behind ";
+      // std::cout << "("<<start2.X() << ", " << start2.Y() << ")";
+      // std::cout << " -- Plane " << cluster1.Plane() << std::endl;
       return false;
     }
 
@@ -167,7 +178,7 @@ namespace cmtool {
 
     // Distance can now be calculated:
     float distance = (start1 + t*direction - center2).Mod();
-    std::cout << "\tclosest approach is " << distance <<std::endl;
+    // std::cout << "\tclosest approach is " << distance <<std::endl;
     return distance;
     // if (t > 0) {
     //   // std::cout << "("<<start1.X() << ", " << start1.Y() << ") ";
@@ -221,11 +232,11 @@ namespace cmtool {
       }
     }
 
-    std::cout << "\tTop is (" << top_hit.w << ", " << top_hit.t << "), bot is "
-              <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - separation " 
-              << bot_clust2 - top_clust1 << "\n";
+    // std::cout << "\tTop is (" << top_hit.w << ", " << top_hit.t << "), bot is "
+    //           <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - separation " 
+    //           << bot_clust2 - top_clust1 << "\n";
 
-    return bot_clust2 - top_clust1;
+    return fabs(bot_clust2 - top_clust1);
   }
 
   float CBAlgoMergeExtendBlob::getLength(
@@ -256,40 +267,40 @@ namespace cmtool {
       }
     }
 
-    std::cout << "\tTop of clust is (" << top_hit.w << ", " << top_hit.t << "), bot is "
-              <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - clust length " 
-              << fabs(top_clust1 - bot_clust1) << "\n";
+    // std::cout << "\tTop of clust is (" << top_hit.w << ", " << top_hit.t << "), bot is "
+    //           <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - clust length " 
+    //           << fabs(top_clust1 - bot_clust1) << "\n";
 
     return fabs(bot_clust1 - top_clust1);
 
   }
 
-  // float CBAlgoMergeExtendBlob::getRMSAlongAxis(
-  //     const ::cluster::ClusterParamsAlg &cluster1){
+  float CBAlgoMergeExtendBlob::getRMSAlongAxis(
+      const ::cluster::ClusterParamsAlg &cluster1){
 
-  //   TVector2 start1, start2, direction;
-  //   direction.Set(cluster1.GetParams().principal_dir[0],cluster1.GetParams().principal_dir[1]);
-  //   TVector2 ort = direction.Ort();
+    TVector2 start1, start2, direction;
+    direction.Set(cluster1.GetParams().principal_dir[0],cluster1.GetParams().principal_dir[1]);
+    TVector2 ort = direction.Ort();
 
-  //   // The direction and the orthogonal direction function as a rotation matrix to the 
-  //   // coords of principal axes
+    // The direction and the orthogonal direction function as a rotation matrix to the 
+    // coords of principal axes
 
-  //   // In this frame the offset from principal axis ought to be zero, so just sum the squared val
+    // In this frame the offset from principal axis ought to be zero, so just sum the squared val
 
-  //   float rms = 0.0;
+    float rms = 0.0;
 
-  //   for (auto & hit : cluster1.GetHitVector() ){
-  //     rms += pow(hit.w * direction.Y() - hit.t * ort.Y(), 2);
-  //   }
+    for (auto & hit : cluster1.GetHitVector() ){
+      rms += pow(hit.w * direction.Y() - hit.t * ort.Y(), 2);
+    }
 
-  //   rms = sqrt(rms);
+    rms = sqrt(rms);
 
-  //   std::cout << "\twidth is  " 
-  //             << rms << "\n";
+    // std::cout << "\twidth is  " 
+    //           << rms << "\n";
 
-  //   return rms;
+    return rms;
 
-  // }
+  }
 
 }
 
