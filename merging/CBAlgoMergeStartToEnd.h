@@ -45,11 +45,6 @@ namespace cmtool {
                       const ::cluster::ClusterParamsAlg &cluster2);
 
 
-    float getShortestDist(const ::cluster::ClusterParamsAlg &cluster1,
-                          const ::cluster::ClusterParamsAlg &cluster2);
-
-    void SetMaxDistance(float d){_max_distance = d;}
-
   private:
     
     float _max_distance;
