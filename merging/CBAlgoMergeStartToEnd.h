@@ -45,9 +45,6 @@ namespace cmtool {
                       const ::cluster::ClusterParamsAlg &cluster2);
 
 
-  private:
-    
-    float _max_distance;
   };
 }
 
