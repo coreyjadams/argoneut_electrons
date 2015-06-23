@@ -1,5 +1,5 @@
-#ifndef RECOTOOL_CBALGOMERGESTARTTOENDANCE_CXX
-#define RECOTOOL_CBALGOMERGESTARTTOENDANCE_CXX
+#ifndef RECOTOOL_CBALGOMERGESTARTTOEND_CXX
+#define RECOTOOL_CBALGOMERGESTARTTOEND_CXX
 
 #include "CBAlgoMergeStartToEnd.h"
 #include <iostream>
@@ -31,6 +31,10 @@ namespace cmtool {
     float actDist2 = pow(pow((cluster1.GetParams().end_point.w - cluster2.GetParams().start_point.w), 2) + pow((cluster1.GetParams().end_point.t - cluster2.GetParams().start_point.t), 2), 0.5); //extra parentheses
 
 
+    //You should not return true here-- you want to take more things into account than just whether or not the polygons overlap.  
+    //For ex, you include cases here where the polygon overlap at the same vertex--definitely do not want to merge those
+    //One slightly more complex example is :
+    // if ( overlap && ( actDist1 <maxDist || actDist2 < maxDist ))
     if (overlap) 
       return true;
     else if (actDist1 < maxDist || actDist2 < maxDist)      //if the clusters' start and end points are within a certain distance of each other, return true to merge
