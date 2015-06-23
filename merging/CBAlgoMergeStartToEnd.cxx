@@ -23,6 +23,7 @@ namespace cmtool {
     auto overlap = cluster2.GetParams().PolyObject.PolyOverlap(cluster1.GetParams().PolyObject ) ;
     //Polygon2D overlapPoly = Polygon2D(const Polygon2D &cluster1.GetParams().PolyObject, const Polygon2D &cluster2.GetParams().PolyObject);
 
+    // Area() is type double, not Polygon2D 
     //Polygon2D polyArea = overlapPoly.PolyObject.Area();
 
     float maxDist = 0.5 ; //semicolon; Can't use "int" for non-integer (like 0.5).
