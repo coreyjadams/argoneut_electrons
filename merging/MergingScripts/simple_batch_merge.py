@@ -216,6 +216,15 @@ def main(**args):
   # mergers[-1].SaveOutputCluster()
   # my_proc.add_process(mergers[-1])
 
+################new function called
+  mergers.append(mergeIfClose())
+  mergers[-1].SetInputProducer(prevProducer)
+  mergers[-1].SetOutputProducer("close")
+  prevProducer = "close"
+  mergers[-1].SaveOutputCluster()
+  my_proc.add_process(mergers[-1])
+
+
   mergers.append(getExtendBlobMerger(True))
   mergers[-1].SetInputProducer(prevProducer)
   mergers[-1].SetOutputProducer("ccMergedExtendBlobNoBig")
@@ -253,6 +262,7 @@ def main(**args):
   # prevProducer = "ccMergedInlineFinal"
   # mergers[-1].SaveOutputCluster()
   # my_proc.add_process(mergers[-1])
+
 
 
   # Add a DropSingles module:

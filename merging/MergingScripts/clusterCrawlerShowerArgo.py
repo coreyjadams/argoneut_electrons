@@ -35,6 +35,14 @@ def getSmallClustMerger(maxHitsProhib=5, maxHitsSmall=1, maxDist=0.5,maxDistAv=2
   merger.GetManager().SetMinNHits(minHits)
   return merger
 
+##new function for merging
+def mergeIfClose():
+
+  merger        = larlite.ClusterMerger()
+  algo          = cmtool.CBAlgoMergeStartToEnd()
+  merger.GetManager().AddMergeAlgo(algo)
+
+  return merger
 
 def getSmallToTrackMerger(dist):
   merger = larlite.ClusterMerger()
