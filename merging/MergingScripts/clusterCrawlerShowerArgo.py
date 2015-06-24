@@ -90,9 +90,9 @@ def getInlineMerger(maxInlineDist=0.6,useAllHits=True,hitFraction=0.35, minHits=
   # PROHIBIT ALGORITHMS
   ########################################
   prohib_array = cmtool.CBAlgoArray()
-  big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  big_prohibit.SetMaxHits(40)
-  prohib_array.AddAlgo(big_prohibit,False)
+  # big_prohibit = cmtool.CBAlgoProhibitBigToBig()
+  # big_prohibit.SetMaxHits(40)
+  # prohib_array.AddAlgo(big_prohibit,False)
   # Want to add a prohibit function that stops if 
   # start to start point distance is too close
 
@@ -146,7 +146,7 @@ def getOverlapMerger(overlapFrac = 0.4, minHits = 10, maxHits = 50):
   s2s_prohibit.SetMinSeparation(1.0)
   s2s_prohibit.SetMinHits(maxHits)
   # s2s_prohibit.SetDebug(True)
-  prohib_array.AddAlgo(s2s_prohibit, False)
+  # prohib_array.AddAlgo(s2s_prohibit, False)
 
 
   ########################################
@@ -399,15 +399,15 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25):
 
   if (prohibitBig):
     big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-    big_prohibit.SetMaxHits(30)
+    big_prohibit.SetMaxHits(bignessProhibit)
     prohib_array.AddAlgo(big_prohibit, False)
 
   # Want to add a prohibit function that stops if 
   # start to start point distance is too close
-  s2s_prohibit = cmtool.CBAlgoProhibitBigStart()
-  s2s_prohibit.SetMinSeparation(1.0)
-  s2s_prohibit.SetMinHits(bignessProhibit)
-  prohib_array.AddAlgo(s2s_prohibit, False)
+  # s2s_prohibit = cmtool.CBAlgoProhibitBigStart()
+  # s2s_prohibit.SetMinSeparation(1.0)
+  # s2s_prohibit.SetMinHits(bignessProhibit)
+  # prohib_array.AddAlgo(s2s_prohibit, False)
 
   ########################################
   # MERGE ALGORITHMS
@@ -423,7 +423,7 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25):
   # blob.SetMaxDistance(shortestDist)
   algo_array.AddAlgo(blob) 
   merger.GetManager().AddMergeAlgo(algo_array)
-  merger.GetManager().AddSeparateAlgo(prohib_array)
-  merger.GetManager().MergeTillConverge(False)
-  merger.GetManager().SetMinNHits(1)
+  # merger.GetManager().AddSeparateAlgo(prohib_array)
+  merger.GetManager().MergeTillConverge(True)
+  merger.GetManager().SetMinNHits(5)
   return merger
