@@ -20,6 +20,7 @@
 #pragma link C++ class cmtool::CBAlgoProhibitTrackToTrack+;
 #pragma link C++ class cmtool::CBAlgoProhibitBigStart+;
 #pragma link C++ class cmtool::CBAlgoMergeWithinBoundary+;
+#pragma link C++ class cmtool::CBAlgoMergeStartToEnd+;
 
 #pragma link C++ class larlite::HitToCluster+;
 #pragma link C++ class larlite::DropSingles+;
