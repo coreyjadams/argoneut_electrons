@@ -208,13 +208,13 @@ def main(**args):
   # # Add one more inline merger iteration:
   # prevProducer = "ccMergedStartTrack"
 
-  #new function called
-  mergers.append(mergeIfClose())
-  mergers[-1].SetInputProducer(prevProducer)
-  mergers[-1].SetOutputProducer("close")
-  prevProducer = "close"
-  mergers[-1].SaveOutputCluster()
-  my_proc.add_process(mergers[-1])
+  # #new function called
+  # mergers.append(mergeIfClose())
+  # mergers[-1].SetInputProducer(prevProducer)
+  # mergers[-1].SetOutputProducer("close")
+  # prevProducer = "close"
+  # mergers[-1].SaveOutputCluster()
+  # my_proc.add_process(mergers[-1])
 
 
 
@@ -252,7 +252,7 @@ def main(**args):
 
 
   # my_proc.process_event(0)
-  my_proc.run(0,50)
+  my_proc.run(0,200)
 
   # done!
 
