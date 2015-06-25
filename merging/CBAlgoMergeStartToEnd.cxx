@@ -44,13 +44,13 @@ namespace cmtool {
     else
       if (cluster1.GetParams().direction != cluster2.GetParams().direction)
         return false;
-      else if ((actDist1 < 4 || actDist2 < 4) && (cluster1.GetParams().angle_2d <= cluster2.GetParams().angle_2d + 0.0125 || cluster1.GetParams().angle_2d >= cluster2.GetParams().angle_2d - 0.0125))
+      else if (((actDist1 < 4 && actDist1 > 1) || (actDist2 < 4 && actDist2 > 1)) && (cluster1.GetParams().angle_2d <= cluster2.GetParams().angle_2d + 0.0125 || cluster1.GetParams().angle_2d >= cluster2.GetParams().angle_2d - 0.0125))
         return true;
       else if (overlapPoly.Area() < 4)
        return false;
       else if (actDist3 < 0.0125)
         return false;
-      else if ( overlap && ( actDist1 < maxDist || actDist2 < maxDist ) && (cluster1.GetParams().angle_2d <= cluster2.GetParams().angle_2d + 0.0125 || cluster1.GetParams().angle_2d >= cluster2.GetParams().angle_2d - 0.0125) && overlapPoly.Area() > 4)
+      else if ( overlap && ((actDist1 < 4 && actDist1 > 1) || (actDist2 < 4 && actDist2 > 1)) && (cluster1.GetParams().angle_2d <= cluster2.GetParams().angle_2d + 0.0125 || cluster1.GetParams().angle_2d >= cluster2.GetParams().angle_2d - 0.0125) && overlapPoly.Area() > 4)
 	return true;
       else if (rmsDist > maxDist)
 	return false;
