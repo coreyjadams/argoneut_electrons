@@ -11,6 +11,8 @@ namespace cmtool {
     _principal_ev_cut = 0.9;
     _rms_scale = 2.0;
     _length_jump_scale = 0.5;
+    _mode = 0;
+    _debug = false;
   }
 
 
@@ -26,15 +28,33 @@ namespace cmtool {
 
     const ::cluster::ClusterParamsAlg * bigCluster, * littleCluster;
 
-    if (cluster1.GetNHits() > cluster2.GetNHits()){
-      bigCluster = &cluster1;
-      littleCluster = &cluster2;
+    // Option of two modes:
+    // Merge small into big
+    // Merge downstream into upstream
+
+    if (_mode == 0){
+      if (cluster1.GetNHits() > cluster2.GetNHits()){
+        bigCluster = &cluster1;
+        littleCluster = &cluster2;
+      }
+      else{
+        bigCluster = & cluster2;
+        littleCluster = &cluster1;
+      }
     }
     else{
-      bigCluster = & cluster2;
-      littleCluster = &cluster1;
+      // compare which cluster is further upstream:
+      if (cluster1.GetParams().start_point.w < cluster2.GetParams().start_point.w){
+        bigCluster = &cluster1;
+        littleCluster = &cluster2;
+      }
+      else{
+        bigCluster = &cluster2;
+        littleCluster = &cluster1;
+      }
     }
 
+    if (bigCluster -> GetNHits() < _min_hits_to_project_from ) return false;
 
     // if (cluster1.GetNHits() >= cluster2.GetNHits()){
       
@@ -72,7 +92,7 @@ namespace cmtool {
         // std::cout << "\trms is " << rms << std::endl;
         if (closest_approach > _rms_scale*rms){
           // reject if offset is more than 2 rms distances away
-          // std::cout << "\trejecting by closest approach \n";
+          if (_debug) std::cout << "\trejecting by closest approach \n";
           return false;           
         }
       // }
@@ -97,13 +117,18 @@ namespace cmtool {
       // check this cut:
       // If the second cluster is only a few hits, greatly reduce the allowed gap
       if (littleCluster -> GetNHits() <4) clust1_length = 2.0;
-      if (separation > _length_jump_scale*clust1_length){
-        // std::cout << "\nFailed Separation cut\n";
+      if ( separation > _length_jump_scale*clust1_length){
+        if (_debug) std::cout << "\tFailed Separation cut, too far away\n";
         return false;
       }        
+      if (separation < 0 && fabs(separation) > clust1_length/2.0 ){
+        if (_debug) std::cout << "\tFailed Separation cut, too far back\n";
+        return false;
+      }
+
 
       // at this point, all checks are passed
-      // std::cout << "Successful merge!\n";
+      if (_debug) std::cout << "Successful merge!\n";
       return true;
 
     }
@@ -140,17 +165,21 @@ namespace cmtool {
 
     float t = (start2 - start1)*direction;
     if (t > 0) {
-      // std::cout << "("<<start1.X() << ", " << start1.Y() << ") ";
-      // std::cout << "is in front of ";
-      // std::cout << "("<<start2.X() << ", " << start2.Y() << ")";
-      // std::cout << " -- Plane " << cluster1.Plane() << ", strength " << cluster1.GetParams().eigenvalue_principal << std::endl;
+      if (_debug){
+        std::cout << "\n\n("<<start1.X() << ", " << start1.Y() << ") ";
+        std::cout << "is in front of ";
+        std::cout << "("<<start2.X() << ", " << start2.Y() << ")";
+        std::cout << " -- Plane " << cluster1.Plane() << ", strength " << cluster1.GetParams().eigenvalue_principal << std::endl;
+      }
       return true;
     }
     else{
-      // std::cout << "("<<start1.X() << ", " << start1.Y() << ")";
-      // std::cout << "is behind ";
-      // std::cout << "("<<start2.X() << ", " << start2.Y() << ")";
-      // std::cout << " -- Plane " << cluster1.Plane() << std::endl;
+      if (_debug) {
+        std::cout << "\n\n("<<start1.X() << ", " << start1.Y() << ")";
+        std::cout << "is behind ";
+        std::cout << "("<<start2.X() << ", " << start2.Y() << ")";
+        std::cout << " -- Plane " << cluster1.Plane() << std::endl;
+      }
       return false;
     }
 
@@ -178,7 +207,7 @@ namespace cmtool {
 
     // Distance can now be calculated:
     float distance = (start1 + t*direction - center2).Mod();
-    // std::cout << "\tclosest approach is " << distance <<std::endl;
+    if (_debug) std::cout << "\tclosest approach is " << distance <<std::endl;
     return distance;
     // if (t > 0) {
     //   // std::cout << "("<<start1.X() << ", " << start1.Y() << ") ";
@@ -231,12 +260,13 @@ namespace cmtool {
         bot_hit = hit;
       }
     }
+    if (_debug){
+      std::cout << "\tTop is (" << top_hit.w << ", " << top_hit.t << "), bot is "
+                <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - separation " 
+                << bot_clust2 - top_clust1 << "\n";
+    }
 
-    // std::cout << "\tTop is (" << top_hit.w << ", " << top_hit.t << "), bot is "
-    //           <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - separation " 
-    //           << bot_clust2 - top_clust1 << "\n";
-
-    return fabs(bot_clust2 - top_clust1);
+    return bot_clust2 - top_clust1;
   }
 
   float CBAlgoMergeExtendBlob::getLength(
@@ -266,10 +296,11 @@ namespace cmtool {
         bot_hit = hit;
       }
     }
-
-    // std::cout << "\tTop of clust is (" << top_hit.w << ", " << top_hit.t << "), bot is "
-    //           <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - clust length " 
-    //           << fabs(top_clust1 - bot_clust1) << "\n";
+    if (_debug){
+      std::cout << "\tTop of clust is (" << top_hit.w << ", " << top_hit.t << "), bot is "
+                <<  "(" << bot_hit.w << ", " << bot_hit.t << ") - clust length " 
+                << fabs(top_clust1 - bot_clust1) << "\n";
+    }
 
     return fabs(bot_clust1 - top_clust1);
 
@@ -295,8 +326,9 @@ namespace cmtool {
 
     rms = sqrt(rms);
 
-    // std::cout << "\twidth is  " 
-    //           << rms << "\n";
+    if (_debug)
+      std::cout << "\twidth is  " 
+                << rms << "\n";
 
     return rms;
 

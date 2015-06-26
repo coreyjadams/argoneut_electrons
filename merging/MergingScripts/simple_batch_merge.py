@@ -5,7 +5,7 @@ import ROOT, sys, os
 from ROOT import *
 from clusterCrawlerShowerArgo import *
 import argparse
-
+import time
 
 def main(**args):
   
@@ -54,9 +54,9 @@ def main(**args):
   mergers = []
   prevProducer = "cccluster"
 
-  # # ##################################
-  # # # Stage 1:
-  # # ##################################
+  # #################################
+  # Stage 1:
+  # #################################
 
   # Module to take all of the poorly done, vertical tracks and destroy them
   htc = larlite.DropBadVertClusters()
@@ -71,7 +71,6 @@ def main(**args):
   htc.SetOutputProducer("ccclusterWithSingles")
   prevProducer="ccclusterWithSingles"
   my_proc.add_process(htc)
-
 
 
   # Trying an iterative merging approach:
@@ -110,12 +109,6 @@ def main(**args):
   inlineMerger.SaveOutputCluster()
   my_proc.add_process(inlineMerger)
 
-  #################################
-  # Stage 2:
-  #################################
-
-
-  prevProducer = "ccMergedInline"
 
   maxClosestDistances = [0.6, 0.8, 1.2, 1.3,]
   maxClusterSizes     = [20,  20,  20,  20, ]
@@ -133,51 +126,21 @@ def main(**args):
 
 
 
-  # ##################################
-  # # Stage 3:
-  # ##################################
-  # ################
-  # This stage appears to be useless
-  # ################
 
-  # overlapFraction    = [0.9, 0.8,]
-  # minHitsForConsid   = [3,   6,  ]
-  # maxHitsProhibit    = [15,  30, ]
+  # # _maxInlineDist   =  [0.8, 1.0, ]
+  # # _hitFraction     =  [.50, 0.4, ]
 
-
-  # for i in range(0, len(overlapFraction)):
-  #   mergers.append(getOverlapMerger(
-  #       overlapFrac = overlapFraction[i],
-  #       minHits     = minHitsForConsid[i],
-  #       maxHits     = maxHitsProhibit[i]))
-  #   mergers[-1].SetInputProducer(prevProducer)
-  #   mergers[-1].SetOutputProducer("ccMergedOverlap" + str(i))
-  #   mergers[-1].SaveOutputCluster()
-  #   prevProducer = "ccMergedOverlap" + str(i)
-  #   my_proc.add_process(mergers[-1])
-
-
-
-  ##################################
-  # Stage 4:
-  ##################################
-
-
-
-  # _maxInlineDist   =  [0.8, 1.0, ]
-  # _hitFraction     =  [.50, 0.4, ]
-
-  # # Add the inline and diffuse merger:
-  # for i in range(0, len(_maxInlineDist)):
-  #   mergers.append(getInlineMerger(
-  #     maxInlineDist=_maxInlineDist[i], 
-  #     useAllHits=False,
-  #     hitFraction=_hitFraction[i]))
-  #   mergers[-1].SetInputProducer(prevProducer)
-  #   mergers[-1].SetOutputProducer("ccMergedInline" + str(i))
-  #   prevProducer = "ccMergedInline" + str(i)
-  #   mergers[-1].SaveOutputCluster()
-  #   my_proc.add_process(mergers[-1])
+  # # # Add the inline and diffuse merger:
+  # # for i in range(0, len(_maxInlineDist)):
+  # #   mergers.append(getInlineMerger(
+  # #     maxInlineDist=_maxInlineDist[i], 
+  # #     useAllHits=False,
+  # #     hitFraction=_hitFraction[i]))
+  # #   mergers[-1].SetInputProducer(prevProducer)
+  # #   mergers[-1].SetOutputProducer("ccMergedInline" + str(i))
+  # #   prevProducer = "ccMergedInline" + str(i)
+  # #   mergers[-1].SaveOutputCluster()
+  # #   my_proc.add_process(mergers[-1])
 
 
 
@@ -189,26 +152,23 @@ def main(**args):
   my_proc.add_process(merger)
 
 
-  # mergers.append(getInlineMerger(
-  #   maxInlineDist=1.0, 
-  #   useAllHits=False,
-  #   hitFraction=0.25,
-  #   bignessProhibit=999,
-  #   minHits=10))
-  # mergers[-1].SetInputProducer(prevProducer)
-  # mergers[-1].SetOutputProducer("ccMergedInlineFinal")
-  # prevProducer = "ccMergedInlineFinal"
-  # mergers[-1].SaveOutputCluster()
-  # my_proc.add_process(mergers[-1])
+  # # mergers.append(getInlineMerger(
+  # #   maxInlineDist=1.0, 
+  # #   useAllHits=False,
+  # #   hitFraction=0.25,
+  # #   bignessProhibit=999,
+  # #   minHits=10))
+  # # mergers[-1].SetInputProducer(prevProducer)
+  # # mergers[-1].SetOutputProducer("ccMergedInlineFinal")
+  # # prevProducer = "ccMergedInlineFinal"
+  # # mergers[-1].SaveOutputCluster()
+  # # my_proc.add_process(mergers[-1])
 
-  ##################################
-  # Stage 5:
-  ##################################
 
-  # # Add one more inline merger iteration:
-  # prevProducer = "ccMergedStartTrack"
+  # # # Add one more inline merger iteration:
+  # # prevProducer = "ccMergedStartTrack"
 
-  # #new function called
+  # new function called
   # mergers.append(mergeIfClose())
   # mergers[-1].SetInputProducer(prevProducer)
   # mergers[-1].SetOutputProducer("close")
@@ -217,24 +177,14 @@ def main(**args):
   # my_proc.add_process(mergers[-1])
 
 
-
-
-
-  # merger = getStartTrackMerger()
-  # merger.SetInputProducer(prevProducer)
-  # merger.SetOutputProducer("ccMergedStartTrack1")
-  # prevProducer = "ccMergedStartTrack1"
-  # merger.SaveOutputCluster()
-  # my_proc.add_process(merger)
-
-  mergers.append(getExtendBlobMerger(False, 50))
+  mergers.append(getExtendBlobMerger(False, 50,1))
   mergers[-1].SetInputProducer(prevProducer)
   mergers[-1].SetOutputProducer("ccMergedExtendBlob")
   prevProducer = "ccMergedExtendBlob"
   mergers[-1].SaveOutputCluster()
   my_proc.add_process(mergers[-1])
 
-  mergers.append(getExtendBlobMerger(False,100))
+  mergers.append(getExtendBlobMerger(False,100,1))
   mergers[-1].SetInputProducer(prevProducer)
   mergers[-1].SetOutputProducer("ccMergedExtendBlob2")
   prevProducer = "ccMergedExtendBlob2"
@@ -250,10 +200,16 @@ def main(**args):
   drop.SetOutputProducer("ccMergedFinal")
   my_proc.add_process(drop)
 
+  start = time.clock()
 
   # my_proc.process_event(0)
-  my_proc.run(0,200)
+  nevents = 200
+  my_proc.run(0,nevents)
 
+  end = time.clock()
+
+  print "Processed ", nevents, " events in ", end-start, "seconds."
+  print "Average per event: ", (end-start)/nevents, "seconds."
   # done!
 
 

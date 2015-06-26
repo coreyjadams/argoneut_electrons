@@ -140,7 +140,7 @@ def getOverlapMerger(overlapFrac = 0.4, minHits = 10, maxHits = 50):
   t2t_prohibit.SetMinMHitWiresFraction(0.05)
   t2t_prohibit.SetMinPrincipal(0.995)
   t2t_prohibit.SetMinLengthWidthRatio(10)
-  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kBOTH)
+  t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kEITHER)
   prohib_array.AddAlgo(t2t_prohibit, False)
 
 
@@ -150,9 +150,9 @@ def getOverlapMerger(overlapFrac = 0.4, minHits = 10, maxHits = 50):
 
   # Want to add a prohibit function that stops if 
   # start to start point distance is too close
-  s2s_prohibit = cmtool.CBAlgoProhibitBigStart()
-  s2s_prohibit.SetMinSeparation(1.0)
-  s2s_prohibit.SetMinHits(maxHits)
+  # s2s_prohibit = cmtool.CBAlgoProhibitBigStart()
+  # s2s_prohibit.SetMinSeparation(1.0)
+  # s2s_prohibit.SetMinHits(maxHits)
   # s2s_prohibit.SetDebug(True)
   # prohib_array.AddAlgo(s2s_prohibit, False)
 
@@ -387,7 +387,7 @@ def getStartTrackMerger():
   merger.GetManager().SetMinNHits(5)
   return merger
 
-def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25):
+def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   merger = larlite.ClusterMerger()
   ########################################
   # PROHIBIT ALGORITHMS
@@ -427,11 +427,17 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25):
   blob.set_rms_scale(2.0)
   blob.set_length_jump_scale(0.25)
   blob.set_min_hits_to_project_from(30)
-  # blob.SetDebug(True)
+  blob.set_mode(mode)
+  blob.set_debug(False)
   # blob.SetMaxDistance(shortestDist)
   algo_array.AddAlgo(blob) 
   merger.GetManager().AddMergeAlgo(algo_array)
-  # merger.GetManager().AddSeparateAlgo(prohib_array)
-  merger.GetManager().MergeTillConverge(True)
-  merger.GetManager().SetMinNHits(5)
+  if prohibitBig:
+    merger.GetManager().AddSeparateAlgo(prohib_array)
+  merger.GetManager().MergeTillConverge(False)
+  if prohibitBig:
+    merger.GetManager().SetMinNHits(3)
+  else:
+    merger.GetManager().SetMinNHits(30)
+
   return merger
