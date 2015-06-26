@@ -2,6 +2,7 @@
 #define RECOTOOL_CBALGOMERGESTARTTOEND_CXX
 
 #include "CBAlgoMergeStartToEnd.h"
+#include "math.h"
 #include "../../RecoTool/ClusterRecoUtil/ClusterParamsAlg.h"
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
@@ -9,6 +10,26 @@
 
 namespace cmtool {
 
+float CBAlgoMergeStartToEnd::best_slope (const ::cluster::ClusterParamsAlg & cluster) {
+
+    auto hit_v = cluster.GetHitVector() ;
+
+//
+  float diff_x_sq = 0;
+  float diff_x_by_diff_y = 0;
+  float mean_x = cluster.GetParams().mean_x;
+  float mean_y = cluster.GetParams().mean_y;
+  float cluster_slope = 0;
+
+    for(auto const& hit_index : hit_v) {
+      diff_x_by_diff_y += (hit_index.w - mean_x) * (hit_index.t - mean_y) ;
+      diff_x_sq += pow((hit_index.w - mean_x), 2) ;
+
+    }
+    cluster_slope = diff_x_by_diff_y / diff_x_sq ;
+
+  return cluster_slope ;
+}
   
   CBAlgoMergeStartToEnd::CBAlgoMergeStartToEnd() : CBoolAlgoBase()
   {
@@ -20,34 +41,40 @@ namespace cmtool {
       const ::cluster::ClusterParamsAlg &cluster2)
   {
 
-    //Use auto when you're not sure what the type is-- PolyOverlap is a boolean, not Polygon2D
     auto overlap = cluster2.GetParams().PolyObject.PolyOverlap(cluster1.GetParams().PolyObject ) ;
     auto overlapPoly = Polygon2D(cluster1.GetParams().PolyObject, cluster2.GetParams().PolyObject);
     
 
-    // Area() is type double, not Polygon2D 
     //double polyArea = overlapPoly.PolyObject.Area();
 
-    float maxDist = 2 ; //semicolon; Can't use "int" for non-integer (like 0.5).
+    float maxDist = 1 ; //semicolon; Can't use "int" for non-integer (like 0.5).
     float actDist1 = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().end_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().end_point.t), 2), 0.5); //extra parentheses
     float actDist2 = pow(pow((cluster1.GetParams().end_point.w - cluster2.GetParams().start_point.w), 2) + pow((cluster1.GetParams().end_point.t - cluster2.GetParams().start_point.t), 2), 0.5); //extra parentheses
     //new lines below
     float actDist3 = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().start_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().start_point.t), 2), 0.5); //extra parentheses
     //float actDist4 = pow(pow((cluster1.GetParams().end_point.w - cluster2.GetParams().end_point.w), 2) + pow((cluster1.GetParams().end_point.t - cluster2.GetParams().end_point.t), 2), 0.5); //extra parentheses
-
+    //auto avgAngle1 = (cluster1.GetParams().opening_angle + cluster1.GetParams().closing_angle) / 2 ;
+    //auto avgAngle2 = (cluster2.GetParams().opening_angle + cluster2.GetParams().closing_angle) / 2 ;
+    float rmsDist = pow(pow(abs(cluster1.GetParams().rms_x - cluster2.GetParams().rms_x), 2) + pow(abs(cluster1.GetParams().rms_y - cluster2.GetParams().rms_y), 2), 0.5);
+    float slope1 = best_slope(cluster1) ;
+    float slope2 = best_slope(cluster2) ;
 
     if (cluster1.GetNHits() < 3 && cluster1.GetNHits() < 3)
       return false;
     else
-      if ( overlap && ( actDist1 < maxDist || actDist2 < maxDist ) && (cluster1.GetParams().angle_2d <= cluster2.GetParams().angle_2d + 0.05 || cluster1.GetParams().angle_2d >= cluster2.GetParams().angle_2d - 0.05)) 
-        return true;
-      else if (actDist1 < maxDist || actDist2 < maxDist)      //if the clusters' start and end points are within a certain distance of each other, return true to merge
-        return true;
-      else if ((actDist1 < 4 || actDist2 < 4) && (cluster1.GetParams().angle_2d <= cluster2.GetParams().angle_2d + 0.0125 || cluster1.GetParams().angle_2d >= cluster2.GetParams().angle_2d - 0.0125))
-        return true;
-      else if (actDist3 < maxDist)
+      if (cluster1.GetParams().direction != cluster2.GetParams().direction)
         return false;
-      else if (overlapPoly.Area() <= 0.5)
+      else if (slope1 >= slope2 - 0.125 || slope1 <= slope2 + 0.125)
+        return true;
+      else if (((actDist1 < 4 && actDist1 > 1) || (actDist2 < 4 && actDist2 > 1)) && ((slope1 >= slope2 - 0.125 || slope1 <= slope2 + 0.125)))
+        return true;
+      else if (overlapPoly.Area() < 4)
+       return false;
+      else if (actDist3 < 0.0125)
+        return false;
+      else if ( overlap && ((actDist1 < 4 && actDist1 > 1) || (actDist2 < 4 && actDist2 > 1)) && (slope1 >= slope2 - 0.125 || slope1 <= slope2 + 0.125) && overlapPoly.Area() > 4)
+        return true;
+      else if (rmsDist > maxDist)
        return false;
       else 
        return false;
@@ -56,4 +83,9 @@ namespace cmtool {
   }
 }
 
+
+
+
+
 #endif
+

@@ -20,6 +20,9 @@
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
 #include "LArUtil/GeometryUtilities.h"
+#include "DataFormat/storage_manager.h"
+#include "DataFormat/cluster.h"
+#include "DataFormat/hit.h"
 
 
 namespace cmtool {
@@ -44,6 +47,9 @@ namespace cmtool {
     virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
                       const ::cluster::ClusterParamsAlg &cluster2);
 
+    float best_slope( const ::cluster::ClusterParamsAlg & c) ;
+
+    ::larlite::storage_manager* storage ;
 
   };
 }
