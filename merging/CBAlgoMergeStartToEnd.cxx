@@ -10,30 +10,24 @@
 
 namespace cmtool {
 
-float best_slope () {
+float CBAlgoMergeStartToEnd::best_slope (const ::cluster::ClusterParamsAlg & cluster) {
 
-  //const ::cluster::ClusterParamsAlg &cluster
+    auto hit_v = cluster.GetHitVector() ;
 
-  //auto ev_cluster = cluster ;
-  double event_index = 0;
-  auto ev_cluster = storage->get_data<event_index>("cccluster");
-  auto ev_hit = storage->get_data<event_index>("cccluster");
-  auto ass_info = ev_cluster.association(ev_hit.id());
-
+//
   float diff_x_sq = 0;
   float diff_x_by_diff_y = 0;
   float mean_x = cluster.GetParams().mean_x;
   float mean_y = cluster.GetParams().mean_y;
-  float cluster_slope;
+  float cluster_slope = 0;
 
-  for(auto const& hit_indices : ass_info) {
-    for(auto const& hit_index : hit_indices) {
-      diff_x_by_diff_y += (ev_hit[hit_index].X() - mean_x) * (ev_hit[hit_index].Y() - mean_y) ;
-      diff_x_sq += pow((ev_hit[hit_index].X() - mean_x), 2) ;
-      event_index++ ;
+    for(auto const& hit_index : hit_v) {
+      diff_x_by_diff_y += (hit_index.w - mean_x) * (hit_index.t - mean_y) ;
+      diff_x_sq += pow((hit_index.w - mean_x), 2) ;
+
     }
     cluster_slope = diff_x_by_diff_y / diff_x_sq ;
-  }
+
   return cluster_slope ;
 }
   
@@ -62,8 +56,8 @@ float best_slope () {
     //auto avgAngle1 = (cluster1.GetParams().opening_angle + cluster1.GetParams().closing_angle) / 2 ;
     //auto avgAngle2 = (cluster2.GetParams().opening_angle + cluster2.GetParams().closing_angle) / 2 ;
     float rmsDist = pow(pow(abs(cluster1.GetParams().rms_x - cluster2.GetParams().rms_x), 2) + pow(abs(cluster1.GetParams().rms_y - cluster2.GetParams().rms_y), 2), 0.5);
-    float slope1 = cluster1.best_slope() ;
-    float slope2 = cluster2.best_slope() ;
+    float slope1 = best_slope(cluster1) ;
+    float slope2 = best_slope(cluster2) ;
 
     if (cluster1.GetNHits() < 3 && cluster1.GetNHits() < 3)
       return false;
