@@ -64,16 +64,16 @@ float CBAlgoMergeStartToEnd::best_slope (const ::cluster::ClusterParamsAlg & clu
     else
       if (cluster1.GetParams().direction != cluster2.GetParams().direction)
         return false;
-      else if (slope1 >= slope2 - 0.125 || slope1 <= slope2 + 0.125)
+      //else if (slope1 >= slope2 - 3 || slope1 <= slope2 + 3)
+        //return false;
+      //else if (overlapPoly.Area() < 4)
+       //return false;
+      else if ( overlap && ((actDist1 < 4 && actDist1 /*> 1*/) || (actDist2 < 4 && actDist2/* > 1*/)) && (slope1 >= slope2 - 0.25 || slope1 <= slope2 + 0.25) && overlapPoly.Area() > 4)
+       return true;
+      else if (((actDist1 < 4 && actDist1 /*> 1*/) || (actDist2 < 4 && actDist2 /*> 1*/)) && ((slope1 >= slope2 - 0.25 || slope1 <= slope2 + 0.25)))
         return true;
-      else if (((actDist1 < 4 && actDist1 > 1) || (actDist2 < 4 && actDist2 > 1)) && ((slope1 >= slope2 - 0.125 || slope1 <= slope2 + 0.125)))
-        return true;
-      else if (overlapPoly.Area() < 4)
-       return false;
-      else if (actDist3 < 0.0125)
+      else if (actDist3 < 0.05)
         return false;
-      else if ( overlap && ((actDist1 < 4 && actDist1 > 1) || (actDist2 < 4 && actDist2 > 1)) && (slope1 >= slope2 - 0.125 || slope1 <= slope2 + 0.125) && overlapPoly.Area() > 4)
-        return true;
       else if (rmsDist > maxDist)
        return false;
       else 
