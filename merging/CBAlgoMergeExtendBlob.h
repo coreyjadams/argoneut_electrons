@@ -63,14 +63,23 @@ namespace cmtool {
     void set_rms_scale(float f)             {_rms_scale = f;}
     void set_length_jump_scale(float f)     {_length_jump_scale = f;}
     void set_min_hits_to_project_from(int f){_min_hits_to_project_from = f;}
+    void set_mode(int m)                    {_mode = m;}
+    void set_debug(bool b)                  {_debug = b;}
 
   private:
     
-    int   _min_hits_to_project_from;
+    // Mode of 0 (default) merges small clusters into the bigger one
+    // Anything else merges downstream into upstream
+    int _mode;
+
+    unsigned int   _min_hits_to_project_from;
+
 
     float _principal_ev_cut;
     float _rms_scale;
     float _length_jump_scale;
+
+    bool _debug;
 
     argo::TrackShower ts;
 

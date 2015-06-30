@@ -89,7 +89,7 @@ ana_unit=DefaultShowerReco3D()
 ana_unit.SetInputProducer("ccMergedFinal")
 ana_unit.SetOutputProducer("showerreco")
 
-my_proc.set_data_to_write(fmwk.data.kShower,"showerreco")
+# my_proc.set_data_to_write(fmwk.data.kShower,"showerreco")
 my_proc.add_process(ana_unit)
 
 print

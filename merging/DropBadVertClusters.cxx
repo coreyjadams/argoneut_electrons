@@ -139,7 +139,7 @@ namespace larlite {
       // std::cout << "slope is: " << slope << std::endl;
       // std::cout << "length/hit is: " << length/clust.GetParams().N_Hits << std::endl;
 
-      if (fabs(slope) > 1 && length/clust.GetParams().N_Hits -1 > 1){
+      if (fabs(slope) > 1 || length/clust.GetParams().N_Hits -1 > 1){
         // std::cout << "\thighHit: " << highHit.w << "," << highHit.t << std::endl;
         // std::cout << "\tlowHit: " << lowHit.w << "," << lowHit.t << std::endl;
         return true;
