@@ -103,6 +103,8 @@ float CBAlgoMergeStartToEnd::getShortestDist(
     float slope1 = best_slope(cluster1) ;
     float slope2 = best_slope(cluster2) ;
 
+    auto st = cluster1.GetParams().start_point ;
+    std::pair<double,double> start(st.w, st.t) ;
  
 
     if (cluster1.GetNHits() < 3 && cluster2.GetNHits() < 3)
@@ -126,7 +128,7 @@ float CBAlgoMergeStartToEnd::getShortestDist(
 	  return true;
       else if ((overlapPoly.Area() > 0.6 * poly1.GetParams().PolyObject.Area() || overlapPoly.Area() > 0.6 * poly2.GetParams().PolyObject.Area()))
 	  return true;
-      else if (overlapPoly.PointInside(cluster1.GetParams().start_point) == true)
+      else if (overlapPoly.PointInside(start) == true)
 	return true;
       else if ((slope1 >= slope2 - 0.0125 && slope1 <= slope2 + 0.0125) && touching(cluster1, cluster2) == true && actDist1 > actDist3)
 	return true;

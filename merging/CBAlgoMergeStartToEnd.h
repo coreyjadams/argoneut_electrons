@@ -49,6 +49,13 @@ namespace cmtool {
 
     float best_slope( const ::cluster::ClusterParamsAlg & c) ;
 
+    float getShortestDist(
+           const ::cluster::ClusterParamsAlg &cluster1,
+           const ::cluster::ClusterParamsAlg &cluster2); 
+
+    bool touching (const ::cluster::ClusterParamsAlg & cluster1, const ::cluster::ClusterParamsAlg & cluster2); 
+
+
     ::larlite::storage_manager* storage ;
 
   };
