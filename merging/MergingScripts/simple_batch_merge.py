@@ -144,12 +144,12 @@ def main(**args):
 
 
 
-  merger = getStartTrackMerger()
-  merger.SetInputProducer(prevProducer)
-  merger.SetOutputProducer("ccMergedStartTrack")
-  prevProducer = "ccMergedStartTrack"
-  merger.SaveOutputCluster()
-  my_proc.add_process(merger)
+  # merger = getStartTrackMerger()
+  # merger.SetInputProducer(prevProducer)
+  # merger.SetOutputProducer("ccMergedStartTrack")
+  # prevProducer = "ccMergedStartTrack"
+  # merger.SaveOutputCluster()
+  # my_proc.add_process(merger)
 
 
   # # mergers.append(getInlineMerger(
@@ -169,12 +169,12 @@ def main(**args):
   # # prevProducer = "ccMergedStartTrack"
 
   # new function called
-  # mergers.append(mergeIfClose())
-  # mergers[-1].SetInputProducer(prevProducer)
-  # mergers[-1].SetOutputProducer("close")
-  # prevProducer = "close"
-  # mergers[-1].SaveOutputCluster()
-  # my_proc.add_process(mergers[-1])
+  mergers.append(mergeIfClose())
+  mergers[-1].SetInputProducer(prevProducer)
+  mergers[-1].SetOutputProducer("close")
+  prevProducer = "close"
+  mergers[-1].SaveOutputCluster()
+  my_proc.add_process(mergers[-1])
 
 
   mergers.append(getExtendBlobMerger(False, 50,1))

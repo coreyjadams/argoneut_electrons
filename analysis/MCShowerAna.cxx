@@ -1,10 +1,19 @@
 #ifndef LARLITE_MCSHOWERANA_CXX
 #define LARLITE_MCSHOWERANA_CXX
 
+#define _USE_MATH_DEFINES
+ 
+#include <cmath>
+#include <iostream>
 #include "MCShowerAna.h"
 #include "DataFormat/mctruth.h"
 #include "DataFormat/mcshower.h"
 #include "DataFormat/shower.h"
+#include "LArUtil/Geometry.h"
+	//use function NearestWire()
+	//takes 3d point and plane as an argument and returns wire nearest to it
+	//get time by scaling x
+#include "LArUtil/GeometryUtilities.h"
 
 namespace larlite {
 
@@ -33,8 +42,12 @@ namespace larlite {
 
     return true;
   }
+	
+  
   
   bool MCShowerAna::analyze(storage_manager* storage) {
+    auto geom = larutil::Geometry::GetME();
+    auto geomUtil = larutil::GeometryUtilities::GetME();
   
     //
     // Do your event-by-event analysis here. This function is called for 
@@ -79,22 +92,35 @@ namespace larlite {
     TVector3 trueDirNorm = trueDirection.Vect();
     trueDirNorm *= 1.0/trueDirNorm.Mag(); 
 
+    int shower_number = 1;
+
     std::cout << "\n\n\nThis event ("<< storage -> event_id() << ") has " << ev_shower->size() << " mc showers.\n";
     for (auto & shower : * ev_shower){
-      if (shower.DetProfile().E() < 100) continue;
-        if (abs(shower.PdgCode()) == 11){
+      //if (shower.DetProfile().E() < 10) continue;
+        if (abs(shower.PdgCode()) == 11)
+	{
+	std::cout << "shower number: " << shower_number << '\n';
         std::cout << "\tPDG: ........ " << shower.PdgCode() << "\n"
                   << "\tTrack ID: ... " << shower.TrackID() << "\n"
                   << "\tMother ID: .. " << shower.MotherTrackID() << "\n"
                   << "\tTotal E: .... " << shower.MotherStart().E() << "\n"
                   << "\tDep E: ...... " << shower.DetProfile().E() << "\n";
-          std::cout << "\tvertex: (" << trueVertex.X() << ", " << trueVertex.Y() << ", " << trueVertex.Z() << ")\n"
-                    << "\tdirection: (" << trueDirNorm.X() << ", " << trueDirNorm.Y() << ", " << trueDirNorm.Z() << ")\n";
-        std::cout << std::endl;
+        std::cout << "\tvertex: (" << trueVertex.X() << ", " << trueVertex.Y() << ", " << trueVertex.Z() << ")\n"
+                    << "\tdirection: (" << trueDirNorm.X() << ", " << trueDirNorm.Y() << ", " << trueDirNorm.Z() << ")" << '\n';
+	std::cout << "\tWire (Vertex) @ Plane 0: " << geom->NearestWire(trueVertex.Vect(), 0) * 0.4 << '\n';
+	std::cout << "\tWire (Vertex) @ Plane 1: " << geom->NearestWire(trueVertex.Vect(), 1) * 0.4 << '\n';
+	std::cout << "\tTime (Vertex): " << trueVertex.X() << '\n';
+	std::cout << "\t2D Angle @ plane 0: " << geomUtil -> Get2DangleFrom3D(0, trueDirNorm) * 180/M_PI << '\n';
+	std::cout << "\t2D Angle @ plane 1: " << geomUtil -> Get2DangleFrom3D(1, trueDirNorm) * 180/M_PI << '\n';
+	std::cout << std::endl;
         }
+	else {std::cout << "shower number " << shower_number << " is not an electron or positron shower." << '\n';}
+	shower_number++ ;
+	std::cout << std:: endl;
     }
 
     std::cout << "This event ("<< storage -> event_id() << ") has " << reco_shower->size() << " reco showers.\n";
+    //std::cout << "PDG of the outgoing lepton is " << lep.PdgCode() << std::endl;
 
     for (auto & shower : * reco_shower){
       TVector3 start = shower.ShowerStart();
@@ -103,11 +129,17 @@ namespace larlite {
       std::vector<double> energy = shower.Energy();
       std::cout << "Start point of the shower: ("
                 << start.X() << ", " << start.Y() << ", " << start.Z() << ")\n"
-                << "Direction: "
+                << "\tDirection: "
                 << dir.X() << ", " << dir.Y() << ", " << dir.Z() << ")\n"
-                << "dEdx: " << dedx[1] << "\n"
-                << "energy: " << energy[1] << "\n";
+                << "\tdEdx: " << dedx[1] << "\n"
+                << "\tenergy: " << energy[1] << "\n";
+      std::cout << "\tWire (Vertex) @ Plane 0: " << geom->NearestWire(shower.ShowerStart(), 0) * 0.4 << '\n';
+      std::cout << "\tWire (Vertex) @ Plane 1: " << geom->NearestWire(shower.ShowerStart(), 1) * 0.4 << '\n';
+      std::cout << "\tTime (Vertex): " << shower.ShowerStart().X() << '\n';
+      std::cout << "\t2D Angle @ plane 0: " << geomUtil -> Get2DangleFrom3D(0, shower.Direction()) * 180/M_PI << '\n';
+      std::cout << "\t2D Angle @ plane 1: " << geomUtil -> Get2DangleFrom3D(1, shower.Direction()) * 180/M_PI << '\n';
 
+     
       // Fill in the histograms:
       vertex_X      -> Fill(trueVertex.X() - start.X());
       vertex_Y      -> Fill(trueVertex.Y() - start.Y());

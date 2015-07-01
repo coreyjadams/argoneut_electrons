@@ -7,7 +7,9 @@ if len(sys.argv) < 2:
     sys.stderr.write(msg)
     sys.exit(1)
 
+from ROOT import*
 from larlite import larlite as fmwk
+larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
