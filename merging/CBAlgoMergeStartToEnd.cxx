@@ -90,7 +90,7 @@ float CBAlgoMergeStartToEnd::getShortestDist(
     auto overlap = poly1.GetParams().PolyObject.PolyOverlap(poly2.GetParams().PolyObject);
     auto overlapPoly = Polygon2D(poly1.GetParams().PolyObject,poly2.GetParams().PolyObject);
     
-    float _max_distance = 0.5; 
+    float _max_distance = 1; 
     float start_to_end = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().end_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().end_point.t), 2), 0.5); 
     float start_to_start = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().start_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().start_point.t), 2), 0.5); 
     float end_to_end = pow(pow((cluster1.GetParams().end_point.w - cluster2.GetParams().end_point.w), 2) + pow((cluster1.GetParams().end_point.t - cluster2.GetParams().end_point.t), 2), 0.5); 
@@ -117,8 +117,16 @@ float CBAlgoMergeStartToEnd::getShortestDist(
       else if (start_to_start < 2)
         return false ;
 
+      // does not merge vertices, part 2
+      else if ((start_to_start - getShortestDist(cluster1, cluster2)) < 2)
+        return false ;
+
       // does not merge clusters whose ends are closer than start to end
-      else if (abs(start_to_end - end_to_end) < 2)
+      else if (abs(start_to_end - end_to_end) < 4)
+        return false ;
+
+      // does not merge clusters whose ends are closer than start to end
+      else if (start_to_end < 2 || (overlap && start_to_end < 4))
         return false ;
 
       // does not merge clusters that get progressively farther apart
@@ -129,32 +137,36 @@ float CBAlgoMergeStartToEnd::getShortestDist(
       else if (start_to_end < 5 && angle_between < 3)
         return true ;
 
+      // merge shower branching to trunks
+      else if (overlapPoly.PointInside(start) == true && (abs(start_to_end - start_to_start) < 2))
+        return true ;
+
       //merge polygons that overlap a lot
       else if (overlapPoly.Area() > 0.3 * poly1.GetParams().PolyObject.Area())
         return true ;
 
       // does not merge clusters whose overlapping area is small
-      else if (overlapPoly.Area() < 0.5)
+      else if (overlapPoly.Area() < 0.75)
         return false ;
 
       // merge overlapping clusters
-      else if (overlap && angle_between < 3 && start_to_end > start_to_start)
+      else if (overlap && angle_between < 3 && start_to_end < start_to_start)
         return true ;
 
       // merge if overlap area is above a certain value
       else if (overlapPoly.Area() > 5)
-	return true ; 
-
-      // merge shower branching to trunks
-      else if (overlapPoly.PointInside(start) == true && (abs(start_to_end - start_to_start) < 2))
-        return true ;
+  	return true ; 
 
       // merge if shortest distance between clusters is small
-      else if (getShortestDist(cluster1, cluster2) < _max_distance)
+      else if (getShortestDist(cluster1, cluster2) < _max_distance && angle_between < 4)
         return true ;
 
       // merge touching clusters
       else if (touching(cluster1, cluster2) == true && angle_between < 3 && start_to_end < start_to_start)
+        return true ;
+
+      // merge remaining overlap
+      else if (overlap || getShortestDist(cluster1, cluster2) < 3)
         return true ;
 
       else
