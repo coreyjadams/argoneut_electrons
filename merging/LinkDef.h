@@ -22,6 +22,7 @@
 #pragma link C++ class cmtool::CBAlgoMergeWithinBoundary+;
 #pragma link C++ class cmtool::CBAlgoMergeStartToEnd+;
 #pragma link C++ class cmtool::CBAlgoMergeInlineCOPY+;
+#pragma link C++ class cmtool::CBAlgoMergeExtendBlobCOPY+;
 
 
 #pragma link C++ class larlite::HitToCluster+;

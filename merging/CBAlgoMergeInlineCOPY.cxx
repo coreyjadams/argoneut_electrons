@@ -2,6 +2,13 @@
 #define RECOTOOL_CBALGOMERGEINLINECOPY_CXX
 
 #include "CBAlgoMergeInlineCOPY.h"
+#include "math.h"
+#include "../../RecoTool/ClusterRecoUtil/ClusterParamsAlg.h"
+#include <iostream>
+#include "CMTool/CMToolBase/CBoolAlgoBase.h"
+
+
+
 
 namespace cmtool {
 
@@ -17,6 +24,8 @@ namespace cmtool {
       const ::cluster::ClusterParamsAlg &cluster1,
       const ::cluster::ClusterParamsAlg &cluster2)
   {
+
+    float start_to_start = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().start_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().start_point.t), 2), 0.5);
 
     if (_use_all_hits){
       if (cluster1.GetNHits() <= cluster2.GetNHits()){

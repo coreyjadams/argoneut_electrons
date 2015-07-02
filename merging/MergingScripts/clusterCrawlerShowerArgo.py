@@ -432,7 +432,8 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   ########################################
   algo_array = cmtool.CBAlgoArray()
 
-  blob = cmtool.CBAlgoMergeExtendBlob()
+#  blob = cmtool.CBAlgoMergeExtendBlob()
+  blob = cmtool.CBAlgoMergeExtendBlobCOPY()
   blob.set_principal_ev_cut(0.9)
   blob.set_rms_scale(2.0)
   blob.set_length_jump_scale(0.25)
