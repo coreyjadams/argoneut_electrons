@@ -1,0 +1,19 @@
+#!/bin/bash
+
+echo cd /uboone/app/users/npereira/larlite/
+
+#setting up root
+echo source /grid/fermiapp/larsoft/products/setup
+echo source /grid/fermiapp/products/uboone/setup_uboone.sh
+echo setup root v5_34_23 -q debug:e6
+
+#setting up pyqt4
+echo source /uboone/app/users/npereira/pystack/setup_pyqt4.sh
+
+#configuring python
+echo source config/setup.sh
+
+#moving into the right directory
+echo cd UserDev/argoneut_electrons/analysis
+
+echo Success!!
