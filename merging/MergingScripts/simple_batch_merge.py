@@ -177,11 +177,12 @@ def main(**args):
   my_proc.add_process(mergers[-1])
 
 
-  mergers.append(getExtendBlobMerger(False, 50,1))
-  mergers[-1].SetInputProducer(prevProducer)
-  mergers[-1].SetOutputProducer("ccMergedExtendBlob")
-  prevProducer = "ccMergedExtendBlob"
-  mergers[-1].SaveOutputCluster()
+#  mergers.append(getExtendBlobMerger(False, 50,1))
+#  mergers[-1].SetInputProducer(prevProducer)
+#  mergers[-1].SetOutputProducer("ccMergedExtendBlob")
+#  prevProducer = "ccMergedExtendBlob"
+#  mergers[-1].SaveOutputCluster()
+#
   my_proc.add_process(mergers[-1])
 
   mergers.append(getExtendBlobMerger(False,100,1))

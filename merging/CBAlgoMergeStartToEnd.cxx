@@ -138,7 +138,8 @@ float CBAlgoMergeStartToEnd::getShortestDist(
         return true ;
 
       // merge shower branching to trunks
-      else if (overlapPoly.PointInside(start) == true && (abs(start_to_end - start_to_start) < 2))
+      else if (overlapPoly.PointInside(start) == true && (abs(start_to_end -
+							      start_to_start) < 2))
         return true ;
 
       //merge polygons that overlap a lot
@@ -162,7 +163,8 @@ float CBAlgoMergeStartToEnd::getShortestDist(
         return true ;
 
       // merge touching clusters
-      else if (touching(cluster1, cluster2) == true && angle_between < 3 && start_to_end < start_to_start)
+      else if (touching(cluster1, cluster2) == true && 
+	       angle_between < 3 && start_to_end < start_to_start)
         return true ;
 
       // merge remaining overlap

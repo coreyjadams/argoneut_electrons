@@ -114,12 +114,22 @@ def getInlineMerger(maxInlineDist=0.6,useAllHits=True,hitFraction=0.35, minHits=
   ########################################
   # MERGE ALGORITHMS
   ########################################
+  #algo_array = cmtool.CBAlgoArray()
+  #inline = cmtool.CBAlgoMergeInline()
+  #inline.SetMaxAverageMinDistance(maxInlineDist)
+  #inline.SetUseAllHits(useAllHits)
+  #inline.SetHitFraction(hitFraction)
+  #algo_array.AddAlgo(inline)
+
+##COPY
   algo_array = cmtool.CBAlgoArray()
   inline = cmtool.CBAlgoMergeInline()
   inline.SetMaxAverageMinDistance(maxInlineDist)
   inline.SetUseAllHits(useAllHits)
   inline.SetHitFraction(hitFraction)
   algo_array.AddAlgo(inline)
+
+
 
   merger.GetManager().AddMergeAlgo(algo_array)
   merger.GetManager().AddSeparateAlgo(prohib_array)
