@@ -192,20 +192,20 @@ def main(**args):
  # mergers[-1].SaveOutputCluster()
  # my_proc.add_process(mergers[-1])
 
- mergers.append(getExtendBlobMerger(False, 50,1))
-  mergers[-1].SetInputProducer(prevProducer)
-  mergers[-1].SetOutputProducer("ccMergedExtendBlobCOPY")
-  prevProducer = "ccMergedExtendBlobCOPY"
-  mergers[-1].SaveOutputCluster()
+#  mergers.append(getExtendBlobMerger(False, 50,1))
+#  mergers[-1].SetInputProducer(prevProducer)
+#  mergers[-1].SetOutputProducer("ccMergedExtendBlobCOPY")
+#  prevProducer = "ccMergedExtendBlobCOPY"
+#  mergers[-1].SaveOutputCluster()
 
-  my_proc.add_process(mergers[-1])
+#  my_proc.add_process(mergers[-1])
 
-  mergers.append(getExtendBlobMergerCOPY(False,100,1))
-  mergers[-1].SetInputProducer(prevProducer)
-  mergers[-1].SetOutputProducer("ccMergedExtendBlob2COPY")
-  prevProducer = "ccMergedExtendBlob2COPY"
-  mergers[-1].SaveOutputCluster()
-  my_proc.add_process(mergers[-1])
+#  mergers.append(getExtendBlobMerger(False,100,1))
+#  mergers[-1].SetInputProducer(prevProducer)
+#  mergers[-1].SetOutputProducer("ccMergedExtendBlob2COPY")
+#  prevProducer = "ccMergedExtendBlob2COPY"
+#  mergers[-1].SaveOutputCluster()
+#  my_proc.add_process(mergers[-1])
 
 
   # Add a DropSingles module:

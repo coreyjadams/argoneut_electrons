@@ -10,7 +10,7 @@
 
 namespace cmtool {
 
-  CBAlgoMergeExtendBlobCOPY::CBAlgoMergeExtendBlob() : CBoolAlgoBase()
+  CBAlgoMergeExtendBlobCOPY::CBAlgoMergeExtendBlobCOPY() : CBoolAlgoBase()
   {
     _min_hits_to_project_from = 25;
     _principal_ev_cut = 0.9;
@@ -34,13 +34,26 @@ namespace cmtool {
     const ::cluster::ClusterParamsAlg * bigCluster, * littleCluster;
 
     float start_to_start = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().start_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().start_point.t), 2), 0.5);
+    float end_to_end = pow(pow((cluster1.GetParams().end_point.w - cluster2.GetParams().end_point.w), 2) + pow((cluster1.GetParams().end_point.t - cluster2.GetParams().end_point.t), 2), 0.5);
+
+    float slope1 = best_slope(cluster1) ;
+    float slope2 = best_slope(cluster2) ;
+
+    float angle_between = atan(abs((slope1 - slope2)/(1 + slope1*slope2))) * 180/M_PI ;
 
 
     // Option of two modes:
     // Merge small into big
     // Merge downstream into upstream
 
-    if (_mode == 0){
+    if (start_to_start < 4) {
+      return false;
+    }
+    else if (getShortestDist(cluster1, cluster2) < 10 && angle_between > 3 && start_to_start < end_to_end) {
+      return false;
+    }
+
+    else if (_mode == 0){
       if (cluster1.GetNHits() > cluster2.GetNHits()){
         bigCluster = &cluster1;
         littleCluster = &cluster2;
@@ -50,10 +63,12 @@ namespace cmtool {
         littleCluster = &cluster1;
       }
     }
-
-    else if (start_to_start < 2) {
-      return false; 
-    }
+    //    else if (getShortestDist(cluster1, cluster2) < 10 && angle_between > 3 && start_to_start < end_to_end) {
+    //      return false;
+    //    }
+    //else if (abs(slope1 - slope2) < 2 && cluster1.GetNHits() > 70 && cluster2.GetNHits() > 70) {
+    //return false;
+    //}
 
     else{
       // compare which cluster is further upstream:
@@ -152,6 +167,46 @@ namespace cmtool {
     
 
     return false;
+  }
+
+
+
+  float CBAlgoMergeExtendBlobCOPY::best_slope (const ::cluster::ClusterParamsAlg & cluster) {
+
+    auto hit_v = cluster.GetHitVector() ;
+    float diff_x_sq = 0;
+    float diff_x_by_diff_y = 0;
+    float mean_x = cluster.GetParams().mean_x;
+    float mean_y = cluster.GetParams().mean_y;
+    float cluster_slope = 0;
+
+    for(auto const& hit_index : hit_v) {
+      if (hit_index.charge > 0.10 * cluster.GetParams().sum_charge)
+        diff_x_by_diff_y += (hit_index.w - mean_x) * (hit_index.t - mean_y) ;
+      diff_x_sq += pow((hit_index.w - mean_x), 2) ;
+
+    }
+    //redefine cluster_slope here
+    cluster_slope = diff_x_by_diff_y / diff_x_sq ;
+
+    return cluster_slope ;
+  }
+
+  float  CBAlgoMergeExtendBlobCOPY::getShortestDist (const ::cluster::ClusterParamsAlg &cluster1,
+						     const ::cluster::ClusterParamsAlg &cluster2)
+  {
+
+
+    float minDist(9999.0);
+    for (auto & hit : cluster2.GetHitVector()){
+      for (auto & otherHit : cluster1.GetHitVector()){
+        float thisDist = sqrt(pow(hit.w - otherHit.w,2 ) + pow(hit.t - otherHit.t, 2));
+        if ( thisDist < minDist){
+          minDist = thisDist;
+        }
+      }
+    }
+    return minDist;
   }
 
 

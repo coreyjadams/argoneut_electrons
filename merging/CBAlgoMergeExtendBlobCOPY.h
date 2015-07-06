@@ -13,8 +13,8 @@
 /** \addtogroup CMTool
 
     @{*/
-#ifndef RECOTOOL_CBALGOMERGEEXTENDBLOB_H
-#define RECOTOOL_CBALGOMERGEEXTENDBLOB_H
+#ifndef RECOTOOL_CBALGOMERGEEXTENDBLOBCOPY_H
+#define RECOTOOL_CBALGOMERGEEXTENDBLOBCOPY_H
 
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
@@ -27,15 +27,15 @@ namespace cmtool {
      \class CMalgoPolyContain
      Merge Polygons if the two overlap even partially
   */
-  class CBAlgoMergeExtendBlob : public CBoolAlgoBase{
+  class CBAlgoMergeExtendBlobCOPY : public CBoolAlgoBase{
     
   public:
     
     /// Default constructor
-    CBAlgoMergeExtendBlob();
+    CBAlgoMergeExtendBlobCOPY();
     
     /// Default destructor
-    virtual ~CBAlgoMergeExtendBlob(){};
+    virtual ~CBAlgoMergeExtendBlobCOPY(){};
  
     /**
        Core function: given the ClusterParamsAlg input, return whether a cluster should be
@@ -58,6 +58,11 @@ namespace cmtool {
     float getLength(           const ::cluster::ClusterParamsAlg &cluster);
 
     float getRMSAlongAxis(     const ::cluster::ClusterParamsAlg &cluster1);
+
+    float best_slope (         const ::cluster::ClusterParamsAlg & cluster);
+
+    float getShortestDist(     const ::cluster::ClusterParamsAlg &cluster1,     
+			       const ::cluster::ClusterParamsAlg &cluster2);
 
     void set_principal_ev_cut(float f)      {_principal_ev_cut = f;}
     void set_rms_scale(float f)             {_rms_scale = f;}
