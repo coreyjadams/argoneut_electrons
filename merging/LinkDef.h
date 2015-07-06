@@ -22,6 +22,9 @@
 #pragma link C++ class cmtool::CBAlgoMergeWithinBoundary+;
 #pragma link C++ class cmtool::CBAlgoMergeStartToEnd+;
 #pragma link C++ class cmtool::CBAlgoMergeInlineCOPY+;
+#pragma link C++ class cmtool::CBAlgoMergeStartToEnd+;
+#pragma link C++ class cmtool::CBAlgoProhibitTrack+;
+#pragma link C++ class cmtool::CBAlgoProhibitOutOfCone+;
 #pragma link C++ class cmtool::CBAlgoMergeExtendBlobCOPY+;
 
 
