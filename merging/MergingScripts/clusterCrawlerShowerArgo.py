@@ -421,13 +421,13 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   prohib_array = cmtool.CBAlgoArray()
 
 # prohibit merging tracks
-#  trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
-#  trackmerge_prohibit.SetMinEP(0.9955000)
-#  prohib_array.AddAlgo(trackmerge_prohibit,False)
+  trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
+  trackmerge_prohibit.SetMinEP(0.9999000)
+  prohib_array.AddAlgo(trackmerge_prohibit,False)
 
 # prohibit merging outside of cone
   outofcone_prohibit = cmtool.CBAlgoProhibitOutOfCone()
-  outofcone_prohibit.SetMaxAngleSep(5.)
+  outofcone_prohibit.SetMaxAngleSep(7.5)
   prohib_array.AddAlgo(outofcone_prohibit,False)
 
   merger.GetManager().AddSeparateAlgo(prohib_array)
