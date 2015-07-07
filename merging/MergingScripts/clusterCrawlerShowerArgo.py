@@ -42,7 +42,7 @@ def mergeIfClose():
 
   # prohibit merging tracks
   trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
-  trackmerge_prohibit.SetMinEP(0.850000)
+  trackmerge_prohibit.SetMinEP(0.950000)
   prohib_array.AddAlgo(trackmerge_prohibit,False)
 
   merger.GetManager().AddSeparateAlgo(prohib_array)
