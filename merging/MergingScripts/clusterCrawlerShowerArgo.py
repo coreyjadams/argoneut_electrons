@@ -37,6 +37,15 @@ def getSmallClustMerger(maxHitsProhib=5, maxHitsSmall=1, maxDist=0.5,maxDistAv=2
 
 ##new function for merging
 def mergeIfClose():
+  merger = larlite.ClusterMerger()
+  prohib_array = cmtool.CBAlgoArray()
+
+  # prohibit merging tracks
+  trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
+  trackmerge_prohibit.SetMinEP(0.850000)
+  prohib_array.AddAlgo(trackmerge_prohibit,False)
+
+  merger.GetManager().AddSeparateAlgo(prohib_array)
 
   merger        = larlite.ClusterMerger()
   algo          = cmtool.CBAlgoMergeStartToEnd()
