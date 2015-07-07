@@ -399,25 +399,6 @@ def getStartTrackMerger():
 
 
 
-def prohibitOverMerge ():
-  
-  prohib_array = cmtool.CBAlgoArray()
-  merger = larlite.ClusterMerger()
-  
-# prohibit merging tracks
-  trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
-  trackmerge_prohibit.SetMinEP(0.99000)
-  prohib_array.AddAlgo(trackmerge_prohibit,False)
-
-# prohibit merging outside of cone
-  outofcone_prohibit = cmtool.CBAlgoProhibitOutOfCone()
-  outofcone_prohibit.SetMaxAngleSep(20.)
-  prohib_array.AddAlgo(outofcone_prohibit,False)
-
-  merger.GetManager().AddSeparateAlgo(prohib_array)
-  return merger
-
-
 
 def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   merger = larlite.ClusterMerger()
@@ -438,6 +419,18 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   # prohib_array.AddAlgo(t2t_prohibit, False)
 
   prohib_array = cmtool.CBAlgoArray()
+
+# prohibit merging tracks
+#  trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
+#  trackmerge_prohibit.SetMinEP(0.9955000)
+#  prohib_array.AddAlgo(trackmerge_prohibit,False)
+
+# prohibit merging outside of cone
+  outofcone_prohibit = cmtool.CBAlgoProhibitOutOfCone()
+  outofcone_prohibit.SetMaxAngleSep(5.)
+  prohib_array.AddAlgo(outofcone_prohibit,False)
+
+  merger.GetManager().AddSeparateAlgo(prohib_array)
 
   if (prohibitBig):
     

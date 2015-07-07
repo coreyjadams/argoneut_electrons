@@ -49,9 +49,9 @@ namespace cmtool {
     if (start_to_start < 4) {
       return false;
     }
-    else if (getShortestDist(cluster1, cluster2) < 10 && angle_between > 3 && start_to_start < end_to_end) {
-      return false;
-    }
+    // else if (getShortestDist(cluster1, cluster2) < 10 && angle_between > 3 && start_to_start < end_to_end) {
+    // return false;
+    //}
 
     else if (_mode == 0){
       if (cluster1.GetNHits() > cluster2.GetNHits()){
