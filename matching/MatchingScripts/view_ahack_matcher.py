@@ -49,11 +49,11 @@ algo_array = cmtool.CFAlgoArray()
 #timeAlg.SetDebug(False)
 #timeAlg.RequireThreePlanes(False)
 
-showerAlg = cmtool.CFAlgoShowerTimeMatch()
-wireAlg = cmtool.CFAlgoShowerWireMatch()
+showerAlg = cmtool.CFAlgoShowerTimeMatchCOPY()
+wireAlg = cmtool.CFAlgoShowerWireMatchCOPY()
 wireAlg.SetDebug(False)
 
-qualityAlg = cmtool.CFAlgoMatchStart()
+qualityAlg = cmtool.CFAlgoMatchStartCOPY()
 
 algo_array.AddAlgo(showerAlg)
 algo_array.AddAlgo(wireAlg)

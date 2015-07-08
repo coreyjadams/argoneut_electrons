@@ -1,12 +1,12 @@
-#ifndef RECOTOOL_CFALGOMATCHSTART_CXX
-#define RECOTOOL_CFALGOMATCHSTART_CXX
+#ifndef RECOTOOL_CFALGOMATCHSTARTCOPY_CXX
+#define RECOTOOL_CFALGOMATCHSTARTCOPY_CXX
 
-#include "CFAlgoMatchStart.h"
+#include "CFAlgoMatchStartCOPY.h"
 
 namespace cmtool {
 
   //-------------------------------------------------------
-  CFAlgoMatchStart::CFAlgoMatchStart() : CFloatAlgoBase()
+  CFAlgoMatchStartCOPY::CFAlgoMatchStartCOPY() : CFloatAlgoBase()
   //-------------------------------------------------------
   {
     SetRatioCut(0.001) ; //(0.095) ;  
@@ -14,26 +14,27 @@ namespace cmtool {
     SetDebug(false) ;
     SetVerbose(false) ;
     RequireThreePlanes(false) ;
+    ts.setFannFileName("/uboone/app/users/npereira/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat"); 
     ts.init();
 
   }
 
   //-----------------------------
-  void CFAlgoMatchStart::Reset()
+  void CFAlgoMatchStartCOPY::Reset()
   //-----------------------------
   {
 
   }
 
   //----------------------------------------------------------------------------------------------
-  float CFAlgoMatchStart::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
+  float CFAlgoMatchStartCOPY::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
   //----------------------------------------------------------------------------------------------
   {
     
     // Code-block by Kazu starts
     // This ensures the algorithm works only if # clusters is > 2 (and not =2)
     // You may take out this block if you want to allow matching using clusters from only 2 planes.
-    if(_require_3planes && clusters.size()==2) return -1;
+    // if(_require_3planes && clusters.size()==2) return -1;
     // Code-block by Kazu ends
 
     // First, find the showers on the collection plane:
@@ -105,7 +106,7 @@ namespace cmtool {
       // std::cout << "chi2 is " << chi2 / n_hits << "\n";
 
       // // Found a shower that might be reconstructable!
-      // // Compare its start time to the start and end time of the other cluster:
+      // // Compare it's start time to the start and end time of the other cluster:
       // std::cout << "Other start point is " << other.GetParams().start_point.w << ", "
       //           << other.GetParams().start_point.t << std::endl;
       // std::cout << "Other angle is " << other.GetParams().angle_2d << std::endl;
@@ -124,12 +125,12 @@ namespace cmtool {
   
     
   //------------------------------
-  void CFAlgoMatchStart::Report()
+  void CFAlgoMatchStartCOPY::Report()
   //------------------------------
   {
   }
 
-  std::vector<larutil::PxHit> CFAlgoMatchStart::GetClosestHits(const cluster::ClusterParamsAlg & params,
+  std::vector<larutil::PxHit> CFAlgoMatchStartCOPY::GetClosestHits(const cluster::ClusterParamsAlg & params,
                                                                 larutil::PxPoint start, 
                                                                 int n_hits, bool forward_only){
     auto all_hits = params.GetHitVector();

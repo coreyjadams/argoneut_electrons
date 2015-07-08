@@ -144,12 +144,12 @@ def main(**args):
 
 
 
-  # merger = getStartTrackMerger()
-  # merger.SetInputProducer(prevProducer)
-  # merger.SetOutputProducer("ccMergedStartTrack")
-  # prevProducer = "ccMergedStartTrack"
-  # merger.SaveOutputCluster()
-  # my_proc.add_process(merger)
+#    merger = getStartTrackMerger()
+#    merger.SetInputProducer(prevProducer)
+#    merger.SetOutputProducer("ccMergedStartTrack")
+#    prevProducer = "ccMergedStartTrack"
+#    merger.SaveOutputCluster()
+#    my_proc.add_process(merger)
 
 
   # # mergers.append(getInlineMerger(
