@@ -18,8 +18,8 @@ namespace cmtool {
     _w2cm = larutil::GeometryUtilities::GetME()->WireToCm();
     _t2cm = larutil::GeometryUtilities::GetME()->TimeToCm();
 
-   // ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;                      
-    ts.setFannFileName("/uboone/app/users/npereira/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;
+    ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;                      
+   // ts.setFannFileName("/uboone/app/users/npereira/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;
 
     // ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/Argoneut/utils/fann_training/trackShowerAnn.dat") ;                      
     ts.init();
@@ -39,6 +39,7 @@ namespace cmtool {
   //----------------------------------------------------------------------------------------------
   {
 
+    //std::cout<<"\n\nWires Float loop" <<std::endl ;
     
     // This ensures the algorithm works only if # clusters is > 2 (and not =2)
     // You may take out this block if you want to allow matching using clusters from only 2 planes.
@@ -60,7 +61,7 @@ namespace cmtool {
      }
 
     if( _debug)
-	std::cout<<"\n\nFound nshowers! "<<nshowers<<std::endl; 
+	std::cout<<"Found nshowers! "<<nshowers<<std::endl; 
 
     if (nshowers != 1) return -1.0;
 
@@ -90,7 +91,7 @@ namespace cmtool {
 //	std::cout<<"Plane "<<h<<std::endl ;
       for ( auto& hit: Hits.at(h) ){
         if ( Hits.at(h).size() == 0 ){
-          std::cout << "Need to insert fake hit ranges...";
+   //       std::cout << "Need to insert fake hit ranges...";
         }   
         else{
           if ( int(hit.w / _w2cm) < StartWires.at(h) ) { StartWires.at(h) = int(hit.w / _w2cm)  ; }
@@ -126,11 +127,11 @@ namespace cmtool {
     WireIDtoWorld(StartWires.at(1), StartTime.at(1),(150.*PI/180), VWorldStart); 
     WireIDtoWorld(EndWires.at(1), EndTime.at(1), (150.*PI/180), VWorldEnd); 
 
-    if( _debug ){
+//    if( _debug ){
 	std::cout<<"World start and end in :"
 	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
 	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
-	}
+//	}
 
     double wireDistU =0;
     double wireDistV =0;
@@ -146,7 +147,7 @@ namespace cmtool {
 	    temp = VWorldEnd[0] ;
 	    VWorldEnd[0] = VWorldStart[0] ;
 	    VWorldStart[0] = temp ;
-	    // std::cout << "wireDistV < 0 (as per WireMatch)" << "\n";
+//	    std::cout << "wireDistV < 0 (as per WireMatch)" << "\n";
 	    } 
 	else if( wireDistU < 0 ){
 	    wireDistU *= -1 ;	
@@ -154,7 +155,7 @@ namespace cmtool {
 	    temp = UWorldEnd[0] ;
 	    UWorldEnd[0] = UWorldStart[0] ;
 	    UWorldStart[0] = temp ;
-	    //std::cout << "wireDistU < 0 (as per WireMatch)" << "\n";
+//	    std::cout << "wireDistU < 0 (as per WireMatch)" << "\n";
 	    } 
     
 	}
@@ -171,7 +172,8 @@ namespace cmtool {
 
     float score = getScore(showerRange,otherRange);
 
-    if( _debug) std::cout << "Score is " << score << std::endl;
+    //if( _debug)
+    std::cout << "Score is " << score << std::endl;
     return score;
 
    }
@@ -190,14 +192,14 @@ namespace cmtool {
     if (otherRange.back()  - showerRange.front() >= 0 && 
          showerRange.back() - otherRange.front()  >= 0)  
     { 
-      overlap = fmax(showerRange.front(), otherRange.front())
-              - fmin(showerRange.back(), otherRange.back());
-      std::cout << "overlap condition from line 195 met (Shower Wire Match)" << "\n";
+      overlap = - fmax(showerRange.front(), otherRange.front())
+              + fmin(showerRange.back(), otherRange.back());
+//      std::cout << "overlap condition from line 195 met (Shower Wire Match)" << "\n";
     }
 
     if(overlap < 0 && overlap > -1 ) overlap*=-1;
 
-    norm = overlap / (showerRange.front() - showerRange.back());
+    norm = overlap / (showerRange.back() - showerRange.front());
 
     //Sometimes overlap is the shower range, giving us a norm of 1.  This isn't very indicative of overlap
     //so adjust the normalization range in this case

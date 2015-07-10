@@ -188,13 +188,13 @@ namespace cmtool {
     if (otherRange.back()  - showerRange.front() >= 0 && 
          showerRange.back() - otherRange.front()  >= 0)  
     { 
-      overlap = fmax(showerRange.front(), otherRange.front())
-              - fmin(showerRange.back(), otherRange.back());
+      overlap = - fmax(showerRange.front(), otherRange.front())
+              + fmin(showerRange.back(), otherRange.back());
     }
 
     if(overlap < 0 && overlap > -1 ) overlap*=-1;
 
-    norm = overlap / (showerRange.front() - showerRange.back());
+    norm = overlap / (showerRange.back() - showerRange.front());
 
     //Sometimes overlap is the shower range, giving us a norm of 1.  This isn't very indicative of overlap
     //so adjust the normalization range in this case
