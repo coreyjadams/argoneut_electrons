@@ -184,7 +184,7 @@ def main(**args):
   # my_proc.process_event(0)\
   if args['num_events'] != None:
     start = time.clock()
-    my_proc.run(90,nevents)
+    my_proc.run(0,nevents)
     end = time.clock()
     print "Processed ", nevents, " events in ", end-start, "seconds."
     print "Average per event: ", (end-start)/nevents, "seconds."
