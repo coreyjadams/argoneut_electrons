@@ -52,7 +52,7 @@ namespace cmtool {
       }
     }
 
-    // if (nshowers != 1) return -1.0;
+    if (nshowers != 1) return -1.0;
 
     auto showerRange = getTimeRange(shower);
     std::vector<float> otherRange;
@@ -109,6 +109,7 @@ namespace cmtool {
     { // overlap
       overlap = fmax(showerRange.front(), otherRange.front())
               - fmax(showerRange.back(), otherRange.back());
+      // std::cout << "There is an overlap in TimeMatchCOPY" << "\n";
     }
     return overlap / (showerRange.front() - showerRange.back());
   }

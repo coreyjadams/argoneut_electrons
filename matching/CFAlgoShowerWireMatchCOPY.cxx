@@ -19,7 +19,7 @@ namespace cmtool {
     _t2cm = larutil::GeometryUtilities::GetME()->TimeToCm();
 
     ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;                      
-    //ts.setFannFileName("/uboone/app/users/npereira/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;
+   // ts.setFannFileName("/uboone/app/users/npereira/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;
 
     // ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/Argoneut/utils/fann_training/trackShowerAnn.dat") ;                      
     ts.init();
@@ -39,6 +39,7 @@ namespace cmtool {
   //----------------------------------------------------------------------------------------------
   {
 
+    //std::cout<<"\n\nWires Float loop" <<std::endl ;
     
     // This ensures the algorithm works only if # clusters is > 2 (and not =2)
     // You may take out this block if you want to allow matching using clusters from only 2 planes.
@@ -60,7 +61,7 @@ namespace cmtool {
      }
 
     if( _debug)
-	std::cout<<"\n\nFound nshowers! "<<nshowers<<std::endl; 
+	std::cout<<"Found nshowers! "<<nshowers<<std::endl; 
 
     if (nshowers != 1) return -1.0;
 
@@ -90,7 +91,7 @@ namespace cmtool {
 //	std::cout<<"Plane "<<h<<std::endl ;
       for ( auto& hit: Hits.at(h) ){
         if ( Hits.at(h).size() == 0 ){
-          std::cout << "Need to insert fake hit ranges...";
+   //       std::cout << "Need to insert fake hit ranges...";
         }   
         else{
           if ( int(hit.w / _w2cm) < StartWires.at(h) ) { StartWires.at(h) = int(hit.w / _w2cm)  ; }
@@ -126,11 +127,11 @@ namespace cmtool {
     WireIDtoWorld(StartWires.at(1), StartTime.at(1),(150.*PI/180), VWorldStart); 
     WireIDtoWorld(EndWires.at(1), EndTime.at(1), (150.*PI/180), VWorldEnd); 
 
-    if( _debug ){
+//    if( _debug ){
 	std::cout<<"World start and end in :"
 	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
 	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
-	}
+//	}
 
     double wireDistU =0;
     double wireDistV =0;
@@ -146,6 +147,7 @@ namespace cmtool {
 	    temp = VWorldEnd[0] ;
 	    VWorldEnd[0] = VWorldStart[0] ;
 	    VWorldStart[0] = temp ;
+//	    std::cout << "wireDistV < 0 (as per WireMatch)" << "\n";
 	    } 
 	else if( wireDistU < 0 ){
 	    wireDistU *= -1 ;	
@@ -153,6 +155,7 @@ namespace cmtool {
 	    temp = UWorldEnd[0] ;
 	    UWorldEnd[0] = UWorldStart[0] ;
 	    UWorldStart[0] = temp ;
+//	    std::cout << "wireDistU < 0 (as per WireMatch)" << "\n";
 	    } 
     
 	}
@@ -169,7 +172,8 @@ namespace cmtool {
 
     float score = getScore(showerRange,otherRange);
 
-    if( _debug) std::cout << "Score is " << score << std::endl;
+    //if( _debug)
+    std::cout << "Score is " << score << std::endl;
     return score;
 
    }
@@ -188,24 +192,25 @@ namespace cmtool {
     if (otherRange.back()  - showerRange.front() >= 0 && 
          showerRange.back() - otherRange.front()  >= 0)  
     { 
-      overlap = fmax(showerRange.front(), otherRange.front())
-              - fmin(showerRange.back(), otherRange.back());
+      overlap = - fmax(showerRange.front(), otherRange.front())
+              + fmin(showerRange.back(), otherRange.back());
+//      std::cout << "overlap condition from line 195 met (Shower Wire Match)" << "\n";
     }
 
     if(overlap < 0 && overlap > -1 ) overlap*=-1;
 
-    norm = overlap / (showerRange.front() - showerRange.back());
+    norm = overlap / (showerRange.back() - showerRange.front());
 
     //Sometimes overlap is the shower range, giving us a norm of 1.  This isn't very indicative of overlap
     //so adjust the normalization range in this case
     if(norm == 1)
-	norm = overlap / abs( fmax(showerRange.back(),otherRange.back()) - fmin(showerRange.front(),otherRange.front())) ; 
-	 
+      //std::cout << "norm == 1 CFAlgoShowerMatch" << "\n";
+      norm = overlap / abs( fmax(showerRange.back(),otherRange.back()) - fmin(showerRange.front(),otherRange.front())) ; 
     //Bias matching against showers with poorly matched fronts AND backs 
     if( abs( showerRange.front() - otherRange.front() ) > 5 
 	&& abs(showerRange.back() - otherRange.back()) > 5 ) 
         norm*=0.1 ; 
-
+    //std::cout << "norm == 1 CFAlgoShowerMatch" << "\n";
     if( _debug) { 
 	std::cout<<"\nfmax of fronts: "<<fmax(showerRange.front(), otherRange.front()) ;
 	std::cout<<"\nfmin of backs: "<<fmin(showerRange.back(), otherRange.back()) ;
@@ -248,7 +253,8 @@ namespace cmtool {
     //Z coord is 0, Y coord is 1
     if ( wireID <= 86 ) {
        //length = 0.5*h/sin(angle) + 0.5*l*abs(1/cos(angle)) - (N-1)/2*p/sin(angle)*abs(1/cos(angle)) + p*wireID/sin(angle)*abs(1/cos(angle)) + 18.42785; 
-	offsetY = 0; 
+      //std::cout << "WireID is less than or equal to 86 (WireMatch)" << "\n";
+        offsetY = 0; 
 	offsetZ = 0;
 	  
        yz[0] = offsetZ + -0.25*l + 0.25*h*abs(1/tan(angle)) - (N-1)/4*p/sin(angle) + 0.25*p*wireID/sin(angle) + 8;   
@@ -257,7 +263,7 @@ namespace cmtool {
     //For variable length wires that terminate on the right.
     else if ( wireID > 154) {
        //length = 0.5*h/sin(angle) + 0.5*l*abs(1/cos(angle)) + (N-1)/2*p/sin(angle)*abs(1/cos(angle)) - p*wireID/sin(angle)*abs(1/cos(angle))+18.42785; 
-
+      //std::cout << "WireID is greater than 154 (WireMatch)" << "\n";
  	offsetY = 0; 
 	offsetZ = 0; 
 
@@ -267,7 +273,7 @@ namespace cmtool {
     //For constant length wires 
     else{
 	//length = h / sin(angle) ;
-
+        //std::cout << "WireID does not fit prior conditions (WireMatch)" << "\n";
 	offsetY = 0;  
 	offsetZ = 0; 
 

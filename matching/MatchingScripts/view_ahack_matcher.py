@@ -40,24 +40,27 @@ match_viewer.SetPrintClusterInfo(True)
 
 
 priority_algo = cmtool.CPAlgoNHits()
-priority_algo.SetMinHits(20)
+priority_algo.SetMinHits(60)
 match_viewer.GetManager().AddPriorityAlgo(priority_algo)
 
 algo_array = cmtool.CFAlgoArray()
 
-#timeAlg = cmtool.CFAlgoTimeOverlap()
+timeAlg = cmtool.CFAlgoTimeOverlap()
 #timeAlg.SetDebug(False)
-#timeAlg.RequireThreePlanes(False)
+timeAlg.RequireThreePlanes(False)
 
 showerAlg = cmtool.CFAlgoShowerTimeMatchCOPY()
-wireAlg = cmtool.CFAlgoShowerWireMatchCOPY()
+wireAlg = cmtool.CFAlgoShowerWireMatch()
 wireAlg.SetDebug(False)
 
 qualityAlg = cmtool.CFAlgoMatchStartCOPY()
 
-algo_array.AddAlgo(showerAlg)
+
+
 algo_array.AddAlgo(wireAlg)
+algo_array.AddAlgo(timeAlg)
 #algo_array.AddAlgo(qualityAlg)
+
 
 match_viewer.GetManager().AddMatchAlgo(algo_array)
 
