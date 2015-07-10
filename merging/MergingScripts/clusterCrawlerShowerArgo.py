@@ -130,7 +130,6 @@ def getInlineMerger(maxInlineDist=0.6,useAllHits=True,hitFraction=0.35, minHits=
   #inline.SetHitFraction(hitFraction)
   #algo_array.AddAlgo(inline)
 
-##COPY
   algo_array = cmtool.CBAlgoArray()
   inline = cmtool.CBAlgoMergeInline()
   inline.SetMaxAverageMinDistance(maxInlineDist)
@@ -354,39 +353,11 @@ def getMergeToTrunk(shortestDist,maxClusterSize,prohibitBig=False):
   merger.GetManager().AddMergeAlgo(algo_array)
   merger.GetManager().AddSeparateAlgo(prohib_array)
   merger.GetManager().MergeTillConverge(True)
-  merger.GetManager().SetMinNHits(3)
+  merger.GetManager().SetMinNHits(1)
   return merger
 
 def getStartTrackMerger():
   merger = larlite.ClusterMerger()
-  ########################################
-  # PROHIBIT ALGORITHMS
-  ########################################
-  # prohib_array = cmtool.CBAlgoArray()
-
-  # # Prohibit Merging Track to track:
-  # t2t_prohibit = cmtool.CBAlgoProhibitTrackToTrack()
-  # t2t_prohibit.SetMinHits(10)
-  # t2t_prohibit.SetMinMHitWiresFraction(0.5)
-  # t2t_prohibit.SetMinPrincipal(0.99)
-  # t2t_prohibit.SetMinLengthWidthRatio(10)
-  # t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kBOTH)
-  # # t2t_prohibit.SetDebug(True)
-  # prohib_array.AddAlgo(t2t_prohibit, False)
-
-
-  # if (prohibitBig):
-  #   big_prohibit = cmtool.CBAlgoProhibitBigToBig()
-  #   big_prohibit.SetMaxHits(10)
-  #   prohib_array.AddAlgo(big_prohibit, False)
-
-  # # Want to add a prohibit function that stops if 
-  # # start to start point distance is too close
-  # s2s_prohibit = cmtool.CBAlgoProhibitStartToStart()
-  # s2s_prohibit.SetMinSeparation(1.0)
-  # # s2s_prohibit.SetDebug(True)
-  # prohib_array.AddAlgo(s2s_prohibit, False)
-
 
   ########################################
   # MERGE ALGORITHMS
@@ -399,9 +370,8 @@ def getStartTrackMerger():
   algo_array.AddAlgo(SDAlg)
 
 
-
   merger.GetManager().AddMergeAlgo(algo_array)
-  merger.GetManager().AddSeparateAlgo(prohib_array)
+  # merger.GetManager().AddSeparateAlgo(prohib_array)
   merger.GetManager().MergeTillConverge(True)
   merger.GetManager().SetMinNHits(5)
   return merger
@@ -416,33 +386,20 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   ########################################
 
 
+# # prohibit merging tracks
+#   trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
+#   trackmerge_prohibit.SetMinEP(0.9999000)
+#   prohib_array.AddAlgo(trackmerge_prohibit,False)
 
-  # Prohibit Merging Track to track:
-  # t2t_prohibit = cmtool.CBAlgoProhibitTrackToTrack()
-  # t2t_prohibit.SetMinHits(10)
-  # t2t_prohibit.SetMinMHitWiresFraction(0.5)
-  # t2t_prohibit.SetMinPrincipal(0.99)
-  # t2t_prohibit.SetMinLengthWidthRatio(10)
-  # t2t_prohibit.SetMode(cmtool.CBAlgoProhibitTrackToTrack.kBOTH)
-  # # t2t_prohibit.SetDebug(True)
-  # prohib_array.AddAlgo(t2t_prohibit, False)
+# # prohibit merging outside of cone
+#   outofcone_prohibit = cmtool.CBAlgoProhibitOutOfCone()
+#   outofcone_prohibit.SetMaxAngleSep(7.)
+#   prohib_array.AddAlgo(outofcone_prohibit,False)
 
-  prohib_array = cmtool.CBAlgoArray()
-
-# prohibit merging tracks
-  trackmerge_prohibit = cmtool.CBAlgoProhibitTrack()
-  trackmerge_prohibit.SetMinEP(0.9999000)
-  prohib_array.AddAlgo(trackmerge_prohibit,False)
-
-# prohibit merging outside of cone
-  outofcone_prohibit = cmtool.CBAlgoProhibitOutOfCone()
-  outofcone_prohibit.SetMaxAngleSep(7.)
-  prohib_array.AddAlgo(outofcone_prohibit,False)
-
-  merger.GetManager().AddSeparateAlgo(prohib_array)
+#   merger.GetManager().AddSeparateAlgo(prohib_array)
 
   if (prohibitBig):
-    
+    prohib_array = cmtool.CBAlgoArray()
     big_prohibit = cmtool.CBAlgoProhibitBigToBig()
     big_prohibit.SetMaxHits(bignessProhibit)
     prohib_array.AddAlgo(big_prohibit, False)
@@ -459,12 +416,12 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   ########################################
   algo_array = cmtool.CBAlgoArray()
 
-#  blob = cmtool.CBAlgoMergeExtendBlob()
-  blob = cmtool.CBAlgoMergeExtendBlobCOPY()
-  blob.set_principal_ev_cut(0.9)
+  blob = cmtool.CBAlgoMergeExtendBlob()
+  # blob = cmtool.CBAlgoMergeExtendBlobCOPY()
+  blob.set_principal_ev_cut(0.95)
   blob.set_rms_scale(2.0)
-  blob.set_length_jump_scale(0.25)
-  blob.set_min_hits_to_project_from(30)
+  blob.set_length_jump_scale(0.4)
+  blob.set_min_hits_to_project_from(15)
   blob.set_mode(mode)
   blob.set_debug(False)
   # blob.SetMaxDistance(shortestDist)
@@ -472,10 +429,10 @@ def getExtendBlobMerger(prohibitBig = True, bignessProhibit = 25, mode = 0):
   merger.GetManager().AddMergeAlgo(algo_array)
   if prohibitBig:
     merger.GetManager().AddSeparateAlgo(prohib_array)
-  merger.GetManager().MergeTillConverge(False)
+  merger.GetManager().MergeTillConverge(True)
   if prohibitBig:
     merger.GetManager().SetMinNHits(3)
   else:
-    merger.GetManager().SetMinNHits(30)
+    merger.GetManager().SetMinNHits(15)
 
   return merger

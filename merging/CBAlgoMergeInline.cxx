@@ -73,7 +73,7 @@ namespace cmtool {
     // them into a quasi histogram to see what fraction are within the
     // required distance
 
-    const float wirePitch = 0.4;
+    const float step = _max_average_min_distance/3.0;
 
     float averageDist(0.0);
     std::vector<float> n_hits_by_dist;
@@ -89,7 +89,7 @@ namespace cmtool {
         }
       }
       // Now have the min dist for this hit.  Put it in the histogram
-      int index = minDist/wirePitch;
+      int index = minDist/step;
       if (index > 9) 
         n_hits_by_dist.back() ++;
       else n_hits_by_dist.at(index) ++;
@@ -100,7 +100,7 @@ namespace cmtool {
     // Find out how many hits are within the _max_average_min_distance
     int n_good_hits = 0;
     for(int i = 0; i < n_hits_by_dist.size(); i++){
-      if (wirePitch*(i+1) <= _max_average_min_distance) n_good_hits += n_hits_by_dist[i];
+      if (step*(i+1) <= _max_average_min_distance) n_good_hits += n_hits_by_dist[i];
     }
 
     // if (n_good_hits > 1){

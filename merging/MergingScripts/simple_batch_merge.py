@@ -41,7 +41,8 @@ def main(**args):
         print "No ana output file selected.  If necessary, output will go to:"
         print "\t"+args['ana_output']
 
-
+  if args['num_events'] != None:
+    nevents = int(args['num_events'])
 
   my_proc.set_io_mode(larlite.storage_manager.kBOTH)
 
@@ -52,24 +53,23 @@ def main(**args):
   larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
   mergers = []
+  mergerNames = []
   prevProducer = "cccluster"
 
-  # #################################
-  # Stage 1:
-  # #################################
-
   # Module to take all of the poorly done, vertical tracks and destroy them
-  htc = larlite.DropBadVertClusters()
-  htc.SetInputProducer(prevProducer)
-  htc.SetOutputProducer("ccNoVert")
+  drop = larlite.DropBadVertClusters()
+  drop.SetInputProducer(prevProducer)
+  drop.SetOutputProducer("ccNoVert")
   prevProducer = "ccNoVert"
-  my_proc.add_process(htc)
+  mergerNames.append(prevProducer)
+  my_proc.add_process(drop)
 
   # Module to turn all the single hits into one hit clusters
   htc = larlite.HitToCluster()
   htc.SetInputProducer(prevProducer)
   htc.SetOutputProducer("ccclusterWithSingles")
   prevProducer="ccclusterWithSingles"
+  mergerNames.append(prevProducer)
   my_proc.add_process(htc)
 
 
@@ -92,26 +92,29 @@ def main(**args):
     mergers[-1].SetOutputProducer("ccMergedSmall" + str(i))
     mergers[-1].SaveOutputCluster()
     prevProducer = "ccMergedSmall" + str(i)
+    mergerNames.append(prevProducer)
     my_proc.add_process(mergers[-1])
 
   mergers.append(getExtendBlobMerger(True))
   mergers[-1].SetInputProducer(prevProducer)
-  mergers[-1].SetOutputProducer("ccMergedExtendBlobNoBigCOPY")
-  prevProducer = "ccMergedExtendBlobNoBigCOPY"
+  mergers[-1].SetOutputProducer("ccMergedExtendBlobNoBig")
+  prevProducer = "ccMergedExtendBlobNoBig"
   mergers[-1].SaveOutputCluster()
+  mergerNames.append(prevProducer)
   my_proc.add_process(mergers[-1])
 
   # Add the inline merger:
-  inlineMerger = getInlineMerger(maxInlineDist=0.5)
+  inlineMerger = getInlineMerger(maxInlineDist=0.5,useAllHits=False,hitFraction=0.25)
   inlineMerger.SetInputProducer(prevProducer)
   inlineMerger.SetOutputProducer("ccMergedInline")
   prevProducer = "ccMergedInline"
+  mergerNames.append(prevProducer)
   inlineMerger.SaveOutputCluster()
   my_proc.add_process(inlineMerger)
 
 
-  maxClosestDistances = [0.6, 0.8, 1.2, 1.3,]
-  maxClusterSizes     = [20,  20,  20,  20, ]
+  maxClosestDistances = [0.6, 0.65, 0.7,]
+  maxClusterSizes     = [20,  20,   20, ]
 
   for i in range(0, len(maxClosestDistances)):
     mergers.append(getMergeToTrunk(
@@ -122,90 +125,50 @@ def main(**args):
     mergers[-1].SetOutputProducer("ccMergedSDnoBig" + str(i))
     mergers[-1].SaveOutputCluster()
     prevProducer = "ccMergedSDnoBig" + str(i)
+    mergerNames.append(prevProducer)
     my_proc.add_process(mergers[-1])
 
+  # mergers.append(getMergeToTrunk(shortestDist = 0.6,
+  #                                maxClusterSize = 20, 
+  #                                prohibitBig=True))
+  # mergers[-1].SetInputProducer(prevProducer)
+  # mergers[-1].SetOutputProducer("ccMergedSDnoBig")
+  # mergers[-1].SaveOutputCluster()
+  # prevProducer = "ccMergedSDnoBig"
+  # mergerNames.append(prevProducer)
+  # my_proc.add_process(mergers[-1])
 
 
-
-  # # _maxInlineDist   =  [0.8, 1.0, ]
-  # # _hitFraction     =  [.50, 0.4, ]
-
-  # # # Add the inline and diffuse merger:
-  # # for i in range(0, len(_maxInlineDist)):
-  # #   mergers.append(getInlineMerger(
-  # #     maxInlineDist=_maxInlineDist[i], 
-  # #     useAllHits=False,
-  # #     hitFraction=_hitFraction[i]))
-  # #   mergers[-1].SetInputProducer(prevProducer)
-  # #   mergers[-1].SetOutputProducer("ccMergedInline" + str(i))
-  # #   prevProducer = "ccMergedInline" + str(i)
-  # #   mergers[-1].SaveOutputCluster()
-  # #   my_proc.add_process(mergers[-1])
-
-
-
-#    merger = getStartTrackMerger()
-#    merger.SetInputProducer(prevProducer)
-#    merger.SetOutputProducer("ccMergedStartTrack")
-#    prevProducer = "ccMergedStartTrack"
-#    merger.SaveOutputCluster()
-#    my_proc.add_process(merger)
-
-
-  # # mergers.append(getInlineMerger(
-  # #   maxInlineDist=1.0, 
-  # #   useAllHits=False,
-  # #   hitFraction=0.25,
-  # #   bignessProhibit=999,
-  # #   minHits=10))
-  # # mergers[-1].SetInputProducer(prevProducer)
-  # # mergers[-1].SetOutputProducer("ccMergedInlineFinal")
-  # # prevProducer = "ccMergedInlineFinal"
-  # # mergers[-1].SaveOutputCluster()
-  # # my_proc.add_process(mergers[-1])
-
-
-  # # # Add one more inline merger iteration:
-  # # prevProducer = "ccMergedStartTrack"
+  merger = getStartTrackMerger()
+  merger.SetInputProducer(prevProducer)
+  merger.SetOutputProducer("ccMergedStartTrack")
+  prevProducer = "ccMergedStartTrack"
+  mergerNames.append(prevProducer)
+  merger.SaveOutputCluster()
+  my_proc.add_process(merger)
 
   # new function called
   mergers.append(mergeIfClose())
   mergers[-1].SetInputProducer(prevProducer)
   mergers[-1].SetOutputProducer("close")
   prevProducer = "close"
+  mergerNames.append(prevProducer)
   mergers[-1].SaveOutputCluster()
   my_proc.add_process(mergers[-1])
-
-
-
-
-#  mergers.append(getExtendBlobMerger(False, 50,1))
-#  mergers[-1].SetInputProducer(prevProducer)
-#  mergers[-1].SetOutputProducer("ccMergedExtendBlob")
-#  prevProducer = "ccMergedExtendBlob"
-#  mergers[-1].SaveOutputCluster()
-#
- # my_proc.add_process(mergers[-1])
-
- # mergers.append(getExtendBlobMerger(False,100,1))
- # mergers[-1].SetInputProducer(prevProducer)
- # mergers[-1].SetOutputProducer("ccMergedExtendBlob2")
- # prevProducer = "ccMergedExtendBlob2"
- # mergers[-1].SaveOutputCluster()
- # my_proc.add_process(mergers[-1])
 
   mergers.append(getExtendBlobMerger(False, 50,1))
   mergers[-1].SetInputProducer(prevProducer)
-  mergers[-1].SetOutputProducer("ccMergedExtendBlobCOPY")
-  prevProducer = "ccMergedExtendBlobCOPY"
+  mergers[-1].SetOutputProducer("ccMergedExtendBlob")
+  prevProducer = "ccMergedExtendBlob"
+  mergerNames.append(prevProducer)
   mergers[-1].SaveOutputCluster()
-
   my_proc.add_process(mergers[-1])
 
-  mergers.append(getExtendBlobMerger(False,100,1))
+  mergers.append(getExtendBlobMerger(False,999,1))
   mergers[-1].SetInputProducer(prevProducer)
-  mergers[-1].SetOutputProducer("ccMergedExtendBlob2COPY")
-  prevProducer = "ccMergedExtendBlob2COPY"
+  mergers[-1].SetOutputProducer("ccMergedExtendBlob2")
+  prevProducer = "ccMergedExtendBlob2"
+  mergerNames.append(prevProducer)
   mergers[-1].SaveOutputCluster()
   my_proc.add_process(mergers[-1])
 
@@ -213,20 +176,27 @@ def main(**args):
   # Add a DropSingles module:
   drop = larlite.DropSingles()
   drop.SetInputProducer(prevProducer)
+  mergerNames.append("ccMergedFinal")
   drop.SetOutputProducer("ccMergedFinal")
   my_proc.add_process(drop)
 
-  start = time.clock()
 
-  # my_proc.process_event(0)
-  nevents = 200
-  my_proc.run(0,nevents)
+  # my_proc.process_event(0)\
+  if args['num_events'] != None:
+    start = time.clock()
+    my_proc.run(90,nevents)
+    end = time.clock()
+    print "Processed ", nevents, " events in ", end-start, "seconds."
+    print "Average per event: ", (end-start)/nevents, "seconds."
+  else:
+    my_proc.run()
 
-  end = time.clock()
 
-  print "Processed ", nevents, " events in ", end-start, "seconds."
-  print "Average per event: ", (end-start)/nevents, "seconds."
-  # done!
+
+
+  print "mergers are: ", mergerNames
+
+
 
 
 if __name__ == '__main__':
@@ -239,6 +209,7 @@ if __name__ == '__main__':
   parser.add_argument("-s","--source",nargs='*',help="Name of input file")
   parser.add_argument("-o","--data-output",help="Output data file, if event is changed")
   parser.add_argument("-a","--ana-output",help="Analysis output file")
+  parser.add_argument("-n","--num-events",help="Number of events to run over")
 
   args = parser.parse_args()
 

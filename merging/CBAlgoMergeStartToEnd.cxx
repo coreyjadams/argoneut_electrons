@@ -85,8 +85,8 @@ float CBAlgoMergeStartToEnd::getShortestDist(
 
     ::cluster::ClusterParamsAlg poly1 = cluster1;
     ::cluster::ClusterParamsAlg poly2 = cluster2;
-    poly1.FillPolygon(1.);
-    poly2.FillPolygon(1.);
+    poly1.FillPolygon();
+    poly2.FillPolygon();
     auto overlap = poly1.GetParams().PolyObject.PolyOverlap(poly2.GetParams().PolyObject);
     auto overlapPoly = Polygon2D(poly1.GetParams().PolyObject,poly2.GetParams().PolyObject);
     
