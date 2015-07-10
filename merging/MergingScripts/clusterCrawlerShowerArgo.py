@@ -392,6 +392,8 @@ def getStartTrackMerger():
   # MERGE ALGORITHMS
   ########################################
   algo_array = cmtool.CBAlgoArray()
+  prohib_array = cmtool.CBAlgoArray()
+
 
   SDAlg = cmtool.CBAlgoStartTrack()
   # SDAlg.SetDebug(True)

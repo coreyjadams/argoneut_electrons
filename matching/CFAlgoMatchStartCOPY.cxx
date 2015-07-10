@@ -34,7 +34,7 @@ namespace cmtool {
     // Code-block by Kazu starts
     // This ensures the algorithm works only if # clusters is > 2 (and not =2)
     // You may take out this block if you want to allow matching using clusters from only 2 planes.
-    // if(_require_3planes && clusters.size()==2) return -1;
+    if(_require_3planes && clusters.size()==2) return -1;
     // Code-block by Kazu ends
 
     // First, find the showers on the collection plane:
@@ -157,6 +157,7 @@ namespace cmtool {
       for (auto _i_dist = 0; _i_dist < distances.size(); _i_dist ++){
         if (dist < distances[_i_dist]){
           // std::cout << dist << " is less than " << distances[_i_dist] << "\n";
+	  // std::cout << "Using the distance parameter in MatchStartCOPY due to dist = " << dist << "\n";
           distances.insert(distances.begin() + _i_dist,dist);
           close_hits.insert(close_hits.begin() + _i_dist,hit);
           if (distances.size() > n_hits){
