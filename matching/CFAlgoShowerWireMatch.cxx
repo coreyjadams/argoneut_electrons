@@ -18,7 +18,9 @@ namespace cmtool {
     _w2cm = larutil::GeometryUtilities::GetME()->WireToCm();
     _t2cm = larutil::GeometryUtilities::GetME()->TimeToCm();
 
-    ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;                      
+    std::string path = getenv("LARLITE_USERDEVDIR");
+    path.append("/argoneut_electrons/utils/fann_training/trackShowerAnn.dat");
+    ts.setFannFileName(path);                      
     //ts.setFannFileName("/uboone/app/users/npereira/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;
 
     // ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/Argoneut/utils/fann_training/trackShowerAnn.dat") ;                      
