@@ -30,11 +30,14 @@ def DefaultMatch():
 
     algo_array = cmtool.CFAlgoArray()
     showerAlg  = cmtool.CFAlgoShowerTimeMatch()
+    timeAlg = cmtool.CFAlgoTimeOverlap()
+    timeAlg.RequireThreePlanes(False)
     wireAlg    = cmtool.CFAlgoShowerWireMatch()
     qualityAlg = cmtool.CFAlgoMatchStart()
-    algo_array.AddAlgo(showerAlg)
+    #algo_array.AddAlgo(showerAlg)
     algo_array.AddAlgo(wireAlg)
-    algo_array.AddAlgo(qualityAlg)
+    algo_array.AddAlgo(timeAlg)
+    #algo_array.AddAlgo(qualityAlg)
 
     return palgo_array, algo_array
 
