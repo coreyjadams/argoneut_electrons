@@ -3,11 +3,13 @@
 
 #include "GenFANNTrainingData.h"
 
+#include "ClusterRecoUtil/Alg/DefaultParamsAlg.h"
+
 #include "DataFormat/cluster.h"
 #include "DataFormat/mctruth.h"
 #include "DataFormat/mcshower.h"
 
-#include "ClusterRecoUtil/ClusterParamsAlg.h"
+// #include "ClusterRecoUtil/Alg/ClusterParamsAlg.h"
 
 
 namespace larlite {
@@ -30,12 +32,12 @@ namespace larlite {
     _n_training_items = 0;
 
     // create a dummy CPAN to find out the length of the output:
-    ::cluster::ClusterParamsAlg alg;
+    ::cluster::cluster_params params;
     std::vector<float> tempVec;
-    alg.GetFANNVector(tempVec);
+    params.GetFANNVector(tempVec);
 
     // Prepare the histograms:
-    std::vector<std::string> legend = alg.GetFANNVectorTitle();
+    std::vector<std::string> legend = params.GetFANNVectorTitle();
     _track_params.resize(legend.size());
     _shower_params.resize(legend.size());
 
@@ -136,30 +138,33 @@ namespace larlite {
     // Have the answer, now get the input to FANN
 
     // Use cruhelper to generate the list of CPAN:
-    std::vector<::cluster::ClusterParamsAlg> cpanVec;
-    helper.GenerateCPAN(storage,_cluster_producer,cpanVec);
-    if (cpanVec.size() == 0){
+    std::vector<::cluster::cluster_params> clusterVec;
+    helper.GenerateParams(storage,_cluster_producer,clusterVec);
+    if (clusterVec.size() == 0){
       std::cout << "No clusters obtained!\n";
       return false;
     }
 
+    // Need a params alg:
+    ::cluster::DefaultParamsAlg alg;
+
     // Find the biggest cluster:
-    ::cluster::ClusterParamsAlg * mainCluster = 0;
+    ::cluster::cluster_params * mainCluster = 0;
     int current_hits = 0;
-    for ( auto & clust : cpanVec){
-      clust.FillParams();
+    for ( auto & clust : clusterVec){
+      alg.FillParams(clust);
       // std::cout << "This plane is " << clust.Plane() << "\n";
-      if (clust.Plane() == 0) continue;
-      if (clust.GetNHits() > current_hits){
+      if (clust.plane_id.Plane == 0) continue;
+      if (clust.hit_vector.size() > current_hits){
         mainCluster = &(clust);
-        current_hits = mainCluster -> GetNHits();
+        current_hits = mainCluster -> hit_vector.size();
       }
     }
 
     if (mainCluster == 0 ) return false;
 
     // Want to require at least, say, 40 hits to be a shower or track?
-    if (mainCluster -> GetNHits() < 40) return false;
+    if (mainCluster -> hit_vector.size() < 40) return false;
 
     // mainCluster -> FillParams();
 

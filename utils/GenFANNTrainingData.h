@@ -16,11 +16,12 @@
 #define LARLITE_GENFANNTRAININGDATA_H
 
 #include "Analysis/ana_base.h"
-#include "ClusterRecoUtil/CRUHelper.h"
+#include "ClusterRecoUtil/Base/CRUHelper.h"
 
 #include <iostream>
 #include "stdio.h"
 #include "TH1F.h"
+#include "TCanvas.h"
 
 namespace larlite {
   /**

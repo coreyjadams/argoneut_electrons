@@ -29,17 +29,17 @@ namespace argo {
     _fann.LoadFromFile();
   }
 
-  bool TrackShower::isTrack(const ::cluster::ClusterParamsAlg & cluster){
+  bool TrackShower::isTrack(const ::cluster::cluster_params & cluster){
 
-      size_t N_Hits = cluster.GetHitVector().size();
-      auto start_point = cluster.GetParams().start_point;
-      double length = cluster.GetParams().length;
-      double plane = cluster.GetParams().start_point.plane;
-      double start_x = cluster.GetParams().start_point.w;
-      double start_y = cluster.GetParams().start_point.t;
-      double end_x = cluster.GetParams().end_point.w;
-      double end_y = cluster.GetParams().end_point.t;
-      double ep = cluster.GetParams().eigenvalue_principal;
+      size_t N_Hits = cluster.hit_vector.size();
+      auto start_point = cluster.start_point;
+      double length = cluster.length;
+      double plane = cluster.start_point.plane;
+      double start_x = cluster.start_point.w;
+      double start_y = cluster.start_point.t;
+      double end_x = cluster.end_point.w;
+      double end_y = cluster.end_point.t;
+      double ep = cluster.eigenvalue_principal;
 
       if(_debug){
 
@@ -66,7 +66,7 @@ namespace argo {
     return false;
   }
 
-  bool TrackShower::isShower(const ::cluster::ClusterParamsAlg & cluster){
+  bool TrackShower::isShower(const ::cluster::cluster_params & cluster){
         
     // These are the parameters from the FANN vector:
     // Opening Angle (normalized)  ... : fParams.opening_angle / PI;
@@ -91,13 +91,13 @@ namespace argo {
     // Do this identification stupidly for the moment.
 
     // Require a minimum number of hits
-    if (cluster.GetParams().N_Hits < _shower_nhits) return false;
+    if (cluster.N_Hits < _shower_nhits) return false;
 
     // if (_debug && cluster.Plane() == 1){
-    //   std::cout << "(" << cluster.GetParams().start_point.w << ", " 
-    //             << cluster.GetParams().start_point.t << ") -> ("
-    //             << cluster.GetParams().end_point.w << ", "
-    //             << cluster.GetParams().end_point.t << "), Plane " 
+    //   std::cout << "(" << cluster.start_point.w << ", " 
+    //             << cluster.start_point.t << ") -> ("
+    //             << cluster.end_point.w << ", "
+    //             << cluster.end_point.t << "), Plane " 
     //             << cluster.Plane() << "\n"
     //             << "\tPrincipal Eigenvalue  ....." << data[4] 
     //             << "\t( < " << _shower_prin_eig << ")\n"
@@ -127,9 +127,9 @@ namespace argo {
     return false;
   }
 
-  TrackShower::Topology TrackShower::trackOrShower(const ::cluster::ClusterParamsAlg & cluster){
+  TrackShower::Topology TrackShower::trackOrShower(const ::cluster::cluster_params & cluster){
     
-    if (cluster.GetNHits() < 40) return kUnknown;
+    if (cluster.hit_vector.size() < 40) return kUnknown;
 
     // get the data used to make the separation:
     std::vector<float> input_data;

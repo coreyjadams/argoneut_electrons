@@ -16,7 +16,7 @@
 
 #include <iostream>
 #include "LArUtil/GeometryUtilities.h"
-#include "ClusterRecoUtil/ClusterParamsAlg.h"
+#include "ClusterRecoUtil/Base/ClusterParams.h"
 #include "FANN/FANNModule.h"
 
 /**
@@ -43,10 +43,10 @@ namespace argo{
     /// Default destructor
     ~TrackShower(){}
 
-    Topology trackOrShower(const ::cluster::ClusterParamsAlg & cluster);
+    Topology trackOrShower(const ::cluster::cluster_params & cluster);
 
-    bool isTrack(const ::cluster::ClusterParamsAlg & cluster);
-    bool isShower(const ::cluster::ClusterParamsAlg & cluster);
+    bool isTrack(const ::cluster::cluster_params & cluster);
+    bool isShower(const ::cluster::cluster_params & cluster);
 
     void SetDebug(bool b){_debug = b;}
 
