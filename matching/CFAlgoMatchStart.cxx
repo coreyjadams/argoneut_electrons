@@ -42,7 +42,7 @@ namespace cmtool {
     int nshowers = 0;
     // Look for showers on the collection plane:
     for(auto const& c : clusters){
-      if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> plane_id.Plane == 1){
+      if (ts.trackOrShower(*c) == argoutils::TrackShower::kShower && c -> plane_id.Plane == 1){
         // std::cout << "found a collection shower!\n";
         shower = *c;
         nshowers++;

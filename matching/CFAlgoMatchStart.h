@@ -69,7 +69,7 @@ protected:
   bool _verbose ;
   bool _require_3planes;
 
-  argo::TrackShower ts;
+  argoutils::TrackShower ts;
 
 };
 }

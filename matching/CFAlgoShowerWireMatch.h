@@ -61,7 +61,7 @@ protected:
   bool _require_3planes;
   double _w2cm, _t2cm ;
 
-  argo::TrackShower ts;
+  argoutils::TrackShower ts;
 
 };
 }
