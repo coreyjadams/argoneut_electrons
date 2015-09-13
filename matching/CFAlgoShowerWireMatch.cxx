@@ -2,7 +2,7 @@
 #define RECOTOOL_CFALGOSHOWERWIREMATCH_CXX
 
 #include "CFAlgoShowerWireMatch.h"
-#include "LArUtil/GeometryUtilities.h"
+#include "LArUtil/GeometryHelper.h"
 
 namespace cmtool {
 
@@ -15,8 +15,8 @@ namespace cmtool {
     SetVerbose(false) ;
     RequireThreePlanes(false) ;
 
-    _w2cm = larutil::GeometryUtilities::GetME()->WireToCm();
-    _t2cm = larutil::GeometryUtilities::GetME()->TimeToCm();
+    _w2cm = larutil::GeometryHelper::GetME()->WireToCm();
+    _t2cm = larutil::GeometryHelper::GetME()->TimeToCm();
 
     std::string path = getenv("LARLITE_USERDEVDIR");
     path.append("/argoneut_electrons/utils/fann_training/trackShowerAnn.dat");
@@ -37,7 +37,7 @@ namespace cmtool {
   }
 
   //----------------------------------------------------------------------------------------------
-  float CFAlgoShowerWireMatch::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
+  float CFAlgoShowerWireMatch::Float(const std::vector<const cluster::cluster_params*> &clusters)
   //----------------------------------------------------------------------------------------------
   {
 
@@ -50,19 +50,19 @@ namespace cmtool {
     if( clusters.size() != 2 ) return -1; 
 
     // First, find the showers on the collection plane:
-//    cluster::ClusterParamsAlg const *  shower;
+//    cluster::cluster_params const *  shower;
     int nshowers = 0;
     // Look for showers on the collection plane:
 // Look for showers on the collection plane:
      for(auto const& c : clusters){
-       if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> Plane() == 1){
+       if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> plane_id.Plane == 1){
          // std::cout << "found a collection shower!\n";
          nshowers++;
        }
      }
 
     if( _debug)
-	std::cout<<"\n\nFound nshowers! "<<nshowers<<std::endl; 
+      std::cout<<"\n\nFound nshowers! "<<nshowers<<std::endl; 
 
     if (nshowers != 1) return -1.0;
 
@@ -72,7 +72,7 @@ namespace cmtool {
     std::vector<std::vector<larutil::PxHit> > Hits(2, std::vector<larutil::PxHit>());
 
     for (size_t c=0; c < clusters.size(); c++)
-      Hits.at( clusters.at(c)->Plane() ) = clusters.at(c)->GetHitVector();
+      Hits.at( clusters.at(c)->plane_id.Plane ) = clusters.at(c)->hit_vector;
 
     std::vector<int> StartWires;
     std::vector<int> EndWires;
@@ -107,7 +107,7 @@ namespace cmtool {
     }//for all hit-lists (i.e. for all clusters)
 
     if( _debug ){
-	std::cout<<"PLANE 0: "<<std::endl ; 
+      std::cout<<"PLANE 0: "<<std::endl ; 
     	std::cout<<"Start and end Times: "<<StartTime.at(0)<<", "<<EndTime.at(0)<<std::endl;
     	std::cout<<"Start and end Wires: "<<StartWires.at(0)<<", "<<EndWires.at(0)<<std::endl;
     	std::cout<<"PLANE 1: "<<std::endl ; 
@@ -129,7 +129,7 @@ namespace cmtool {
     WireIDtoWorld(EndWires.at(1), EndTime.at(1), (150.*PI/180), VWorldEnd); 
 
     if( _debug ){
-	std::cout<<"World start and end in :"
+      std::cout<<"World start and end in :"
 	    << "\nPlane 0: "<<UWorldStart[0]<<" : "<<UWorldEnd[0]
 	    << "\nPlane 1: "<<VWorldStart[0]<<" : "<<VWorldEnd[0]<<std::endl ;
 	}

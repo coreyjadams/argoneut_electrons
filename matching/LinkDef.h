@@ -13,10 +13,6 @@
 #pragma link C++ class cmtool::CFAlgoShowerTimeMatch+;
 #pragma link C++ class cmtool::CFAlgoMatchStart+;
 #pragma link C++ class cmtool::CFAlgoShowerWireMatch+;
-#pragma link C++ class cmtool::CFAlgoShowerTimeMatchCOPY+;
-#pragma link C++ class cmtool::CFAlgoMatchStartCOPY+;
-#pragma link C++ class cmtool::CFAlgoShowerWireMatchCOPY+;
-//#pragma link C++ class cmtool::CFAlgoREPLACENAMECOPY+;
 
 
 

@@ -24,7 +24,7 @@ namespace cmtool {
   }
 
   //----------------------------------------------------------------------------------------------
-  float CFAlgoREPLACENAME::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
+  float CFAlgoREPLACENAME::Float(const std::vector<const cluster::cluster_params*> &clusters)
   //----------------------------------------------------------------------------------------------
   {
     
@@ -51,12 +51,12 @@ namespace cmtool {
     
     for(auto const& c : clusters){
       
-      auto charge = c->GetParams().sum_charge ;		
+      auto charge = c->sum_charge ;		
       
-      time_difference  = c->GetParams().start_point.t - c->GetParams().end_point.t ; 
+      time_difference  = c->start_point.t - c->end_point.t ; 
       
-      max_hits_1 = c->GetParams().N_Hits;
-      max_hits_2 = c->GetParams().N_Hits;
+      max_hits_1 = c->N_Hits;
+      max_hits_2 = c->N_Hits;
       
     }
 
@@ -73,7 +73,7 @@ namespace cmtool {
 //	std::cout<<"Charge Ratio: "<<charge_ratio<<std::endl;
 //	//std::cout<<"Hits are: "<<min_hits<<", "<<middle_hits<<", "<<max_hits<<std::endl;
 //	//				std::cout<<"Adjusted Charge Ratio: "<<adjusted_charge_ratio<<std::endl;
-//	std::cout<<"Length and Width: "<<c->GetParams().length<<", "<<c->GetParams().width<<std::endl;
+//	std::cout<<"Length and Width: "<<c->length<<", "<<c->width<<std::endl;
 //      } 
       
     

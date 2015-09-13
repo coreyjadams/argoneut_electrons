@@ -25,7 +25,7 @@ namespace cmtool {
   }
 
   //----------------------------------------------------------------------------------------------
-  float CFAlgoShowerTimeMatch::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
+  float CFAlgoShowerTimeMatch::Float(const std::vector<const cluster::cluster_params*> &clusters)
   //----------------------------------------------------------------------------------------------
   {
     
@@ -40,11 +40,11 @@ namespace cmtool {
 
     
     // First, find the showers on the collection plane:
-    cluster::ClusterParamsAlg const *  shower;
+    cluster::cluster_params const *  shower;
     int nshowers = 0;
     // Look for showers on the collection plane:
     for(auto const& c : clusters){
-      if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> Plane() == 1){
+      if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> plane_id.Plane == 1){
         // std::cout << "found a collection shower!\n";
         shower = c;
         nshowers++;
@@ -76,11 +76,11 @@ namespace cmtool {
    }
 
   std::vector<float> CFAlgoShowerTimeMatch::getTimeRange(
-    const cluster::ClusterParamsAlg* cluster)
+    const cluster::cluster_params* cluster)
   {
     std::vector<float> range;
     range.resize(2);
-    auto hits = cluster->GetHitVector();
+    auto hits = cluster->hit_vector;
     range.front() = hits.front().t;
     range.back()  = hits.front().t;
     for (auto & hit : hits){

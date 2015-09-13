@@ -26,7 +26,7 @@ namespace cmtool {
   }
 
   //----------------------------------------------------------------------------------------------
-  float CFAlgoMatchStart::Float(const std::vector<const cluster::ClusterParamsAlg*> &clusters)
+  float CFAlgoMatchStart::Float(const std::vector<const cluster::cluster_params*> &clusters)
   //----------------------------------------------------------------------------------------------
   {
     
@@ -37,12 +37,12 @@ namespace cmtool {
     // Code-block by Kazu ends
 
     // First, find the showers on the collection plane:
-    cluster::ClusterParamsAlg shower;
-    // cluster::ClusterParamsAlg other;
+    cluster::cluster_params shower;
+    // cluster::cluster_params other;
     int nshowers = 0;
     // Look for showers on the collection plane:
     for(auto const& c : clusters){
-      if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> Plane() == 1){
+      if (ts.trackOrShower(*c) == argo::TrackShower::kShower && c -> plane_id.Plane == 1){
         // std::cout << "found a collection shower!\n";
         shower = *c;
         nshowers++;
@@ -52,10 +52,9 @@ namespace cmtool {
       // }
     }
 
-    shower.RefineStartPointAndDirection(true);
 
     // print out the start point of the shower:
-    auto start_point = shower.GetParams().start_point;
+    auto start_point = shower.start_point;
 
     if (start_point.w != start_point.w){
       return -1;
@@ -65,7 +64,7 @@ namespace cmtool {
 
     // Find the closest hits to the start point
     int n_hits = 15;
-    std::vector<larutil::PxHit> close_hits = GetClosestHits(shower, start_point, n_hits, true);
+    std::vector<Hit2D> close_hits = GetClosestHits(shower, start_point, n_hits, true);
     if (close_hits.size() < 10) return false;
 
     // std::cout << "\nhitlist is:\n";
@@ -78,7 +77,7 @@ namespace cmtool {
     // try to fit a line to this hit list 
 
     // Compute the average displacement vector (unit)
-    larutil::PxPoint displacement;
+    Point2D displacement;
     // std::cout << displacement.w << "-----" << displacement.t << "\n";
     for (auto & hit : close_hits){
       float dist = sqrt(dist = pow((hit.w - start_point.w),2) + pow((hit.w - start_point.w),2));
@@ -100,15 +99,15 @@ namespace cmtool {
 
 
     if (chi2 / n_hits < 0.1){
-      // std::cout << "\n\nStart point is at (" << start_point.w << ", " << start_point.t << ")" << std::endl; 
-      // std::cout << "Angle is " << shower.GetParams().angle_2d << std::endl;
+      // std::cout << "\n\nStart hit_vector is at (" << start_point.w << ", " << start_point.t << ")" << std::endl; 
+      // std::cout << "Angle is " << shower.angle_2d << std::endl;
       // std::cout << "chi2 is " << chi2 / n_hits << "\n";
 
       // // Found a shower that might be reconstructable!
       // // Compare its start time to the start and end time of the other cluster:
-      // std::cout << "Other start point is " << other.GetParams().start_point.w << ", "
-      //           << other.GetParams().start_point.t << std::endl;
-      // std::cout << "Other angle is " << other.GetParams().angle_2d << std::endl;
+      // std::cout << "Other start point is " << other.start_point.w << ", "
+      //           << other.start_point.t << std::endl;
+      // std::cout << "Other angle is " << other.angle_2d << std::endl;
       return 1.0;
     }
 
@@ -129,12 +128,12 @@ namespace cmtool {
   {
   }
 
-  std::vector<larutil::PxHit> CFAlgoMatchStart::GetClosestHits(const cluster::ClusterParamsAlg & params,
-                                                                larutil::PxPoint start, 
+  std::vector<Hit2D> CFAlgoMatchStart::GetClosestHits(const cluster::cluster_params & params,
+                                                                Point2D start, 
                                                                 int n_hits, bool forward_only){
-    auto all_hits = params.GetHitVector();
+    auto all_hits = params.hit_vector;
 
-    std::vector<larutil::PxHit> close_hits;
+    std::vector<Hit2D> close_hits;
     close_hits.reserve(n_hits);
     std::vector<float> distances;
     distances.reserve(n_hits);
