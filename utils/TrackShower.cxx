@@ -3,7 +3,7 @@
 
 #include "TrackShower.h"
 
-namespace argo {
+namespace argoutils {
 
   TrackShower::TrackShower(){
     _shower_prin_eig = 0.995;

@@ -25,7 +25,7 @@
    doxygen documentation!
  */
 
-namespace argo{
+namespace argoutils{
   class TrackShower{
 
 

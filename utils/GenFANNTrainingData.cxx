@@ -12,7 +12,7 @@
 // #include "ClusterRecoUtil/Alg/ClusterParamsAlg.h"
 
 
-namespace larlite {
+namespace argoutils {
 
   bool GenFANNTrainingData::initialize() {
 
@@ -57,7 +57,7 @@ namespace larlite {
     return true;
   }
   
-  bool GenFANNTrainingData::analyze(storage_manager* storage) {
+  bool GenFANNTrainingData::analyze(::larlite::storage_manager* storage) {
   
     //
     // Do your event-by-event analysis here. This function is called for 
@@ -78,7 +78,7 @@ namespace larlite {
 
     // This module requires both the cluster data and the mctruth data
     // check for both and only proceed if both exists
-    auto ev_truth = storage->get_data<event_mctruth>("generator");
+    auto ev_truth = storage->get_data<::larlite::event_mctruth>("generator");
     if (ev_truth -> size() == 0) {
       std::cout << "No mctruth info available!\n";
       exit(-1);
@@ -88,7 +88,7 @@ namespace larlite {
     // Get the list of particles and find the primary particle (mother == 0):
     auto particles = ev_truth -> front().GetParticles();
 
-    mcpart primary;
+    ::larlite::mcpart primary;
     for (auto & part : particles){
       // std::cout << "ID is " << part.TrackId() 
       // << ", Pdg is: " << part.PdgCode() 
@@ -150,7 +150,7 @@ namespace larlite {
 
     // Find the biggest cluster:
     ::cluster::cluster_params * mainCluster = 0;
-    int current_hits = 0;
+    size_t current_hits = 0;
     for ( auto & clust : clusterVec){
       alg.FillParams(clust);
       // std::cout << "This plane is " << clust.Plane() << "\n";

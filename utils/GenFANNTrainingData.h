@@ -23,12 +23,12 @@
 #include "TH1F.h"
 #include "TCanvas.h"
 
-namespace larlite {
+namespace argoutils {
   /**
      \class GenFANNTrainingData
      User custom analysis class made by SHELL_USER_NAME
    */
-  class GenFANNTrainingData : public ana_base{
+  class GenFANNTrainingData : public ::larlite::ana_base{
   
   public:
 
@@ -48,7 +48,7 @@ namespace larlite {
     /** IMPLEMENT in GenFANNTrainingData.cc! 
         Analyze a data event-by-event  
     */
-    virtual bool analyze(storage_manager* storage);
+    virtual bool analyze(::larlite::storage_manager* storage);
 
     /** IMPLEMENT in GenFANNTrainingData.cc! 
         Finalize method to be called after all events processed.
