@@ -18,6 +18,7 @@
 #include "Analysis/ana_base.h"
 #include "ClusterRecoUtil/Base/CRUHelper.h"
 #include "ClusterRecoUtil/Alg/DefaultParamsAlg.h"
+#include "utils/TrackShower.h"
 
 namespace argofilter {
 /**
@@ -51,9 +52,15 @@ public:
 
 protected:
 
+  // Parameters:
+  size_t _min_hits;
+
   std::string _input_producer;
   ::cluster::DefaultParamsAlg _params_alg;
   ::cluster::CRUHelper _cru_helper;
+
+  argoutils::TrackShower ts;
+
 
 };
 }

@@ -14,6 +14,18 @@ bool ShowerFilter::initialize() {
   // here is a good place to create one on the heap (i.e. "new TH1D").
   //
 
+  // Initialize the neural network for the track/shower separation
+  std::string path = getenv("LARLITE_USERDEVDIR");
+  path.append("/argoneut_electrons/utils/fann_training/trackShowerAnn.dat");
+  ts.setFannFileName(path);
+  //ts.setFannFileName("/uboone/app/users/npereira/larlite/UserDev/argoneut_electrons/utils/fann_training/trackShowerAnn.dat") ;
+
+  // ts.setFannFileName("/Users/ah673/WorkArea/Root6LArLite/UserDev/Argoneut/utils/fann_training/trackShowerAnn.dat") ;
+  ts.init();
+
+  _input_producer = "ccMergedFinal";
+  _min_hits = 100;
+
   return true;
 }
 
@@ -57,11 +69,24 @@ bool ShowerFilter::analyze(::larlite::storage_manager* storage) {
 
 
   for (auto & clust : params_vec) {
+
+    // skip non collection clusters
+    if (clust.plane_id.Plane != 1)
+      continue;
+
+    // Skip clusters that are too small:
+    if (clust.hit_vector.size() < _min_hits)
+      continue;
+
     _params_alg.FillParams(clust);
-    
+
+    if (ts.trackOrShower(clust) == argoutils::TrackShower::kShower ) {
+      return true;
+    }
+
   }
 
-  return true;
+  return false;
 }
 
 bool ShowerFilter::finalize() {

@@ -14,6 +14,9 @@ OBJECTS = $(SOURCES:.cxx=.o)
 INCFLAGS  = -I.                       #Include itself
 INCFLAGS += $(shell larlite-config --includes)
 INCFLAGS += $(shell recotool-config --includes)
+INCFLAGS += -I$(LARLITE_BASEDIR)/UserDev/argoneut_electrons
+
+CINTFLAGS += -p
 
 # platform-specific options
 OSNAME          = $(shell uname -s)
@@ -25,6 +28,11 @@ include $(LARLITE_BASEDIR)/Makefile/Makefile.${OSNAME}
 
 # call the common GNUmakefile
 LDFLAGS += $(shell larlite-config --libs)
+LDFLAGS += -L$(LARLITE_LIBDIR) -lRecoTool_ClusterRecoUtil
+LDFLAGS += -L$(LARLITE_LIBDIR) -lRecoTool_ClusterRecoUtilAlg
+LDFLAGS += -L$(LARLITE_LIBDIR) -largoneut_electrons_utils
+
+
 include $(LARLITE_BASEDIR)/Makefile/GNUmakefile.CORE
 
 
