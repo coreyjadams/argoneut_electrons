@@ -39,19 +39,19 @@ namespace cmtool {
     virtual ~CBAlgoMergeInline(){};
  
     /**
-       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       Core function: given the cluster_params input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
-                      const ::cluster::ClusterParamsAlg &cluster2);
+    virtual bool Bool(const ::cluster::cluster_params &cluster1,
+                      const ::cluster::cluster_params &cluster2);
 
 
 
-    float getAverageDist(const ::cluster::ClusterParamsAlg &cluster1,
-                         const ::cluster::ClusterParamsAlg &cluster2);
+    float getAverageDist(const ::cluster::cluster_params &cluster1,
+                         const ::cluster::cluster_params &cluster2);
 
-    float getBinnedDist (const ::cluster::ClusterParamsAlg &cluster1,
-                         const ::cluster::ClusterParamsAlg &cluster2);
+    float getBinnedDist (const ::cluster::cluster_params &cluster1,
+                         const ::cluster::cluster_params &cluster2);
 
     void SetMaxAverageMinDistance(float d){_max_average_min_distance = d;}
     void SetUseAllHits(bool b){_use_all_hits = b;}

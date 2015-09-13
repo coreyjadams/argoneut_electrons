@@ -16,7 +16,8 @@
 #define LARLITE_DROPBADVERTCLUSTERS_H
 
 #include "Analysis/ana_base.h"
-#include "ClusterRecoUtil/CRUHelper.h"
+#include "ClusterRecoUtil/Base/CRUHelper.h"
+#include "ClusterRecoUtil/Alg/DefaultParamsAlg.h"
 
 namespace larlite {
   /**
@@ -51,13 +52,14 @@ namespace larlite {
     void SetInputProducer(std::string s){_input_producer = s;}
     void SetOutputProducer(std::string s){_output_producer = s;}
 
-    bool isBadVertCluster(::cluster::ClusterParamsAlg &cluster);
+    bool isBadVertCluster(::cluster::cluster_params &cluster);
 
   protected:
     std::string _input_producer;
     std::string _output_producer;
 
     ::cluster::CRUHelper helper;
+    ::cluster::DefaultParamsAlg _params_alg;
 
   };
 }

@@ -38,15 +38,15 @@ namespace cmtool {
     virtual ~CBAlgoMergeSingleToBig(){};
  
     /**
-       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       Core function: given the cluster_params input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
-                      const ::cluster::ClusterParamsAlg &cluster2);
+    virtual bool Bool(const ::cluster::cluster_params &cluster1,
+                      const ::cluster::cluster_params &cluster2);
 
 
-    bool isContainedBy(const ::cluster::ClusterParamsAlg &cluster1,
-                       const ::cluster::ClusterParamsAlg &cluster2);
+    bool isContainedBy(const ::cluster::cluster_params &cluster1,
+                       const ::cluster::cluster_params &cluster2);
 
     void SetMaxDistance(float d){_max_distance = d;}
     void SetMaxAverageDistance(float d){_max_average_distance = d;}

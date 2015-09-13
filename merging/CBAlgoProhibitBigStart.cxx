@@ -25,8 +25,8 @@ namespace cmtool {
 
   
   bool CBAlgoProhibitBigStart::Bool(
-      const ::cluster::ClusterParamsAlg &cluster1,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster1,
+      const ::cluster::cluster_params &cluster2)
   {
 
     // This algorithm probihits merging if a cluster is too close to the start point of the bigger cluster
@@ -34,17 +34,17 @@ namespace cmtool {
     // Looks at every point of the other cluster.
 
     // if both clusters are below the minimum number of hits, don't do this;
-    if (cluster1.GetParams().N_Hits < _min_hits &&
-        cluster2.GetParams().N_Hits < _min_hits){
+    if (cluster1.N_Hits < _min_hits &&
+        cluster2.N_Hits < _min_hits){
       return false;
     }
 
     // std::cout << "min sep is " << _min_separation << std::endl;
 
     // Find the bigger cluster: 
-    if (cluster1.GetParams().N_Hits > cluster2.GetParams().N_Hits){
-      auto start_point = cluster1.GetParams().start_point;
-      larutil::PxPoint alt_start_point = alt_start(cluster1.GetHitVector());
+    if (cluster1.N_Hits > cluster2.N_Hits){
+      auto start_point = cluster1.start_point;
+      larutil::PxPoint alt_start_point = alt_start(cluster1.hit_vector);
       if (closestApproach(start_point, cluster2) < _min_separation){
         // std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t 
                   // << "in plane " << cluster1.Plane() << " -- dist " << closestApproach(start_point, cluster1) << std::endl;
@@ -57,8 +57,8 @@ namespace cmtool {
       }
     }
     else{
-      auto start_point = cluster2.GetParams().start_point;
-      larutil::PxPoint alt_start_point = alt_start(cluster2.GetHitVector());
+      auto start_point = cluster2.start_point;
+      larutil::PxPoint alt_start_point = alt_start(cluster2.hit_vector);
       if (closestApproach(start_point, cluster1) < _min_separation){
         // std::cout << "Prohibiting around other point " << start_point.w << ", " << start_point.t 
                   // << "in plane " << cluster1.Plane() << " -- dist " << closestApproach(start_point, cluster1) << std::endl;
@@ -77,12 +77,12 @@ namespace cmtool {
 
   float CBAlgoProhibitBigStart::closestApproach(
       larutil::PxPoint start_point,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster2)
   {
 
 
     float minDist(9999.0);
-    for (auto & hit : cluster2.GetHitVector()){
+    for (auto & hit : cluster2.hit_vector){
       float thisDist = sqrt(pow(hit.w - start_point.w,2 ) + pow(hit.t - start_point.t, 2));
       if ( thisDist < minDist){
         minDist = thisDist;

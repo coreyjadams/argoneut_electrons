@@ -35,11 +35,11 @@ namespace cmtool {
     virtual ~CBAlgoProhibitBigToBig(){};
  
     /**
-       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       Core function: given the cluster_params input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
-                      const ::cluster::ClusterParamsAlg &cluster2);
+    virtual bool Bool(const ::cluster::cluster_params &cluster1,
+                      const ::cluster::cluster_params &cluster2);
 
     void SetMaxHits(unsigned int n){_max_hits = n;}
 

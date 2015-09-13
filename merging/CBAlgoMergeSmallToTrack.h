@@ -2,7 +2,7 @@
  * \file CBAlgoMergeSmallToTrack.h
  *
  * \ingroup CMTool
- * 
+ *
  * \brief Class def header for a class CBAlgoMergeSmallToTrack
  *
  * @author Corey Adams
@@ -20,34 +20,34 @@
 
 
 namespace cmtool {
-  /**
-     \class CMalgoPolyContain
-     Merge Polygons if the two overlap even partially
-  */
-  class CBAlgoMergeSmallToTrack : public CBoolAlgoBase{
-    
-  public:
-    
+/**
+   \class CMalgoPolyContain
+   Merge Polygons if the two overlap even partially
+*/
+class CBAlgoMergeSmallToTrack : public CBoolAlgoBase {
+
+public:
+
     /// Default constructor
     CBAlgoMergeSmallToTrack();
-    
+
     /// Default destructor
-    virtual ~CBAlgoMergeSmallToTrack(){};
- 
+    virtual ~CBAlgoMergeSmallToTrack() {};
+
     /**
-       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       Core function: given the cluster_params input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
-		      const ::cluster::ClusterParamsAlg &cluster2);
+    virtual bool Bool(const ::cluster::cluster_params &cluster1,
+                      const ::cluster::cluster_params &cluster2);
 
     void SetDebug(bool debug) { _debug = debug; }
 
 
-    bool isTrack(const ::cluster::ClusterParamsAlg &cluster);
-    bool isSmall(const ::cluster::ClusterParamsAlg &cluster);
-    float closestApproach(const ::cluster::ClusterParamsAlg &cluster1,
-                          const ::cluster::ClusterParamsAlg &cluster2);
+    bool isTrack(const ::cluster::cluster_params &cluster);
+    bool isSmall(const ::cluster::cluster_params &cluster);
+    float closestApproach(const ::cluster::cluster_params &cluster1,
+                          const ::cluster::cluster_params &cluster2);
 
     /// Setter for track-like parameters
     void SetMinHits(size_t mh)          { _min_hits           = mh; }
@@ -62,13 +62,13 @@ namespace cmtool {
     void SetMaxCharge(float mc) {_max_charge = mc;}
     void SetMaxLength(float ml) {_max_length = ml;}
     void SetMaxWidth(float mw)  {_max_width  = mw;}
-    
+
     // Setter for merging parameters
-    void SetMaxClosestDist(float mcd)  {_max_closest_dist=mcd;} 
-    void SetMinDistToStart(float mdts) {_min_dist_to_start=mdts;} 
-    void SetMinDistToEnd(float mdte)   {_min_dist_to_end=mdte;} 
-  private:
-    
+    void SetMaxClosestDist(float mcd)  {_max_closest_dist = mcd;}
+    void SetMinDistToStart(float mdts) {_min_dist_to_start = mdts;}
+    void SetMinDistToEnd(float mdte)   {_min_dist_to_end = mdte;}
+private:
+
     // Criteria for a cluster to be a "track"
     unsigned int   _min_hits;
     float _min_mod_hit_dens;
@@ -84,7 +84,7 @@ namespace cmtool {
     float _max_length;
     float _max_width;
 
-    // Criteria to merge a small cluster into a track: 
+    // Criteria to merge a small cluster into a track:
     float _max_closest_dist;
     float _min_dist_to_start;
     float _min_dist_to_end;
@@ -92,9 +92,9 @@ namespace cmtool {
 
     bool _debug;
     // size_t _min_hits;
-  };
+};
 }
 
 #endif
-/** @} */ // end of doxygen group 
+/** @} */ // end of doxygen group
 

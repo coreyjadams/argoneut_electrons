@@ -3,7 +3,6 @@
 
 #include "CBAlgoMergeStartToEnd.h"
 #include "math.h"
-#include "../../RecoTool/ClusterRecoUtil/ClusterParamsAlg.h"
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
 
@@ -11,17 +10,17 @@
 namespace cmtool {
 
 //defining best_slope
-float CBAlgoMergeStartToEnd::best_slope (const ::cluster::ClusterParamsAlg & cluster) {
+float CBAlgoMergeStartToEnd::best_slope (const ::cluster::cluster_params & cluster) {
 
-  auto hit_v = cluster.GetHitVector() ;
+  auto hit_v = cluster.hit_vector ;
   float diff_x_sq = 0;
   float diff_x_by_diff_y = 0;
-  float mean_x = cluster.GetParams().mean_x;
-  float mean_y = cluster.GetParams().mean_y;
+  float mean_x = cluster.mean_x;
+  float mean_y = cluster.mean_y;
   float cluster_slope = 0;
 
     for(auto const& hit_index : hit_v) {
-      if (hit_index.charge > 0.10 * cluster.GetParams().sum_charge)
+      if (hit_index.charge > 0.10 * cluster.sum_charge)
         diff_x_by_diff_y += (hit_index.w - mean_x) * (hit_index.t - mean_y) ;
         diff_x_sq += pow((hit_index.w - mean_x), 2) ;
 
@@ -34,14 +33,14 @@ float CBAlgoMergeStartToEnd::best_slope (const ::cluster::ClusterParamsAlg & clu
 
 //defining getShortestDist
 float CBAlgoMergeStartToEnd::getShortestDist(
-      const ::cluster::ClusterParamsAlg &cluster1,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster1,
+      const ::cluster::cluster_params &cluster2)
   {
 
 
     float minDist(9999.0);
-    for (auto & hit : cluster2.GetHitVector()){
-      for (auto & otherHit : cluster1.GetHitVector()){
+    for (auto & hit : cluster2.hit_vector){
+      for (auto & otherHit : cluster1.hit_vector){
         float thisDist = sqrt(pow(hit.w - otherHit.w,2 ) + pow(hit.t - otherHit.t, 2));
         if ( thisDist < minDist){
           minDist = thisDist;
@@ -52,10 +51,10 @@ float CBAlgoMergeStartToEnd::getShortestDist(
   }
 
   //defining touching
-  bool CBAlgoMergeStartToEnd::touching (const ::cluster::ClusterParamsAlg & cluster1, const ::cluster::ClusterParamsAlg & cluster2) {
+  bool CBAlgoMergeStartToEnd::touching (const ::cluster::cluster_params & cluster1, const ::cluster::cluster_params & cluster2) {
 
-  auto hit_v_1 = cluster1.GetHitVector() ;
-  auto hit_v_2 = cluster2.GetHitVector() ;
+  auto hit_v_1 = cluster1.hit_vector ;
+  auto hit_v_2 = cluster2.hit_vector ;
   bool touch = false;  
 
     for(auto const& hit_index_1 : hit_v_1) {
@@ -79,38 +78,36 @@ float CBAlgoMergeStartToEnd::getShortestDist(
   
 
   bool CBAlgoMergeStartToEnd::Bool(
-      const ::cluster::ClusterParamsAlg &cluster1,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster1,
+      const ::cluster::cluster_params &cluster2)
   {
 
-    ::cluster::ClusterParamsAlg poly1 = cluster1;
-    ::cluster::ClusterParamsAlg poly2 = cluster2;
-    poly1.FillPolygon();
-    poly2.FillPolygon();
-    auto overlap = poly1.GetParams().PolyObject.PolyOverlap(poly2.GetParams().PolyObject);
-    auto overlapPoly = Polygon2D(poly1.GetParams().PolyObject,poly2.GetParams().PolyObject);
+    // ::cluster::cluster_params poly1 = cluster1;
+    // ::cluster::cluster_params poly2 = cluster2;
+    auto overlap = cluster1.PolyObject.PolyOverlap(cluster2.PolyObject);
+    auto overlapPoly = Polygon2D(cluster1.PolyObject,cluster2.PolyObject);
     
     float _max_distance = 1; 
-    float start_to_end = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().end_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().end_point.t), 2), 0.5); 
-    float start_to_start = pow(pow((cluster1.GetParams().start_point.w - cluster2.GetParams().start_point.w), 2) + pow((cluster1.GetParams().start_point.t - cluster2.GetParams().start_point.t), 2), 0.5); 
-    float end_to_end = pow(pow((cluster1.GetParams().end_point.w - cluster2.GetParams().end_point.w), 2) + pow((cluster1.GetParams().end_point.t - cluster2.GetParams().end_point.t), 2), 0.5); 
+    float start_to_end = pow(pow((cluster1.start_point.w - cluster2.end_point.w), 2) + pow((cluster1.start_point.t - cluster2.end_point.t), 2), 0.5); 
+    float start_to_start = pow(pow((cluster1.start_point.w - cluster2.start_point.w), 2) + pow((cluster1.start_point.t - cluster2.start_point.t), 2), 0.5); 
+    float end_to_end = pow(pow((cluster1.end_point.w - cluster2.end_point.w), 2) + pow((cluster1.end_point.t - cluster2.end_point.t), 2), 0.5); 
     float slope1 = best_slope(cluster1) ;
     float slope2 = best_slope(cluster2) ;
     // angle between in degrees
     float angle_between = atan(abs((slope1 - slope2)/(1 + slope1*slope2))) * 180/M_PI ;
 
     
-    auto st = cluster1.GetParams().start_point ;
+    auto st = cluster1.start_point ;
     std::pair<double,double> start(st.w, st.t) ;
 
  
     // do not merge small clusters -- "one hit wonders"
-    if (cluster1.GetNHits() < 3 && cluster2.GetNHits() < 3)
+    if (cluster1.hit_vector.size() < 3 && cluster2.hit_vector.size() < 3)
       return false ;
 
     else
       // if clusters are not pointing in the same direction, do not merge
-      if (cluster1.GetParams().direction != cluster2.GetParams().direction)
+      if (cluster1.direction != cluster2.direction)
         return false ;
 
       // does not merge vertices
@@ -143,7 +140,7 @@ float CBAlgoMergeStartToEnd::getShortestDist(
         return true ;
 
       //merge polygons that overlap a lot
-      else if (overlapPoly.Area() > 0.3 * poly1.GetParams().PolyObject.Area())
+      else if (overlapPoly.Area() > 0.3 * cluster1.PolyObject.Area())
         return true ;
 
       // does not merge clusters whose overlapping area is small

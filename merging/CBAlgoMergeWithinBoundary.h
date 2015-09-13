@@ -2,7 +2,7 @@
  * \file CBAlgoMergeWithinBoundary.h
  *
  * \ingroup CMTool
- * 
+ *
  * \brief Class def header for a class CBAlgoMergeWithinBoundary
  *
  * @author pandacruzer
@@ -26,36 +26,36 @@
 
 namespace cmtool {
 
-	class CBAlgoMergeWithinBoundary : public CBoolAlgoBase{
+class CBAlgoMergeWithinBoundary : public CBoolAlgoBase {
 
-	public:
+public:
 
-	  /// Default constructor
-	  CBAlgoMergeWithinBoundary();
+  /// Default constructor
+  CBAlgoMergeWithinBoundary();
 
-	  /// Default destructor
-	  virtual ~CBAlgoMergeWithinBoundary(){}
+  /// Default destructor
+  virtual ~CBAlgoMergeWithinBoundary() {}
 
-      virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
-	      const ::cluster::ClusterParamsAlg &cluster2);
+  virtual bool Bool(const ::cluster::cluster_params &cluster1,
+                    const ::cluster::cluster_params &cluster2);
 
-  	  bool isBig(const ::cluster::ClusterParamsAlg &cluster);
-      bool isSmall(const ::cluster::ClusterParamsAlg &cluster);
-      //float* inBoundary(const ::cluster::ClusterParamsAlg &cluster);
-      float closestApproach(const ::cluster::ClusterParamsAlg &cluster1,
-                          const ::cluster::ClusterParamsAlg &cluster2);
+  bool isBig(const ::cluster::cluster_params &cluster);
+  bool isSmall(const ::cluster::cluster_params &cluster);
+  //float* inBoundary(const ::cluster::cluster_params &cluster);
+  float closestApproach(const ::cluster::cluster_params &cluster1,
+                        const ::cluster::cluster_params &cluster2);
 
-	private:
+private:
 
-  	float _max_length;
-  	float _min_length;
-  	float _max_hits;
-  	float _min_hits;
-    float _max_dist;
-    float _max_ep;
+  float _max_length;
+  float _min_length;
+  float _max_hits;
+  float _min_hits;
+  float _max_dist;
+  float _max_ep;
 
-	};
+};
 }
 #endif
-/** @} */ // end of doxygen group 
+/** @} */ // end of doxygen group
 

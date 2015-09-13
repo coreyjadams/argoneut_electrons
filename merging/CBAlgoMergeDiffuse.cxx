@@ -13,10 +13,10 @@ namespace cmtool {
 
   
   bool CBAlgoMergeDiffuse::Bool(
-      const ::cluster::ClusterParamsAlg &cluster1,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster1,
+      const ::cluster::cluster_params &cluster2)
   {
-    if (cluster1.GetNHits() <= cluster2.GetNHits()){
+    if (cluster1.hit_vector.size() <= cluster2.hit_vector.size()){
       if (getBinnedDist(cluster1, cluster2) > _hit_fraction)
         // std::cout << "Merging!\n";
         return true;
@@ -31,8 +31,8 @@ namespace cmtool {
   }
 
   float CBAlgoMergeDiffuse::getBinnedDist(
-      const ::cluster::ClusterParamsAlg &cluster1,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster1,
+      const ::cluster::cluster_params &cluster2)
   {
     // This function finds the closest hit for each other hit, and bins
     // them into a quasi histogram to see what fraction are within the
@@ -42,16 +42,16 @@ namespace cmtool {
     // and the cluster to merge to is not.
 
     const float wirePitch = 0.4;
-    if (cluster1.GetParams().hit_density_2D > 1) return 0;
-    if (cluster1.GetParams().hit_density_2D == 0) return 0;
+    if (cluster1.hit_density_2D > 1) return 0;
+    if (cluster1.hit_density_2D == 0) return 0;
 
     std::vector<float> n_hits_by_dist;
     // Units of this are wire spacing in argoneut: 4mm.
     // Want to be able to bin out to a few centimeters.  Use 10 spots (4cm)
     n_hits_by_dist.resize(10);
-    for (auto & hit : cluster1.GetHitVector()){
+    for (auto & hit : cluster1.hit_vector){
       float minDist(9999.0);
-      for (auto & otherHit : cluster2.GetHitVector()){
+      for (auto & otherHit : cluster2.hit_vector){
         float thisDist = sqrt(pow(hit.w - otherHit.w,2 ) + pow(hit.t - otherHit.t, 2));
         if ( thisDist < minDist){
           minDist = thisDist;
@@ -71,7 +71,7 @@ namespace cmtool {
     }
 
     // if (n_good_hits > 1){
-    //   std::cout << n_good_hits << " of " << cluster1.GetNHits() << " were good.";
+    //   std::cout << n_good_hits << " of " << cluster1.hit_vector.size() << " were good.";
     //   std::cout << "(Plane " << cluster1.Plane() << ", start pos: "
     //             << cluster1.GetParams().start_point.w << ", " << cluster1.GetParams().start_point.t << ")\n"
     //             << "cluster1 rms: (" << cluster1.GetParams().rms_x << ", " << cluster1.GetParams().rms_y << ")\n"
@@ -86,7 +86,7 @@ namespace cmtool {
     //   }
     // }
 
-    return (float) n_good_hits/cluster1.GetNHits();
+    return (float) n_good_hits/cluster1.hit_vector.size();
 
   }
 

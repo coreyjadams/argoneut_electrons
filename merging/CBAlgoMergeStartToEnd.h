@@ -20,9 +20,9 @@
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
 #include "LArUtil/GeometryUtilities.h"
-#include "DataFormat/storage_manager.h"
-#include "DataFormat/cluster.h"
-#include "DataFormat/hit.h"
+// #include "DataFormat/storage_manager.h"
+// #include "DataFormat/cluster.h"
+// #include "DataFormat/hit.h"
 
 
 namespace cmtool {
@@ -41,22 +41,22 @@ namespace cmtool {
     virtual ~CBAlgoMergeStartToEnd(){};
  
     /**
-       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       Core function: given the cluster_params input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
-                      const ::cluster::ClusterParamsAlg &cluster2);
+    virtual bool Bool(const ::cluster::cluster_params &cluster1,
+                      const ::cluster::cluster_params &cluster2);
 
-    float best_slope( const ::cluster::ClusterParamsAlg & c) ;
+    float best_slope( const ::cluster::cluster_params & c) ;
 
     float getShortestDist(
-           const ::cluster::ClusterParamsAlg &cluster1,
-           const ::cluster::ClusterParamsAlg &cluster2); 
+           const ::cluster::cluster_params &cluster1,
+           const ::cluster::cluster_params &cluster2); 
 
-    bool touching (const ::cluster::ClusterParamsAlg & cluster1, const ::cluster::ClusterParamsAlg & cluster2); 
+    bool touching (const ::cluster::cluster_params & cluster1, const ::cluster::cluster_params & cluster2); 
 
 
-    ::larlite::storage_manager* storage ;
+    // ::larlite::storage_manager* storage ;
 
   };
 }

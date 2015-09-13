@@ -36,8 +36,8 @@ namespace cmtool {
 
   
   bool CBAlgoMergeSmallToTrack::Bool(
-      const ::cluster::ClusterParamsAlg &cluster1,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster1,
+      const ::cluster::cluster_params &cluster2)
   {
 
     // Figure out which cluster is the track and which is the small
@@ -45,8 +45,8 @@ namespace cmtool {
 
     // return true;
 
-    const ::cluster::ClusterParamsAlg * track;
-    const ::cluster::ClusterParamsAlg * small;
+    const ::cluster::cluster_params * track;
+    const ::cluster::cluster_params * small;
 
     if (isTrack(cluster1)){
       if (isTrack(cluster2)){
@@ -97,24 +97,24 @@ namespace cmtool {
 // Determine is a cluster is a track based on some parameters.
 
   bool CBAlgoMergeSmallToTrack::isTrack(
-    const ::cluster::ClusterParamsAlg &cluster)
+    const ::cluster::cluster_params &cluster)
   {
 
-      size_t N_Hits = cluster.GetHitVector().size();
-      auto start_point = cluster.GetParams().start_point;
-      // double angle_2d = cluster.GetParams().angle_2d;
-      // double opening_angle = cluster.GetParams().opening_angle;
-      Polygon2D PolyObject = cluster.GetParams().PolyObject;
-      double length = cluster.GetParams().length;
-      double width = cluster.GetParams().width;
-      double plane = cluster.GetParams().start_point.plane;
-      double start_x = cluster.GetParams().start_point.w;
-      double start_y = cluster.GetParams().start_point.t;
-      double end_x = cluster.GetParams().end_point.w;
-      double end_y = cluster.GetParams().end_point.t;
-      double ep = cluster.GetParams().eigenvalue_principal;
-      double hit_density = cluster.GetParams().modified_hit_density;
-      double mhit_wire = cluster.GetParams().multi_hit_wires;
+      size_t N_Hits = cluster.hit_vector.size();
+      auto start_point = cluster.start_point;
+      // double angle_2d = cluster.angle_2d;
+      // double opening_angle = cluster.opening_angle;
+      Polygon2D PolyObject = cluster.PolyObject;
+      double length = cluster.length;
+      double width = cluster.width;
+      double plane = cluster.start_point.plane;
+      double start_x = cluster.start_point.w;
+      double start_y = cluster.start_point.t;
+      double end_x = cluster.end_point.w;
+      double end_y = cluster.end_point.t;
+      double ep = cluster.eigenvalue_principal;
+      double hit_density = cluster.modified_hit_density;
+      double mhit_wire = cluster.multi_hit_wires;
 
       if( ((N_Hits > _min_hits) &&
           (length > _min_length)  &&
@@ -159,23 +159,23 @@ namespace cmtool {
 // Determine if a cluster is small enough
 
   bool CBAlgoMergeSmallToTrack::isSmall(
-    const ::cluster::ClusterParamsAlg &cluster)
+    const ::cluster::cluster_params &cluster)
   {
 
-      size_t N_Hits = cluster.GetHitVector().size();
-      auto start_point = cluster.GetParams().start_point;
-      // double angle_2d = cluster.GetParams().angle_2d;
-      // double opening_angle = cluster.GetParams().opening_angle;
-      Polygon2D PolyObject = cluster.GetParams().PolyObject;
-      double length = cluster.GetParams().length;
-      double width = cluster.GetParams().width;
-      // double charge = cluster.GetParams().sum_charge;
-      double plane = cluster.GetParams().start_point.plane;
-      double start_x = cluster.GetParams().start_point.w;
-      double start_y = cluster.GetParams().start_point.t;
-      double end_x = cluster.GetParams().end_point.w;
-      double end_y = cluster.GetParams().end_point.t;
-      double hit_density = cluster.GetParams().modified_hit_density;
+      size_t N_Hits = cluster.hit_vector.size();
+      auto start_point = cluster.start_point;
+      // double angle_2d = cluster.angle_2d;
+      // double opening_angle = cluster.opening_angle;
+      Polygon2D PolyObject = cluster.PolyObject;
+      double length = cluster.length;
+      double width = cluster.width;
+      // double charge = cluster.sum_charge;
+      double plane = cluster.start_point.plane;
+      double start_x = cluster.start_point.w;
+      double start_y = cluster.start_point.t;
+      double end_x = cluster.end_point.w;
+      double end_y = cluster.end_point.t;
+      double hit_density = cluster.modified_hit_density;
 
 
       if( (N_Hits < _max_hits) &&
@@ -216,25 +216,25 @@ namespace cmtool {
   }
 
   float CBAlgoMergeSmallToTrack::closestApproach(
-    const ::cluster::ClusterParamsAlg &cluster1,
-    const ::cluster::ClusterParamsAlg &cluster2)
+    const ::cluster::cluster_params &cluster1,
+    const ::cluster::cluster_params &cluster2)
   {
 
-      unsigned int npoints1 = cluster1.GetParams().PolyObject.Size();
-      unsigned int npoints2 = cluster2.GetParams().PolyObject.Size();
+      unsigned int npoints1 = cluster1.PolyObject.Size();
+      unsigned int npoints2 = cluster2.PolyObject.Size();
       float bound = 10000;
 
       //loop over points on first polygon
       for(unsigned int i = 0; i < npoints1; ++i){
 
-        float pt1w = cluster1.GetParams().PolyObject.Point(i).first;
-        float pt1t = cluster1.GetParams().PolyObject.Point(i).second;
+        float pt1w = cluster1.PolyObject.Point(i).first;
+        float pt1t = cluster1.PolyObject.Point(i).second;
         
         //loop over points on second polygon
         for(unsigned int j = 0; j < npoints2; ++j){
 
-          float pt2w = cluster2.GetParams().PolyObject.Point(j).first;
-          float pt2t = cluster2.GetParams().PolyObject.Point(j).second;
+          float pt2w = cluster2.PolyObject.Point(j).first;
+          float pt2t = cluster2.PolyObject.Point(j).second;
           float dist = pow((pow(pt2w-pt1w,2)+pow(pt2t-pt1t,2)),0.5);
           
           if(_debug){

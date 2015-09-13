@@ -23,13 +23,13 @@ namespace cmtool {
 
   
   bool CBAlgoProhibitBigToBig::Bool(
-      const ::cluster::ClusterParamsAlg &cluster1,
-      const ::cluster::ClusterParamsAlg &cluster2)
+      const ::cluster::cluster_params &cluster1,
+      const ::cluster::cluster_params &cluster2)
   {
 
     // Determine if this combination is exactly one cluster with 
     // multiple hits and one cluster with a single hit:
-    if (cluster1.GetNHits() > _max_hits && cluster2.GetNHits() > _max_hits){
+    if (cluster1.hit_vector.size() > _max_hits && cluster2.hit_vector.size() > _max_hits){
       return true;
     }
     return false;

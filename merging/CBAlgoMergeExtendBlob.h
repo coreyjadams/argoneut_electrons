@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
+// #include "ClusterRecoUtil/Base/ClusterParams.h"
 #include "LArUtil/GeometryUtilities.h"
 
 #include "utils/TrackShower.h"
@@ -38,26 +39,26 @@ namespace cmtool {
     virtual ~CBAlgoMergeExtendBlob(){};
  
     /**
-       Core function: given the ClusterParamsAlg input, return whether a cluster should be
+       Core function: given the cluster_params input, return whether a cluster should be
        merged or not.
     */
-    virtual bool Bool(const ::cluster::ClusterParamsAlg &cluster1,
-                      const ::cluster::ClusterParamsAlg &cluster2);
+    virtual bool Bool(const ::cluster::cluster_params &cluster1,
+                      const ::cluster::cluster_params &cluster2);
 
 
 
-    bool isInFrontOf(          const ::cluster::ClusterParamsAlg &cluster1,
-                               const ::cluster::ClusterParamsAlg &cluster2);
+    bool isInFrontOf(          const ::cluster::cluster_params &cluster1,
+                               const ::cluster::cluster_params &cluster2);
 
-    float getClosestApproachTo(const ::cluster::ClusterParamsAlg &cluster1,
-                               const ::cluster::ClusterParamsAlg &cluster2);
+    float getClosestApproachTo(const ::cluster::cluster_params &cluster1,
+                               const ::cluster::cluster_params &cluster2);
 
-    float getSeparation(       const ::cluster::ClusterParamsAlg &cluster1,
-                               const ::cluster::ClusterParamsAlg &cluster2);
+    float getSeparation(       const ::cluster::cluster_params &cluster1,
+                               const ::cluster::cluster_params &cluster2);
 
-    float getLength(           const ::cluster::ClusterParamsAlg &cluster);
+    float getLength(           const ::cluster::cluster_params &cluster);
 
-    float getRMSAlongAxis(     const ::cluster::ClusterParamsAlg &cluster1);
+    float getRMSAlongAxis(     const ::cluster::cluster_params &cluster1);
 
     void set_principal_ev_cut(float f)      {_principal_ev_cut = f;}
     void set_rms_scale(float f)             {_rms_scale = f;}
