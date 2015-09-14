@@ -59,7 +59,7 @@ protected:
   ::cluster::DefaultParamsAlg _params_alg;
   ::cluster::CRUHelper _cru_helper;
 
-  argoutils::TrackShower ts;
+  ::argoutils::TrackShower ts;
 
 
 };

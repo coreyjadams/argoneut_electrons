@@ -63,6 +63,7 @@ bool ShowerFilter::analyze(::larlite::storage_manager* storage) {
   //  Just look at collection plane for this pass
   //  Require that it pass the FANN cut, and require that there is a nice straight track at the front
 
+  std::cout << "Got here\n";
 
   std::vector<::cluster::cluster_params> params_vec;
   _cru_helper.GenerateParams(storage, _input_producer, params_vec);

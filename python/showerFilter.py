@@ -13,8 +13,8 @@ def main(**args):
 
   my_proc = larlite.ana_processor()
   my_proc.enable_filter(True)
+  my_proc.enable_event_alignment(False)
 
-  print "OK"
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -33,7 +33,7 @@ def main(**args):
       quit()
 
   if args['data_output'] == None:
-      args['data_output'] = "default_event_output.root"
+      args['data_output'] = "default_filter_output.root"
       if args['verbose']:
           print "No event output file selected.  If necessary, output will go to: "
           print "\t"+args['data_output']
