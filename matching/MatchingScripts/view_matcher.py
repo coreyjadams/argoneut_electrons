@@ -39,19 +39,19 @@ match_viewer.SetPrintClusterInfo(True)
 ########################################
 
 
-priority_algo = cmtool.CPAlgoNHits()
+priority_algo = argomatch.CPAlgoNHits()
 priority_algo.SetMinHits(25)
 match_viewer.GetManager().AddPriorityAlgo(priority_algo)
 
-algo_array = cmtool.CFAlgoArray()
+algo_array = argomatch.CFAlgoArray()
 
-#timeAlg = cmtool.CFAlgoTimeOverlap()
+#timeAlg = argomatch.CFAlgoTimeOverlap()
 #timeAlg.SetDebug(False)
 #timeAlg.RequireThreePlanes(False)
 
-showerAlg = cmtool.CFAlgoShowerTimeMatch()
-startAlg = cmtool.CFAlgoMatchStart()
-wireAlg = cmtool.CFAlgoShowerWireMatch()
+showerAlg = argomatch.CFAlgoShowerTimeMatch()
+startAlg = argomatch.CFAlgoMatchStart()
+wireAlg = argomatch.CFAlgoShowerWireMatch()
 
 algo_array.AddAlgo(startAlg)
 

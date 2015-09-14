@@ -8,51 +8,72 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 
-from ROOT import gSystem,TMath
+# from ROOT import gSystem,TMath
 from larlite import larlite as fmwk
 from larlite import larutil
-from recotool import cmtool, showerreco
-from ROOT import calo
+# from recotool import argomatch, showerreco
+# from ROOT import calo
+from ROOT import *
 # from recotool.showerDef import DefaultShowerReco3D
 
 
 
+def getShowerRecoAlgModular():
+  # This function returns the default shower reco module
+  # If you want to extend, customize, or otherwise alter the default
+  # reco (which you should!) it's recommended that you do one of two
+  # things:
+  #   1) Copy this function, and change the lines you need
+  #   2) Use this function as is and replace the modules with the built-in functions
+  #       to ShowerRecoAlgModular
+  # Then, use the return value (alg) in place of ShowerRecoAlg in your python script
+
+  # It should be noted, however, that this "default" set of modules is not yet developed
+  # and if you are developing you ought to be updating it here!
+
+  alg = showerreco.ShowerRecoAlgModular()
+  alg.AddShowerRecoModule(showerreco.Axis3DModule()        )
+  alg.AddShowerRecoModule(showerreco.StartPoint2DModule()  )
+  alg.AddShowerRecoModule(showerreco.StartPoint3DModule()  )
+  alg.AddShowerRecoModule(showerreco.ShowerChargeModule()  )
+
+  alg.PrintModuleList()
+
+  return alg
+
 def DefaultMatch():
 
-    palgo_array = cmtool.CPAlgoArray()
+    palgo_array = argomatch.CPAlgoArray()
     
-    palgo1 = cmtool.CPAlgoNHits()
-    palgo1.SetMinHits(25)
-    
-    # palgo2 = cmtool.CPAlgoIgnoreTracks()
-    
+    palgo1 = argomatch.CPAlgoNHits()
+    palgo1.SetMinHits(60)
+        
     palgo_array.AddAlgo(palgo1)
 
-    algo_array = cmtool.CFAlgoArray()
-    showerAlg  = cmtool.CFAlgoShowerTimeMatch()
-    wireAlg    = cmtool.CFAlgoShowerWireMatch()
-    qualityAlg = cmtool.CFAlgoMatchStart()
-    algo_array.AddAlgo(showerAlg)
+    algo_array = argomatch.CFAlgoArray()
+    wireAlg    = argomatch.CFAlgoShowerWireMatch()
+    timeAlg = argomatch.CFAlgoTimeOverlap()
+    timeAlg.RequireThreePlanes(False)
     algo_array.AddAlgo(wireAlg)
-    algo_array.AddAlgo(qualityAlg)
+    algo_array.AddAlgo(timeAlg)
 
     return palgo_array, algo_array
-
 
 def DefaultShowerReco3D():
     # Create analysis unit
     ana_unit = fmwk.ShowerReco3D()
     
     # Attach shower reco alg
-    sralg = showerreco.ShowerRecoAlg()
-    sralg.Verbose(False)
+    sralg = getShowerRecoAlgModular()
+    sralg.SetDebug()
+    # sralg.Verbose(False)
     # sralg.Verbose(True)
-    sralg.SetUseArea(True)
+    # sralg.SetUseArea(True)
     # Attach calo alg
-    calg = calo.CalorimetryAlg()
-    sralg.CaloAlgo(calg)
+    # calg = calo.CalorimetryAlg()
+    # sralg.CaloAlgo(calg)
     #sralg.SetUseModBox(True)
-    ana_unit.SetShowerAlgo(sralg)
+    ana_unit.AddShowerAlgo(sralg)
 
     # 
     # Attach Matching algorithm
@@ -97,7 +118,7 @@ print  "Finished configuring ana_processor. Start event loop!"
 print
 
 #my_proc.run(0,5)
-my_proc.run()
+my_proc.process_event(2)
 
 sys.exit()
 

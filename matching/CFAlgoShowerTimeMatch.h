@@ -18,13 +18,13 @@
 
 #include "utils/TrackShower.h"
 
-namespace cmtool {
+namespace argomatch {
 /**
    \class CFAlgoShowerTimeMatch
    User implementation for CFloatAlgoBase class
    doxygen documentation!
 */
-class CFAlgoShowerTimeMatch : public CFloatAlgoBase {
+class CFAlgoShowerTimeMatch : public ::cmtool::CFloatAlgoBase {
 
 public:
 

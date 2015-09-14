@@ -9,10 +9,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class cmtool::CFAlgoREPLACENAME+;
-#pragma link C++ class cmtool::CFAlgoShowerTimeMatch+;
-#pragma link C++ class cmtool::CFAlgoMatchStart+;
-#pragma link C++ class cmtool::CFAlgoShowerWireMatch+;
+#pragma link C++ class argomatch::CFAlgoREPLACENAME+;
+#pragma link C++ class argomatch::CFAlgoShowerTimeMatch+;
+#pragma link C++ class argomatch::CFAlgoMatchStart+;
+#pragma link C++ class argomatch::CFAlgoShowerWireMatch+;
 
 
 

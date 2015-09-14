@@ -16,13 +16,13 @@
 
 #include "CMTool/CMToolBase/CFloatAlgoBase.h"
 
-namespace cmtool {
+namespace argomatch {
   /**
      \class CFAlgoREPLACENAME
      User implementation for CFloatAlgoBase class
      doxygen documentation!
   */
-  class CFAlgoREPLACENAME : public CFloatAlgoBase {
+  class CFAlgoREPLACENAME : public ::cmtool::CFloatAlgoBase {
     
   public:
     

@@ -25,23 +25,23 @@ producer = "ccMergedStT4"
 proc = fmwk.ClusterMatcher()
 proc.SetClusterProducer(producer)
 
-#priority_algo = cmtool.CPAlgoPolyArea()
+#priority_algo = argomatch.CPAlgoPolyArea()
 #priority_algo.SetMinArea(1e9)
 
-priority_algo = cmtool.CPAlgoNHits()
+priority_algo = argomatch.CPAlgoNHits()
 priority_algo.SetMinHits(20)
 proc.GetManager().AddPriorityAlgo(priority_algo)
 
-timeAlg = cmtool.CFAlgoTimeOverlap()
+timeAlg = argomatch.CFAlgoTimeOverlap()
 timeAlg.RequireThreePlanes(False)
 timeAlg.SetDebug(False)
 
 
 proc.GetManager().AddMatchAlgo(timeAlg)
 
-#proc.GetManager().DebugMode(cmtool.CMatchManager.kPerIteration)
-#proc.GetManager().DebugMode(cmtool.CMatchManager.kPerAlgoSet)
-#proc.GetManager().DebugMode(cmtool.CMatchManager.kPerMerging)
+#proc.GetManager().DebugMode(argomatch.CMatchManager.kPerIteration)
+#proc.GetManager().DebugMode(argomatch.CMatchManager.kPerAlgoSet)
+#proc.GetManager().DebugMode(argomatch.CMatchManager.kPerMerging)
 
 mgr.add_process(proc)
 

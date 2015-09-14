@@ -3,7 +3,7 @@
 
 #include "CFAlgoREPLACENAME.h"
 
-namespace cmtool {
+namespace argomatch {
 
   //-------------------------------------------------------
   CFAlgoREPLACENAME::CFAlgoREPLACENAME() : CFloatAlgoBase()

@@ -28,11 +28,11 @@ proc = fmwk.ClusterMatcher()
 proc.SetClusterProducer("ccMergedStT4")
 proc.SaveOutputCluster(True)
 
-priority_algo = cmtool.CPAlgoNHits()
+priority_algo = argomatch.CPAlgoNHits()
 priority_algo.SetMinHits(20)
 proc.GetManager().AddPriorityAlgo(priority_algo)
 
-timeAlg = cmtool.CFAlgoTimeOverlap()
+timeAlg = argomatch.CFAlgoTimeOverlap()
 timeAlg.RequireThreePlanes(False)
 timeAlg.SetDebug(False)
 

@@ -3,7 +3,7 @@
 
 #include "CFAlgoMatchStart.h"
 
-namespace cmtool {
+namespace argomatch {
 
   //-------------------------------------------------------
   CFAlgoMatchStart::CFAlgoMatchStart() : CFloatAlgoBase()

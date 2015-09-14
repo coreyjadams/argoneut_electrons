@@ -3,7 +3,7 @@
 
 #include "CFAlgoShowerTimeMatch.h"
 
-namespace cmtool {
+namespace argomatch {
 
   //-------------------------------------------------------
   CFAlgoShowerTimeMatch::CFAlgoShowerTimeMatch() : CFloatAlgoBase()

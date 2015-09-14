@@ -17,13 +17,13 @@
 #include "CMTool/CMToolBase/CFloatAlgoBase.h"
 #include "utils/TrackShower.h"
 
-namespace cmtool {
+namespace argomatch {
 /**
    \class CFAlgoMatchStart
    User implementation for CFloatAlgoBase class
    doxygen documentation!
 */
-class CFAlgoMatchStart : public CFloatAlgoBase {
+class CFAlgoMatchStart : public ::cmtool::CFloatAlgoBase {
 
 public:
 

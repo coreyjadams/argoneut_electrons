@@ -4,7 +4,7 @@
 #include "CFAlgoShowerWireMatch.h"
 #include "LArUtil/GeometryHelper.h"
 
-namespace cmtool {
+namespace argomatch {
 
   //-------------------------------------------------------
   CFAlgoShowerWireMatch::CFAlgoShowerWireMatch() : CFloatAlgoBase()

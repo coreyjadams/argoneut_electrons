@@ -17,16 +17,16 @@ mgr.set_ana_output_file("")
 
 proc = fmwk.ClusterMatcher()
 
-#priority_algo = cmtool.CPAlgoPolyArea()
+#priority_algo = argomatch.CPAlgoPolyArea()
 #priority_algo.SetMinArea(1e9)
 
 #proc.GetManager().AddPriorityAlgo(priority_algo)
 
-proc.GetManager().AddMatchAlgo(cmtool.CFAlgoZOverlap())
+proc.GetManager().AddMatchAlgo(argomatch.CFAlgoZOverlap())
 
-#proc.GetManager().DebugMode(cmtool.CMatchManager.kPerIteration)
-#proc.GetManager().DebugMode(cmtool.CMatchManager.kPerAlgoSet)
-proc.GetManager().DebugMode(cmtool.CMatchManager.kPerMerging)
+#proc.GetManager().DebugMode(argomatch.CMatchManager.kPerIteration)
+#proc.GetManager().DebugMode(argomatch.CMatchManager.kPerAlgoSet)
+proc.GetManager().DebugMode(argomatch.CMatchManager.kPerMerging)
 
 mgr.add_process(proc)
 
