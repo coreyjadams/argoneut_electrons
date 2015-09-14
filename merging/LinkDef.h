@@ -9,20 +9,20 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class cmtool::CBAlgoMergeSmallToTrack+;
-#pragma link C++ class cmtool::CBAlgoMergeSingleToBig+;
-#pragma link C++ class cmtool::CBAlgoMergeInline+;
-#pragma link C++ class cmtool::CBAlgoMergeDiffuse+;
-#pragma link C++ class cmtool::CBAlgoMergeShortestDistance+;
-#pragma link C++ class cmtool::CBAlgoMergeExtendBlob+;
-#pragma link C++ class cmtool::CBAlgoProhibitBigToBig+;
-#pragma link C++ class cmtool::CBAlgoProhibitStartToStart+;
-#pragma link C++ class cmtool::CBAlgoProhibitTrackToTrack+;
-#pragma link C++ class cmtool::CBAlgoProhibitBigStart+;
-#pragma link C++ class cmtool::CBAlgoMergeWithinBoundary+;
-#pragma link C++ class cmtool::CBAlgoMergeStartToEnd+;
-#pragma link C++ class cmtool::CBAlgoProhibitTrack+;
-#pragma link C++ class cmtool::CBAlgoProhibitOutOfCone+;
+#pragma link C++ class argomerge::CBAlgoMergeSmallToTrack+;
+#pragma link C++ class argomerge::CBAlgoMergeSingleToBig+;
+#pragma link C++ class argomerge::CBAlgoMergeInline+;
+#pragma link C++ class argomerge::CBAlgoMergeDiffuse+;
+#pragma link C++ class argomerge::CBAlgoMergeShortestDistance+;
+#pragma link C++ class argomerge::CBAlgoMergeExtendBlob+;
+#pragma link C++ class argomerge::CBAlgoProhibitBigToBig+;
+#pragma link C++ class argomerge::CBAlgoProhibitStartToStart+;
+#pragma link C++ class argomerge::CBAlgoProhibitTrackToTrack+;
+#pragma link C++ class argomerge::CBAlgoProhibitBigStart+;
+#pragma link C++ class argomerge::CBAlgoMergeWithinBoundary+;
+#pragma link C++ class argomerge::CBAlgoMergeStartToEnd+;
+#pragma link C++ class argomerge::CBAlgoProhibitTrack+;
+#pragma link C++ class argomerge::CBAlgoProhibitOutOfCone+;
 
 
 #pragma link C++ class larlite::HitToCluster+;
