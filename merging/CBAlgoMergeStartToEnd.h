@@ -25,12 +25,12 @@
 // #include "DataFormat/hit.h"
 
 
-namespace cmtool {
+namespace argomerge {
   /**
      \class CMalgoPolyContain
      Merge Polygons if the two overlap even partially
   */
-  class CBAlgoMergeStartToEnd : public CBoolAlgoBase{
+  class CBAlgoMergeStartToEnd : public ::cmtool::CBoolAlgoBase{
     
   public:
     

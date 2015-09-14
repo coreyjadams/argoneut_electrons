@@ -23,12 +23,12 @@
 
 #include "utils/TrackShower.h"
 
-namespace cmtool {
+namespace argomerge {
   /**
      \class CMalgoPolyContain
      Merge Polygons if the two overlap even partially
   */
-  class CBAlgoMergeExtendBlob : public CBoolAlgoBase{
+  class CBAlgoMergeExtendBlob : public ::cmtool::CBoolAlgoBase{
     
   public:
     

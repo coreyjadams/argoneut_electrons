@@ -3,7 +3,7 @@
 
 #include "CBAlgoProhibitOutOfCone.h"
 
-namespace cmtool {
+namespace argomerge {
 
 //----------------------------------------
 CBAlgoProhibitOutOfCone::CBAlgoProhibitOutOfCone() : CBoolAlgoBase()

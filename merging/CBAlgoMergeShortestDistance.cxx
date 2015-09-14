@@ -3,7 +3,7 @@
 
 #include "CBAlgoMergeShortestDistance.h"
 
-namespace cmtool {
+namespace argomerge {
 
 CBAlgoMergeShortestDistance::CBAlgoMergeShortestDistance() : CBoolAlgoBase()
 {

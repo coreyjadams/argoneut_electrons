@@ -17,13 +17,13 @@
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
 
-namespace cmtool {
+namespace argomerge {
 /**
    \class CBAlgoProhibitAllTracks
    User implementation for CBoolAlgoBase class
    doxygen documentation!
 */
-class CBAlgoProhibitTrack : public CBoolAlgoBase {
+class CBAlgoProhibitTrack : public ::cmtool::CBoolAlgoBase {
 
 public:
 

@@ -24,9 +24,9 @@
    doxygen documentation!
  */
 
-namespace cmtool {
+namespace argomerge {
 
-class CBAlgoMergeWithinBoundary : public CBoolAlgoBase {
+class CBAlgoMergeWithinBoundary : public ::cmtool::CBoolAlgoBase {
 
 public:
 

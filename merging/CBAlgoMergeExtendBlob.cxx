@@ -3,7 +3,7 @@
 
 #include "CBAlgoMergeExtendBlob.h"
 
-namespace cmtool {
+namespace argomerge {
 
 CBAlgoMergeExtendBlob::CBAlgoMergeExtendBlob() : CBoolAlgoBase()
 {

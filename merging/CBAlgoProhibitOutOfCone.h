@@ -18,13 +18,13 @@
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
 
-namespace cmtool {
+namespace argomerge {
 /**
    \class CBAlgoAngleSeparate
    Track Prohibit algorithm: if the angle between the direction of a cluster (end-start) and the line connecting the cluster's start point and the start point of t a second cluster is too large, then probihit merging between the two clusters. The first cluster needs to be a "good" and "large" cluster
    algorithm has performed
 */
-class CBAlgoProhibitOutOfCone: public CBoolAlgoBase {
+class CBAlgoProhibitOutOfCone: public ::cmtool::CBoolAlgoBase {
 
 public:
 

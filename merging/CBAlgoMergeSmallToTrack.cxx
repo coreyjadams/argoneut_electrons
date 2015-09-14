@@ -3,7 +3,7 @@
 
 #include "CBAlgoMergeSmallToTrack.h"
 
-namespace cmtool {
+namespace argomerge {
 
   CBAlgoMergeSmallToTrack::CBAlgoMergeSmallToTrack() : CBoolAlgoBase()
   {

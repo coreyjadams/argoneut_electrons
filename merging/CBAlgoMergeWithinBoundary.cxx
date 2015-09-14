@@ -3,7 +3,7 @@
 
 #include "CBAlgoMergeWithinBoundary.h"
 
-namespace cmtool {
+namespace argomerge {
 
 CBAlgoMergeWithinBoundary::CBAlgoMergeWithinBoundary() : CBoolAlgoBase()
 {

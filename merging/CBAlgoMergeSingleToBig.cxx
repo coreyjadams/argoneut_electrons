@@ -3,7 +3,7 @@
 
 #include "CBAlgoMergeSingleToBig.h"
 
-namespace cmtool {
+namespace argomerge {
 
   CBAlgoMergeSingleToBig::CBAlgoMergeSingleToBig() : CBoolAlgoBase()
   {

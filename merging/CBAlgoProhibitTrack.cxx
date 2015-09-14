@@ -3,7 +3,7 @@
 
 #include "CBAlgoProhibitTrack.h"
 
-namespace cmtool {
+namespace argomerge {
 
 //-------------------------------------------------------
 CBAlgoProhibitTrack::CBAlgoProhibitTrack() : CBoolAlgoBase()

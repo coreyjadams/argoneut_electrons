@@ -3,7 +3,7 @@
 
 #include "CBAlgoProhibitTrackToTrack.h"
 
-namespace cmtool {
+namespace argomerge {
 
 CBAlgoProhibitTrackToTrack::CBAlgoProhibitTrackToTrack() : CBoolAlgoBase()
 {

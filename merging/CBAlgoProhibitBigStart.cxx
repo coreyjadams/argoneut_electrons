@@ -3,7 +3,7 @@
 
 #include "CBAlgoProhibitBigStart.h"
 
-namespace cmtool {
+namespace argomerge {
 
   CBAlgoProhibitBigStart::CBAlgoProhibitBigStart() : CBoolAlgoBase()
   {

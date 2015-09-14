@@ -23,12 +23,12 @@
 #include "LArUtil/GeometryUtilities.h"
 
 
-namespace cmtool {
+namespace argomerge {
   /**
      \class CMalgoPolyContain
      Merge Polygons if the two overlap even partially
   */
-  class CBAlgoMergeDiffuse : public CBoolAlgoBase{
+  class CBAlgoMergeDiffuse : public ::cmtool::CBoolAlgoBase{
     
   public:
     

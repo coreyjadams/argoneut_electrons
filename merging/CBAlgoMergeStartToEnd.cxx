@@ -7,7 +7,7 @@
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
 
 
-namespace cmtool {
+namespace argomerge {
 
 //defining best_slope
 float CBAlgoMergeStartToEnd::best_slope (const ::cluster::cluster_params & cluster) {

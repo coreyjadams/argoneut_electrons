@@ -3,7 +3,7 @@
 
 #include "CBAlgoMergeDiffuse.h"
 
-namespace cmtool {
+namespace argomerge {
 
   CBAlgoMergeDiffuse::CBAlgoMergeDiffuse() : CBoolAlgoBase()
   {
