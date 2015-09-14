@@ -40,24 +40,24 @@ merge_viewer.SetDrawOnlyTracks(False)
 ########################################
 
 # Remove tracks with priority algo!
-merge_viewer.GetManager().AddPriorityAlgo(cmtool.CPAlgoIgnoreTracks())
+merge_viewer.GetManager().AddPriorityAlgo(argomerge.CPAlgoIgnoreTracks())
 
 # PROHIBIT ALGORITHMS
-prohib_array = cmtool.CBAlgoArray()
+prohib_array = argomerge.CBAlgoArray()
 
-tracksep_prohibit = cmtool.CBAlgoTrackSeparate()
+tracksep_prohibit = argomerge.CBAlgoTrackSeparate()
 tracksep_prohibit.SetDebug(False)
 tracksep_prohibit.SetVerbose(False)
 tracksep_prohibit.SetUseEP(True)
 prohib_array.AddAlgo(tracksep_prohibit,False)
 
-outofcone_prohibit = cmtool.CBAlgoOutOfConeSeparate()
+outofcone_prohibit = argomerge.CBAlgoOutOfConeSeparate()
 outofcone_prohibit.SetDebug(False)
 outofcone_prohibit.SetVerbose(False)
 outofcone_prohibit.SetMaxAngleSep(20.)
 prohib_array.AddAlgo(outofcone_prohibit,False)
 
-angle_prohibit = cmtool.CBAlgoAngleIncompat()
+angle_prohibit = argomerge.CBAlgoAngleIncompat()
 #this only applies if both clusters have >50 hits
 angle_prohibit.SetMinHits(50)
 angle_prohibit.SetAllow180Ambig(True)
@@ -71,9 +71,9 @@ prohib_array.AddAlgo(angle_prohibit,False)
 merge_viewer.GetManager().AddSeparateAlgo(prohib_array)
 
 # MERGE ALGORITHMS
-algo_array = cmtool.CBAlgoArray()
+algo_array = argomerge.CBAlgoArray()
 
-COM_algo = cmtool.CBAlgoCenterOfMass()
+COM_algo = argomerge.CBAlgoCenterOfMass()
 COM_algo.SetDebug(False)
 COM_algo.SetVerbose(False)
 COM_algo.UseCOMInPoly(True)
@@ -82,11 +82,11 @@ COM_algo.UseCOMNearClus(True)
 COM_algo.SetLengthReach(3.)
 algo_array.AddAlgo(COM_algo,False)
 
-overlapalg = cmtool.CBAlgoPolyOverlap()
+overlapalg = argomerge.CBAlgoPolyOverlap()
 overlapalg.SetMinNumHits(0)
 algo_array.AddAlgo(overlapalg,False)
 
-polyshortalg_bigclusters = cmtool.CBAlgoPolyShortestDist()
+polyshortalg_bigclusters = argomerge.CBAlgoPolyShortestDist()
 #this one is for big-ish clusters
 polyshortalg_bigclusters.SetMinNumHits(30)
 polyshortalg_bigclusters.SetMaxNumHits(9999)

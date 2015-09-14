@@ -17,13 +17,13 @@ mgr.set_ana_output_file("")
 
 proc = fmwk.ClusterMerger()
 
-proc.GetManager().AddMergeAlgo(cmtool.CBAlgoFake())
+proc.GetManager().AddMergeAlgo(argomerge.CBAlgoFake())
 
-proc.GetManager().AddSeparateAlgo(cmtool.CBAlgoFake())
+proc.GetManager().AddSeparateAlgo(argomerge.CBAlgoFake())
 
-proc.GetManager().DebugMode(cmtool.CMergeManager.kPerIteration)
-#proc.GetManager().DebugMode(cmtool.CMergeManager.kPerAlgoSet)
-#proc.GetManager().DebugMode(cmtool.CMergeManager.kPerMerging)
+proc.GetManager().DebugMode(argomerge.CMergeManager.kPerIteration)
+#proc.GetManager().DebugMode(argomerge.CMergeManager.kPerAlgoSet)
+#proc.GetManager().DebugMode(argomerge.CMergeManager.kPerMerging)
 
 mgr.add_process(proc)
 
