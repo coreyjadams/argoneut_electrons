@@ -125,8 +125,8 @@ namespace larlite {
     for (auto & shower : * reco_shower){
       TVector3 start = shower.ShowerStart();
       TVector3 dir   = shower.Direction();
-      std::vector<double> dedx = shower.dEdx();
-      std::vector<double> energy = shower.Energy();
+      std::vector<double> dedx = shower.dEdx_v();
+      std::vector<double> energy = shower.Energy_v();
       std::cout << "Start point of the shower: ("
                 << start.X() << ", " << start.Y() << ", " << start.Z() << ")\n"
                 << "\tDirection: "
