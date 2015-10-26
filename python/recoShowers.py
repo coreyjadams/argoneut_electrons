@@ -1,20 +1,16 @@
 #!/usr/bin/env python
 
 # Load libraries
-import ROOT
 import sys
-import os
 from ROOT import *
 import argparse
 import time
 
+from argotool import match, shower
 
 def main(**args):
 
   my_proc = larlite.ana_processor()
-  my_proc.enable_filter(True)
-  my_proc.enable_event_alignment(False)
-
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -33,13 +29,13 @@ def main(**args):
       quit()
 
   if args['data_output'] == None:
-      args['data_output'] = "default_filter_output.root"
+      args['data_output'] = "default_shower_output.root"
       if args['verbose']:
           print "No event output file selected.  If necessary, output will go to: "
           print "\t"+args['data_output']
 
   if args['ana_output'] == None:
-      args['ana_output'] = "default_ana_output.root"
+      args['ana_output'] = "default_shower_ana_output.root"
       if args['verbose']:
           print "No ana output file selected.  If necessary, output will go to:"
           print "\t"+args['ana_output']
@@ -56,11 +52,30 @@ def main(**args):
   larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
 
-  showerfilter=argofilter.ShowerFilter()
+  # Get the list of processes from argotool
+  matchalg, priority = match.ArgoMatch()
 
-  my_proc.add_process(showerfilter)
+  # 
+  # Get a Shower Reco algorithm
+  # 
+  showerRecoAlg = shower.getShowerRecoAlgModular()
 
+  # 
+  # Get a shower reco framework
+  # 
+  showerRecoUnit = larlite.ShowerReco3D()
+  showerRecoUnit.AddShowerAlgo(showerRecoAlg)
+  showerRecoUnit.SetInputProducer("ccMergedFinal")
+  showerRecoUnit.SetOutputProducer("showerreco")
 
+  # 
+  # Attach Matching algorithm
+  #
+  showerRecoUnit.GetManager().AddPriorityAlgo(matchalg)
+  showerRecoUnit.GetManager().AddMatchAlgo(priority)
+  my_proc.add_process(showerRecoUnit)
+
+  # my_proc.process_event(0)\
   if args['num_events'] != None:
       start=time.clock()
       my_proc.run(0, nevents)

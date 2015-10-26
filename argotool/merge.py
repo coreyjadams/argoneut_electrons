@@ -23,6 +23,10 @@ def getSmallClustMerger(maxHitsProhib=5,
     prohib_array = cmtool.CBAlgoArray()
     big_prohibit = argomerge.CBAlgoProhibitBigToBig()
     big_prohibit.SetMaxHits(maxHitsProhib)
+    big_start = argomerge.CBAlgoProhibitBigStart()
+    big_start.SetMinSeparation(0.4)
+    big_start.SetMinHits(10)
+    prohib_array.AddAlgo(big_start, False)
     prohib_array.AddAlgo(big_prohibit, False)
 
     ########################################
@@ -82,7 +86,7 @@ def getExtendBlobMerger(prohibitBig=True,
     blob = argomerge.CBAlgoMergeExtendBlob()
     blob.set_principal_ev_cut(0.9)
     blob.set_rms_scale(2.0)
-    blob.set_length_jump_scale(0.25)
+    blob.set_length_jump_scale(0.5)
     blob.set_min_hits_to_project_from(30)
     blob.set_mode(mode)
     blob.set_debug(False)
@@ -95,7 +99,7 @@ def getExtendBlobMerger(prohibitBig=True,
     if prohibitBig:
         merger.GetManager().SetMinNHits(3)
     else:
-        merger.GetManager().SetMinNHits(30)
+        merger.GetManager().SetMinNHits(20)
 
     return merger
 
@@ -149,7 +153,7 @@ def getMergeToTrunk(shortestDist, maxClusterSize, prohibitBig=False):
 def getInlineMerger(maxInlineDist=0.6,
                     useAllHits=True,
                     hitFraction=0.35,
-                    minHits=5,
+                    minHits=10,
                     bignessProhibit=25):
     merger = larlite.ClusterMerger()
     ########################################
@@ -239,12 +243,24 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
     procList = []
     prevProducer = initProducer
 
+
+
+    # Add a RemoveTrackHits module:
+    rth = argomerge.RemoveTrackHits()
+    rth.SetTrackProducer("ct")
+    rth.SetClusterProducer("cccluster")
+    rth.SetOutputProducer("ccNoTracks")
+    prevProducer = "ccNoTracks"
+    procList.append(rth)
+
+
     # Module to take all of the poorly done, vertical tracks and destroy them
     dbvc = larlite.DropBadVertClusters()
     dbvc.SetInputProducer(prevProducer)
     dbvc.SetOutputProducer("ccNoVert")
     prevProducer = "ccNoVert"
     procList.append(dbvc)
+
 
     # Module to turn all the single hits into one hit clusters
     htc = larlite.HitToCluster()
@@ -254,7 +270,7 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
     procList.append(htc)
 
     # Using an iterative merging approach:
-    maxClosestDistances = [0.5,   0.8,  1.0,  0.8]
+    maxClosestDistances = [0.4,   0.6,  0.8,  0.8]
     maxAverageDistances = [9999,  9999, 9999, 9999]
     maxHitsSmall = [1,     1,    3,    7]
     maxHitsProhibit = [1,     1,    3,    7]
@@ -272,6 +288,16 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
         merger.SaveOutputCluster()
         prevProducer = "ccMergedSmall" + str(i)
         procList.append(merger)
+
+    return procList
+
+
+    # Add a DropSingles module:
+    drop=larlite.DropSingles()
+    drop.SetInputProducer(prevProducer)
+    drop.SetOutputProducer("ccDropSingles")
+    prevProducer = "ccDropSingles"
+    procList.append(drop)
 
     merger = getExtendBlobMerger(True)
     merger.SetInputProducer(prevProducer)
@@ -318,15 +344,9 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
 
     merger=getExtendBlobMerger(False, 100, 1)
     merger.SetInputProducer(prevProducer)
-    merger.SetOutputProducer("ccMergedExtendBlob2")
-    prevProducer="ccMergedExtendBlob2"
+    merger.SetOutputProducer(finalProducer)
     merger.SaveOutputCluster()
     procList.append(merger)
 
-    # Add a DropSingles module:
-    drop=larlite.DropSingles()
-    drop.SetInputProducer(prevProducer)
-    drop.SetOutputProducer("ccMergedFinal")
-    procList.append(drop)
 
     return procList

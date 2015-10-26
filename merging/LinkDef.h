@@ -24,6 +24,7 @@
 #pragma link C++ class argomerge::CBAlgoProhibitTrack+;
 #pragma link C++ class argomerge::CBAlgoProhibitOutOfCone+;
 
+#pragma link C++ class argomerge::RemoveTrackHits+;
 
 #pragma link C++ class larlite::HitToCluster+;
 #pragma link C++ class larlite::DropSingles+;

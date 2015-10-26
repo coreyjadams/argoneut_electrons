@@ -28,20 +28,15 @@ SUBDIRS := utils merging matching analysis filter #ADD_NEW_SUBDIR ... do not rem
 #.phony: all configure default-config clean
 .phony: all clean
 
-all: py
+all: 
 	@for i in $(SUBDIRS); do ( echo "" && echo "Compiling $$i..."); $(MAKE) -C $(LARLITE_USERDEVDIR)/argoneut_electrons/$$i  || exit $$?; done
 #####################################################################################
 #
 # CLEANs...
 #
-clean: pyclean
+clean: 
 	@for i in $(SUBDIRS); do ( echo "" && echo "Cleaning $$i..." && cd $(LARLITE_USERDEVDIR)/argoneut_electrons/$$i && $(MAKE) clean && rm -f $(LARLITE_LIBDIR)/$$i.* ) || exit $$?; done
 
-py:
-	@cp -r argotool $(LARLITE_BASEDIR)/python/argotool 
-
-pyclean:
-	@rm -r $(LARLITE_BASEDIR)/python/argotool
 
 #####################################################################################
 #

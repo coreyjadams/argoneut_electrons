@@ -64,7 +64,7 @@ namespace larlite {
     TH1F * direction_X;
     TH1F * direction_Y;
     TH1F * direction_Z;
-    TH1F * direction_abs;
+    TH1F * direction_angle;
 
     TH1F * dEdx;
     TH1F * dEdx_fid;

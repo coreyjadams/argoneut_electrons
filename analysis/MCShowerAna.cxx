@@ -10,9 +10,9 @@
 #include "DataFormat/mcshower.h"
 #include "DataFormat/shower.h"
 #include "LArUtil/Geometry.h"
-	//use function NearestWire()
-	//takes 3d point and plane as an argument and returns wire nearest to it
-	//get time by scaling x
+//use function NearestWire()
+//takes 3d point and plane as an argument and returns wire nearest to it
+//get time by scaling x
 #include "LArUtil/GeometryUtilities.h"
 
 namespace larlite {
@@ -35,14 +35,14 @@ namespace larlite {
     direction_X = new TH1F("direction_x","X direction True - reco",100,-25,25);
     direction_Y = new TH1F("direction_y","Y direction True - reco",100,-25,25);
     direction_Z = new TH1F("direction_z","Z direction True - reco",100,-25,25);
-    direction_abs = new TH1F("direction_abs","Abs direction True - reco",100,-25,25);
+    direction_angle = new TH1F("direction_angle","Angle Between True and reco",100,-3.14,3.14);
 
     dEdx = new TH1F("dEdx","Reconstructed dEdx",50,-2,20);
     dEdx_fid = new TH1F("dEdx_fid","Reconstructed dEdx",50,-2,20);
 
     return true;
   }
-	
+        
   
   
   bool MCShowerAna::analyze(storage_manager* storage) {
@@ -98,8 +98,8 @@ namespace larlite {
     for (auto & shower : * ev_shower){
       //if (shower.DetProfile().E() < 10) continue;
         if (abs(shower.PdgCode()) == 11)
-	{
-	std::cout << "shower number: " << shower_number << '\n';
+        {
+        std::cout << "shower number: " << shower_number << '\n';
         std::cout << "\tPDG: ........ " << shower.PdgCode() << "\n"
                   << "\tTrack ID: ... " << shower.TrackID() << "\n"
                   << "\tMother ID: .. " << shower.MotherTrackID() << "\n"
@@ -107,16 +107,16 @@ namespace larlite {
                   << "\tDep E: ...... " << shower.DetProfile().E() << "\n";
         std::cout << "\tvertex: (" << trueVertex.X() << ", " << trueVertex.Y() << ", " << trueVertex.Z() << ")\n"
                     << "\tdirection: (" << trueDirNorm.X() << ", " << trueDirNorm.Y() << ", " << trueDirNorm.Z() << ")" << '\n';
-	std::cout << "\tWire (Vertex) @ Plane 0: " << geom->NearestWire(trueVertex.Vect(), 0) * 0.4 << '\n';
-	std::cout << "\tWire (Vertex) @ Plane 1: " << geom->NearestWire(trueVertex.Vect(), 1) * 0.4 << '\n';
-	std::cout << "\tTime (Vertex): " << trueVertex.X() << '\n';
-	std::cout << "\t2D Angle @ plane 0: " << geomUtil -> Get2DangleFrom3D(0, trueDirNorm) * 180/M_PI << '\n';
-	std::cout << "\t2D Angle @ plane 1: " << geomUtil -> Get2DangleFrom3D(1, trueDirNorm) * 180/M_PI << '\n';
-	std::cout << std::endl;
+        std::cout << "\tWire (Vertex) @ Plane 0: " << geom->NearestWire(trueVertex.Vect(), 0) * 0.4 << '\n';
+        std::cout << "\tWire (Vertex) @ Plane 1: " << geom->NearestWire(trueVertex.Vect(), 1) * 0.4 << '\n';
+        std::cout << "\tTime (Vertex): " << trueVertex.X() << '\n';
+        std::cout << "\t2D Angle @ plane 0: " << geomUtil -> Get2DangleFrom3D(0, trueDirNorm) * 180/M_PI << '\n';
+        std::cout << "\t2D Angle @ plane 1: " << geomUtil -> Get2DangleFrom3D(1, trueDirNorm) * 180/M_PI << '\n';
+        std::cout << std::endl;
         }
-	else {std::cout << "shower number " << shower_number << " is not an electron or positron shower." << '\n';}
-	shower_number++ ;
-	std::cout << std:: endl;
+        else {std::cout << "shower number " << shower_number << " is not an electron or positron shower." << '\n';}
+        shower_number++ ;
+        std::cout << std:: endl;
     }
 
     std::cout << "This event ("<< storage -> event_id() << ") has " << reco_shower->size() << " reco showers.\n";
@@ -148,7 +148,10 @@ namespace larlite {
       direction_X   -> Fill(trueDirNorm.X() - dir.X());
       direction_Y   -> Fill(trueDirNorm.Y() - dir.Y());
       direction_Z   -> Fill(trueDirNorm.Z() - dir.Z());
-      // direction_abs -> Fill();
+      float theta = dir.Dot(trueDirection.Vect()) / (dir.Mag() * trueDirection.Vect().Mag());
+      theta = acos(theta);
+      std::cout << "Theta is " << theta << std::endl;
+      direction_angle -> Fill(theta);
       dEdx          -> Fill(dedx[1]);
       if (isFiducial(start)){
         dEdx_fid -> Fill(dedx[1]);
@@ -183,7 +186,7 @@ namespace larlite {
       direction_X   -> Write();
       direction_Y   -> Write();
       direction_Z   -> Write();
-      direction_abs -> Write();
+      direction_angle -> Write();
       dEdx          -> Write() ;
       dEdx_fid      -> Write() ;
     }

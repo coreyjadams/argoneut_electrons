@@ -63,10 +63,16 @@ bool ShowerFilter::analyze(::larlite::storage_manager* storage) {
   //  Just look at collection plane for this pass
   //  Require that it pass the FANN cut, and require that there is a nice straight track at the front
 
-  std::cout << "Got here\n";
 
   std::vector<::cluster::cluster_params> params_vec;
+
+  // try {
   _cru_helper.GenerateParams(storage, _input_producer, params_vec);
+  // }
+  // catch (const std::exception& e) {
+  // std::cerr << e.what() << '\n';
+  // }
+
 
 
   for (auto & clust : params_vec) {
@@ -82,6 +88,12 @@ bool ShowerFilter::analyze(::larlite::storage_manager* storage) {
     _params_alg.FillParams(clust);
 
     if (ts.trackOrShower(clust) == argoutils::TrackShower::kShower ) {
+      // std::cout << "Event " << storage -> event_id() << "\n";
+      // clust.PrintFANNVector();
+      // clust.Report();
+
+      if (clust.multi_hit_wires / clust.N_Wires < 0.1)
+        return false;
       return true;
     }
 

@@ -139,6 +139,7 @@ TrackShower::Topology TrackShower::trackOrShower(
   // Make the classification:
   float _classification = output_data[0] - output_data[1];
 
+
   if (_classification > 0.9) {
     return kShower;
   } else if (_classification < -0.9) {

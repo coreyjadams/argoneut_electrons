@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # Load libraries
-import ROOT
 import sys
 import os
 from ROOT import *
@@ -13,8 +12,6 @@ from argotool import merge
 def main(**args):
 
   my_proc = larlite.ana_processor()
-  my_proc.enable_event_alignment(False)
-
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -64,7 +61,7 @@ def main(**args):
   # my_proc.process_event(0)\
   if args['num_events'] != None:
       start=time.clock()
-      my_proc.run(0, nevents)
+      my_proc.run(6, nevents)
       end=time.clock()
       print "Processed ", nevents, " events in ", end-start, "seconds."
       print "Average per event: ", (end-start)/nevents, "seconds."
