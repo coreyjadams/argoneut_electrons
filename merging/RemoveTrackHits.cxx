@@ -45,7 +45,7 @@ bool RemoveTrackHits::analyze(::larlite::storage_manager* storage) {
   // Get the tracks for this event:
   auto ev_track = storage->get_data<larlite::event_track>(_track_producer);
 
-  storage -> set_id(1,0,ev_track->event_id());
+  storage -> set_id(1, 0, ev_track->event_id());
   // Holder for new clusters that are not tracks:
   auto out_cluster_v = storage->get_data<larlite::event_cluster>(_output_producer);
   auto ev_ass = storage->get_data<larlite::event_ass>(out_cluster_v->name());
@@ -60,7 +60,7 @@ bool RemoveTrackHits::analyze(::larlite::storage_manager* storage) {
     // std::cout << "Bailing because no cluster pointer.\n";
     return false;
   }
-  if (!ev_clus -> size()){
+  if (!ev_clus -> size()) {
     // std::cout << "Bailing because no clusters\n";
     return false;
   }
@@ -86,7 +86,7 @@ bool RemoveTrackHits::analyze(::larlite::storage_manager* storage) {
     // std::cout << "Bailing because hit pointer 2.\n";
     return false;
   }
-  if (!ev_hit_2 -> size()){
+  if (!ev_hit_2 -> size()) {
     // std::cout << "Bailing because no hits 2.\n";
     return false;
   }
@@ -234,6 +234,13 @@ bool RemoveTrackHits::analyze(::larlite::storage_manager* storage) {
       // save this cluster and keep it in the new set of clusters
       hit_ass.push_back(hit_index_v_from_clusts.at(i));
       out_cluster_v -> push_back(ev_clus -> at(i));
+      if ( ! out_cluster_v -> back().IsMergedCluster()) {
+        out_cluster_v -> back().set_is_merged(true);
+        out_cluster_v -> back().set_original_producer(_cluster_producer);
+        std::vector<unsigned short> orig_index(1, i);
+        out_cluster_v -> back().set_original_indexes(orig_index);
+      }
+
     }
 
   }
