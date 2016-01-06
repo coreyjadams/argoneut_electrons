@@ -250,14 +250,14 @@ namespace argoutils {
     if (_output_file_name == ""){
       _output_file_name = "defaultFannTrainingFile.txt";
     }
-    ofstream trueOutputFile;
+    std::ofstream trueOutputFile;
     trueOutputFile.open(_output_file_name);
     // Write the header information:
     trueOutputFile  << _n_training_items << " " << _n_inputs 
                     << " " << _n_outputs << "\n";
 
     // reopen the old file:
-    ifstream _in;
+    std::ifstream _in;
     _in.open(_tempFileName);
     std::string line;
 

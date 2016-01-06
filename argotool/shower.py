@@ -47,7 +47,8 @@ def getShowerRecoAlgModular():
   dedx.SetUsePitch(False)
   dedx.setVerbosity(False)
 
-  alg.AddShowerRecoModule(axis3D)
+  # alg.AddShowerRecoModule(axis3D)
+  alg.AddShowerRecoModule(showerreco.AxisFromTracks())
   # alg.AddShowerRecoModule(showerreco.StartPoint3DModule()  )
   # alg.AddShowerRecoModule(energy)
   # alg.AddShowerRecoModule(dqdx)

@@ -21,7 +21,7 @@ def ArgoMatch():
 
     algo_array = cmtool.CFAlgoArray()
     wireAlg    = argomatch.CFAlgoShowerWireMatch()
-    timeAlg = cmtool.CFAlgoTimeOverlap()
+    timeAlg    = cmtool.CFAlgoTimeOverlap()
     timeAlg.RequireThreePlanes(False)
     algo_array.AddAlgo(wireAlg)
     algo_array.AddAlgo(timeAlg)

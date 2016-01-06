@@ -15,4 +15,4 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 # This section extends the path and python path to run from anywhere
 # export DIR=$LARLITE_USERDEVDIR/DisplayTool/
 
-export PYTHONPATH=$DIR/:$PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:$DIR/

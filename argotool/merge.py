@@ -289,7 +289,7 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
         prevProducer = "ccMergedSmall" + str(i)
         procList.append(merger)
 
-    return procList
+    # return procList
 
 
     # Add a DropSingles module:

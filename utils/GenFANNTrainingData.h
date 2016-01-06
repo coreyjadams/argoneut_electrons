@@ -78,7 +78,7 @@ namespace argoutils {
     std::vector<TH1F *> _shower_params;
 
     // Output file:
-    ofstream _out;
+    std::ofstream _out;
 
   };
 }
