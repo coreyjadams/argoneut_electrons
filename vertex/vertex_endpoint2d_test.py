@@ -32,6 +32,7 @@ my_proc.set_ana_output_file("from_test_ana_you_can_remove_me.root");
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
 my_proc.add_process(argovertex.LineIntersectionVertexer())
+# my_proc.add_process(argovertex.VertexCondenser())
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
@@ -43,7 +44,8 @@ print
   # pass
 
 # Let's run it.
-my_proc.run(0,20);
+my_proc.run();
+# my_proc.run(0,2);
 
 # done!
 print

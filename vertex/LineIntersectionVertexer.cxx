@@ -150,6 +150,7 @@ bool LineIntersectionVertexer::analyze(larlite::storage_manager* storage) {
 
       if (isInPlane(intercept, params_v.at(i_cluster_1).plane_id.Plane)) {
         float strength = 1;
+
         listOfIntercepts.push_back(
           interceptCand( intercept,
                          strength,

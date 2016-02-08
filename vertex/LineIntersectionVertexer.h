@@ -43,7 +43,9 @@ public:
   size_t cluster_index_2;
 };
 
-struct bound{
+class bound{
+public:
+  bound(){}
   float x_min;
   float x_max;
   float y_min;
@@ -92,7 +94,7 @@ protected:
 
   std::string _cluster_producer;
 
-  std::vector<bound> boundaries;
+  std::vector<::argovertex::bound> boundaries;
 
 };
 }

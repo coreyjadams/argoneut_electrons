@@ -10,6 +10,10 @@
 #pragma link off all functions;
 
 #pragma link C++ class argovertex::LineIntersectionVertexer+;
+#pragma link C++ class larlite::VertexCondenser+;
+#pragma link C++ class larlite::VertexPlaneMatch+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
