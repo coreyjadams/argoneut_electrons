@@ -95,7 +95,7 @@ def getExtendBlobMerger(prohibitBig=True,
     merger.GetManager().AddMergeAlgo(algo_array)
     if prohibitBig:
         merger.GetManager().AddSeparateAlgo(prohib_array)
-    merger.GetManager().MergeTillConverge(False)
+    merger.GetManager().MergeTillConverge(True)
     if prohibitBig:
         merger.GetManager().SetMinNHits(3)
     else:
@@ -245,13 +245,13 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
 
 
 
-    # Add a RemoveTrackHits module:
-    rth = argomerge.RemoveTrackHits()
-    rth.SetTrackProducer("ct")
-    rth.SetClusterProducer("cccluster")
-    rth.SetOutputProducer("ccNoTracks")
-    prevProducer = "ccNoTracks"
-    procList.append(rth)
+    # # Add a RemoveTrackHits module:
+    # rth = argomerge.RemoveTrackHits()
+    # rth.SetTrackProducer("ct")
+    # rth.SetClusterProducer("cccluster")
+    # rth.SetOutputProducer("ccNoTracks")
+    # prevProducer = "ccNoTracks"
+    # procList.append(rth)
 
 
     # Module to take all of the poorly done, vertical tracks and destroy them
@@ -291,20 +291,22 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
 
     # return procList
 
-
-    # Add a DropSingles module:
-    drop=larlite.DropSingles()
-    drop.SetInputProducer(prevProducer)
-    drop.SetOutputProducer("ccDropSingles")
-    prevProducer = "ccDropSingles"
-    procList.append(drop)
-
     merger = getExtendBlobMerger(True)
     merger.SetInputProducer(prevProducer)
     merger.SetOutputProducer("ccMergedExtendBlobNoBig")
     prevProducer = "ccMergedExtendBlobNoBig"
     merger.SaveOutputCluster()
     procList.append(merger)
+
+   # Add a DropSingles module:
+    drop=larlite.DropSingles()
+    drop.SetInputProducer(prevProducer)
+    drop.SetOutputProducer("ccDropSingles")
+    prevProducer = "ccDropSingles"
+    procList.append(drop)
+
+
+
 
     # Add the inline merger:
     inlineMerger = getInlineMerger(maxInlineDist=0.5)
@@ -314,20 +316,21 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
     inlineMerger.SaveOutputCluster()
     procList.append(inlineMerger)
 
-    maxClosestDistances = [0.6, 0.8, 1.2, 1.3, ]
-    maxClusterSizes = [20,  20,  20,  20, ]
+    # maxClosestDistances = [0.6, 0.8, 1.2, 1.3, ]
+    # maxClusterSizes = [20,  20,  20,  20, ]
 
-    for i in range(0, len(maxClosestDistances)):
-        merger = getMergeToTrunk(
-            shortestDist=maxClosestDistances[i],
-            maxClusterSize=maxClusterSizes[i],
-            prohibitBig=True)
-        merger.SetInputProducer(prevProducer)
-        merger.SetOutputProducer("ccMergedSDnoBig" + str(i))
-        merger.SaveOutputCluster()
-        prevProducer="ccMergedSDnoBig" + str(i)
-        procList.append(merger)
+    # for i in range(0, len(maxClosestDistances)):
+    #     merger = getMergeToTrunk(
+    #         shortestDist=maxClosestDistances[i],
+    #         maxClusterSize=maxClusterSizes[i],
+    #         prohibitBig=True)
+    #     merger.SetInputProducer(prevProducer)
+    #     merger.SetOutputProducer("ccMergedSDnoBig" + str(i))
+    #     merger.SaveOutputCluster()
+    #     prevProducer="ccMergedSDnoBig" + str(i)
+    #     procList.append(merger)
 
+ 
     merger=getStartTrackMerger()
     merger.SetInputProducer(prevProducer)
     merger.SetOutputProducer("ccMergedStartTrack")
