@@ -49,15 +49,39 @@ bool ShowerFilter::analyze(::larlite::storage_manager* storage) {
   //
 
 
-  // // Get the clusters from the event
-  // auto ev_clus = storage->get_data<event_cluster>(_input_producer);
-  // if (!ev_clus->size()) {
+  // Holder for new clusters:
+  auto out_cluster_v = storage->get_data<larlite::event_cluster>(_output_producer);
+  auto out_ass = storage->get_data<larlite::event_ass>(out_cluster_v->name());
 
-  //     print(msg::kWARNING, __FUNCTION__,
-  //           Form("Skipping event %d since no cluster found...", ev_clus->event_id()));
-  //     return false;
-  // }
 
+  // set event ID through storage manager
+  storage->set_id(storage->get_data<larlite::event_cluster>(_input_producer)->run(),
+                  storage->get_data<larlite::event_cluster>(_input_producer)->subrun(),
+                  storage->get_data<larlite::event_cluster>(_input_producer)->event_id());
+
+
+
+  // Get all of the clusters from this event:
+  auto ev_clus = storage->get_data<larlite::event_cluster>(_input_producer);
+  if (!ev_clus) {
+    std::cout << "ev_clus is == 0, returning.\n";
+    return false;
+  }
+
+
+  ::larlite::event_hit* ev_hit = nullptr;
+  auto const& hit_index_v = storage->find_one_ass(ev_clus->id(), ev_hit, _input_producer);
+
+
+  if (!ev_hit) {
+    std::cout << "Did not find hit data product"
+              << "!" << std::endl;
+    return false;
+  }
+
+
+  if (!hit_index_v.size())
+    return false;
 
   // Loop over the clusters and look for showers
   //  Just look at collection plane for this pass
@@ -66,24 +90,25 @@ bool ShowerFilter::analyze(::larlite::storage_manager* storage) {
 
   std::vector<::cluster::cluster_params> params_vec;
 
-  // try {
   _cru_helper.GenerateParams(storage, _input_producer, params_vec);
-  // }
-  // catch (const std::exception& e) {
-  // std::cerr << e.what() << '\n';
-  // }
 
 
+  larlite::AssSet_t hit_ass;
 
+  size_t index = 0;
   for (auto & clust : params_vec) {
 
     // skip non collection clusters
-    if (clust.plane_id.Plane != 1)
+    if (clust.plane_id.Plane != 1){
+      index ++;
       continue;
+    }
 
     // Skip clusters that are too small:
-    if (clust.hit_vector.size() < _min_hits)
+    if (clust.hit_vector.size() < _min_hits){
+      index ++;
       continue;
+    }
 
     _params_alg.FillParams(clust);
 
@@ -92,14 +117,21 @@ bool ShowerFilter::analyze(::larlite::storage_manager* storage) {
       // clust.PrintFANNVector();
       // clust.Report();
 
-      if (clust.multi_hit_wires / clust.N_Wires < 0.1)
-        return false;
-      return true;
+      // if (clust.multi_hit_wires / clust.N_Wires < 0.1)
+      out_cluster_v->push_back(ev_clus->at(index));
+      hit_ass.push_back(hit_index_v.at(index));
     }
+    index ++;
 
   }
+  out_ass->set_association(out_cluster_v->id(), ev_hit->id(), hit_ass);
 
-  return false;
+
+  if (out_cluster_v->size() == 0) {
+    return false;
+  }
+
+  return true;
 }
 
 bool ShowerFilter::finalize() {

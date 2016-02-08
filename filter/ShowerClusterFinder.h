@@ -1,9 +1,9 @@
 /**
- * \file ShowerFilter.h
+ * \file ShowerClusterFinder.h
  *
  * \ingroup filter
  *
- * \brief Class def header for a class ShowerFilter
+ * \brief Class def header for a class ShowerClusterFinder
  *
  * @author cadams
  */
@@ -12,58 +12,50 @@
 
     @{*/
 
-#ifndef ARGOFILTER_SHOWERFILTER_H
-#define ARGOFILTER_SHOWERFILTER_H
+#ifndef SHOWERCLUSTERFINDER_H
+#define SHOWERCLUSTERFINDER_H
 
 #include "Analysis/ana_base.h"
 #include "ClusterRecoUtil/Base/CRUHelper.h"
-#include "ClusterRecoUtil/Alg/DefaultParamsAlg.h"
-#include "utils/TrackShower.h"
+
 
 namespace argofilter {
 /**
-   \class ShowerFilter
+   \class ShowerClusterFinder
    User custom analysis class made by SHELL_USER_NAME
  */
-class ShowerFilter : public ::larlite::ana_base {
+class ShowerClusterFinder : public larlite::ana_base {
 
 public:
 
   /// Default constructor
-  ShowerFilter() { _name = "ShowerFilter"; _fout = 0;}
+  ShowerClusterFinder() { _name = "ShowerClusterFinder"; _fout = 0;}
 
   /// Default destructor
-  virtual ~ShowerFilter() {}
+  virtual ~ShowerClusterFinder() {}
 
-  /** IMPLEMENT in ShowerFilter.cc!
+  /** IMPLEMENT in ShowerClusterFinder.cc!
       Initialization method to be called before the analysis event loop.
   */
   virtual bool initialize();
 
-  /** IMPLEMENT in ShowerFilter.cc!
+  /** IMPLEMENT in ShowerClusterFinder.cc!
       Analyze a data event-by-event
   */
-  virtual bool analyze(::larlite::storage_manager* storage);
+  virtual bool analyze(larlite::storage_manager* storage);
 
-  /** IMPLEMENT in ShowerFilter.cc!
+  /** IMPLEMENT in ShowerClusterFinder.cc!
       Finalize method to be called after all events processed.
   */
   virtual bool finalize();
 
-  void SetInputProducer(std::string s){_input_producer = s;}
-  void SetOutputProducer(std::string s){_output_producer = s;}
+  void SetInputProducer(std::string s) {_input_producer = s;}
+  void SetOutputProducer(std::string s) {_output_producer = s;}
 
 protected:
-
-  // Parameters:
-  size_t _min_hits;
-
   std::string _input_producer;
   std::string _output_producer;
-  ::cluster::DefaultParamsAlg _params_alg;
   ::cluster::CRUHelper _cru_helper;
-
-  ::argoutils::TrackShower ts;
 
 
 };

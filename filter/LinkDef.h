@@ -10,6 +10,9 @@
 #pragma link off all functions;
 
 #pragma link C++ class argofilter::ShowerFilter+;
+#pragma link C++ class argofilter::ShowerClusterFinder+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
