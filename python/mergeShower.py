@@ -3,7 +3,10 @@
 # Load libraries
 import sys
 import os
-from ROOT import *
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+from ROOT import larlite, larutil
 import argparse
 import time
 
@@ -61,7 +64,7 @@ def main(**args):
   # my_proc.process_event(0)\
   if args['num_events'] != None:
       start=time.clock()
-      my_proc.run(6, nevents)
+      my_proc.run(4, nevents)
       end=time.clock()
       print "Processed ", nevents, " events in ", end-start, "seconds."
       print "Average per event: ", (end-start)/nevents, "seconds."

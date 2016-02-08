@@ -2,9 +2,10 @@
 
 # Load libraries
 import ROOT
+import larlite
+from ROOT import larlite, larutil, argofilter
 import sys
 import os
-from ROOT import *
 import argparse
 import time
 
@@ -57,13 +58,14 @@ def main(**args):
 
 
   showerfilter=argofilter.ShowerFilter()
-
+  showerfilter.SetInputProducer("ccMergedFinal")
+  showerfilter.SetOutputProducer("ccShowers")
   my_proc.add_process(showerfilter)
 
 
   if args['num_events'] != None:
       start=time.clock()
-      my_proc.run(0, nevents)
+      my_proc.run(4, nevents)
       end=time.clock()
       print "Processed ", nevents, " events in ", end-start, "seconds."
       print "Average per event: ", (end-start)/nevents, "seconds."
