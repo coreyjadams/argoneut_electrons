@@ -53,13 +53,13 @@ bool CBAlgoProhibitBigStart::Bool(
     auto start_point = cluster1.start_point;
     larutil::PxPoint alt_start_point = alt_start(cluster1.hit_vector);
     if (closestApproach(start_point, cluster2) < _min_separation) {
-      std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t
-                << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(start_point, cluster2) << std::endl;
+      // std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t
+      //           << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(start_point, cluster2) << std::endl;
       return true;
     }
     if (closestApproach(alt_start_point, cluster2) < _min_separation) {
-      std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t
-                << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(alt_start_point, cluster2) << std::endl;
+      // std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t
+      //           << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(alt_start_point, cluster2) << std::endl;
       return true;
     }
   }
@@ -70,13 +70,13 @@ bool CBAlgoProhibitBigStart::Bool(
     auto start_point = cluster2.start_point;
     larutil::PxPoint alt_start_point = alt_start(cluster2.hit_vector);
     if (closestApproach(start_point, cluster1) < _min_separation) {
-      std::cout << "Prohibiting around other point " << start_point.w << ", " << start_point.t
-                << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(start_point, cluster1) << std::endl;
+      // std::cout << "Prohibiting around other point " << start_point.w << ", " << start_point.t
+      //           << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(start_point, cluster1) << std::endl;
       return true;
     }
     if (closestApproach(alt_start_point, cluster1) < _min_separation) {
-      std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t
-                << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(alt_start_point, cluster2) << std::endl;
+      // std::cout << "Prohibiting around point " << start_point.w << ", " << start_point.t
+      //           << "in plane " << cluster1.plane_id.Plane << " -- dist " << closestApproach(alt_start_point, cluster2) << std::endl;
       return true;
     }
   }

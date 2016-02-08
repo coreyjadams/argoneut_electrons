@@ -45,10 +45,16 @@ bool RemoveTrackHits::analyze(::larlite::storage_manager* storage) {
   // Get the tracks for this event:
   auto ev_track = storage->get_data<larlite::event_track>(_track_producer);
 
-  storage -> set_id(1, 0, ev_track->event_id());
+  // storage -> set_id(1, 0, ev_track->event_id());
   // Holder for new clusters that are not tracks:
   auto out_cluster_v = storage->get_data<larlite::event_cluster>(_output_producer);
   auto ev_ass = storage->get_data<larlite::event_ass>(out_cluster_v->name());
+
+  // set event ID through storage manager
+  storage->set_id(storage->get_data<larlite::event_cluster>(_cluster_producer)->run(),
+                  storage->get_data<larlite::event_cluster>(_cluster_producer)->subrun(),
+                  storage->get_data<larlite::event_cluster>(_cluster_producer)->event_id());
+
 
   // Get all of the clusters from this event:
   ::larlite::event_cluster * ev_clus = storage->get_data<larlite::event_cluster>(_cluster_producer);
@@ -245,7 +251,6 @@ bool RemoveTrackHits::analyze(::larlite::storage_manager* storage) {
 
   }
   ev_ass->set_association(out_cluster_v->id(), ev_hit_2->id(), hit_ass);
-  // storage -> set_id(1, 0, ev_track->event_id());
 
   return true;
 }

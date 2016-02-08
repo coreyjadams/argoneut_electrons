@@ -45,6 +45,12 @@ bool HitToCluster::analyze(storage_manager* storage) {
   auto out_ass = storage->get_data<event_ass>(out_cluster_v->name());
   // std::cout << "Initial id is " << out_cluster_v -> event_id() << std::endl;
 
+
+  // set event ID through storage manager
+  storage->set_id(storage->get_data<event_cluster>(_input_producer)->run(),
+                  storage->get_data<event_cluster>(_input_producer)->subrun(),
+                  storage->get_data<event_cluster>(_input_producer)->event_id());
+
   // Get all of the clusters from this event:
   auto ev_clus = storage->get_data<event_cluster>(_input_producer);
   if (!ev_clus) {
@@ -99,7 +105,7 @@ bool HitToCluster::analyze(storage_manager* storage) {
 
   // Try to make new clusters:
 
-  // Make new associations
+  // Make new associations - start with a copy of the old association
   AssSet_t hit_ass;
   for (unsigned int i = 0; i < ass_info.size(); i ++) {
     hit_ass.push_back(ass_info.at(i));
@@ -146,8 +152,6 @@ bool HitToCluster::analyze(storage_manager* storage) {
   // std::cout << "output id is: " << out_cluster_v -> event_id() << std::endl;
   //auto out_ass = storage->get_data<event_ass>(out_cluster_v->name());
   out_ass->set_association(out_cluster_v->id(), ev_hit->id(), hit_ass);
-
-  storage -> set_id(1, 0, ev_clus->event_id());
 
   // // Print out all the hits in the new clusters on one plane:
   // for(auto const& hit_indices : hit_ass) {

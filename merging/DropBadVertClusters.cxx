@@ -45,6 +45,12 @@ bool DropBadVertClusters::analyze(storage_manager* storage) {
   auto ev_ass = storage->get_data<event_ass>(out_cluster_v->name());
   // std::cout << "Initial id is " << out_cluster_v -> event_id() << std::endl;
 
+  // set event ID through storage manager
+  storage->set_id(storage->get_data<event_cluster>(_input_producer)->run(),
+                  storage->get_data<event_cluster>(_input_producer)->subrun(),
+                  storage->get_data<event_cluster>(_input_producer)->event_id());
+
+
   // Get all of the clusters from this event:
   auto ev_clus = storage->get_data<event_cluster>(_input_producer);
   if (!ev_clus) {
@@ -115,7 +121,6 @@ bool DropBadVertClusters::analyze(storage_manager* storage) {
   }
   //auto ev_ass = storage->get_data<event_ass>(out_cluster_v->name());
   ev_ass->set_association(out_cluster_v->id(), ev_hit->id(), hit_ass);
-  storage -> set_id(1, 0, ev_clus->event_id());
 
   return true;
 }
