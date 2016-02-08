@@ -61,7 +61,7 @@ outputVec.resize(n_output)
 
 result = vector(float)()
 
-n_iterations = 576
+n_iterations = 393
 
 track_cut = -0.9
 shower_cut = 0.9

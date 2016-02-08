@@ -30,12 +30,12 @@ from ROOT import *
 
 # Configure the process:
 proc = cluster.TrainingModule()
-
+# proc.setUseCascade(True)
 # proc.addLayer(8)
 # proc.addLayer(8)
 
 proc.addLayer(7)
-proc.addLayer(7)
+
 
 proc.setFeatureVectorLength(7)
 proc.setOutputVectorLength(2)

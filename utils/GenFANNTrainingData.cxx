@@ -164,7 +164,7 @@ namespace argoutils {
     if (mainCluster == 0 ) return false;
 
     // Want to require at least, say, 40 hits to be a shower or track?
-    if (mainCluster -> hit_vector.size() < 40) return false;
+    if (mainCluster -> hit_vector.size() < 60) return false;
 
     // mainCluster -> FillParams();
 

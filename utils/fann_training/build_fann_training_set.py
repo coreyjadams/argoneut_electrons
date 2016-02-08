@@ -9,11 +9,11 @@ if len(sys.argv) < 2:
     sys.stderr.write(msg)
     sys.exit(1)
 
-from larlite import larlite as fmwk
-from ROOT import *
+from larlite import larlite
+from ROOT import larutil, argoutils
 
 # Create ana_processor instance
-my_proc = fmwk.ana_processor()
+my_proc = larlite.ana_processor()
 larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
 # Set input root file
@@ -21,7 +21,7 @@ for x in xrange(len(sys.argv)-1):
     my_proc.add_input_file(sys.argv[x+1])
 
 # Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kREAD)
+my_proc.set_io_mode(larlite.storage_manager.kREAD)
 
 # Specify output root file name
 my_proc.set_ana_output_file("testingParameters.root");
@@ -30,7 +30,7 @@ my_proc.set_ana_output_file("testingParameters.root");
 # Replace with your analysis unit if you wish.
 
 # Configure the process:
-proc = fmwk.GenFANNTrainingData()
+proc = argoutils.GenFANNTrainingData()
 proc.setOutputFile("testingFannData.txt")
 proc.setClusterProducer("ccMergedFinal");
 
@@ -42,7 +42,7 @@ print  "Finished configuring ana_processor. Start event loop!"
 print
 
 # Let's run it.
-my_proc.run(500,1000);
+my_proc.run(0);
 
 # done!
 print
