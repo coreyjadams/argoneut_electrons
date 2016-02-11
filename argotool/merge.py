@@ -238,6 +238,32 @@ def getStartTrackMerger():
 # This function actually makes an instance of each of the necessary
 # mergers and returns them as an array
 
+def joinBrokenTracks():
+
+    merger = larlite.ClusterMerger()
+
+    ########################################
+    # MERGE ALGORITHMS
+    ########################################
+    algo_array = cmtool.CBAlgoArray()
+
+    BTmerger = argomerge.CBAlgoMergeBrokenTrack()
+    BTmerger.setMinCosThetaCut(0.98)
+    BTmerger.setDebug(False)
+    BTmerger.setMinHits(5)
+
+    # BTmerger.SetDebug(True)
+    # BTmerger.SetMaxDistance(shortestDist)
+    algo_array.AddAlgo(BTmerger)
+
+    merger.GetManager().AddMergeAlgo(algo_array)
+    # merger.GetManager().AddSeparateAlgo(prohib_array)
+    merger.GetManager().MergeTillConverge(False)
+    merger.GetManager().SetMinNHits(5)
+    
+    return merger
+
+
 def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
 
     procList = []
@@ -253,24 +279,28 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
     # prevProducer = "ccNoTracks"
     # procList.append(rth)
 
-
+    merger_count = 1;
     # Module to take all of the poorly done, vertical tracks and destroy them
     dbvc = larlite.DropBadVertClusters()
     dbvc.SetInputProducer(prevProducer)
-    dbvc.SetOutputProducer("ccNoVert")
-    prevProducer = "ccNoVert"
+    name = "cc"+str(merger_count).zfill(2) + "NoVert"
+    dbvc.SetOutputProducer(name)
+    prevProducer = name
+    merger_count += 1
     procList.append(dbvc)
 
 
     # Module to turn all the single hits into one hit clusters
     htc = larlite.HitToCluster()
     htc.SetInputProducer(prevProducer)
-    htc.SetOutputProducer("ccclusterWithSingles")
-    prevProducer = "ccclusterWithSingles"
+    name = "cc"+str(merger_count).zfill(2) + "clusterWithSingles"
+    htc.SetOutputProducer(name)
+    prevProducer = name
+    merger_count += 1
     procList.append(htc)
 
     # Using an iterative merging approach:
-    maxClosestDistances = [0.4,   0.6,  0.8,  0.8]
+    maxClosestDistances = [0.5,   0.6,  0.8,  0.8]
     maxAverageDistances = [9999,  9999, 9999, 9999]
     maxHitsSmall = [1,     1,    3,    7]
     maxHitsProhibit = [1,     1,    3,    7]
@@ -284,25 +314,57 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
             maxDistAv=maxAverageDistances[i],
             minHits=minHitsInCluster[i])
         merger.SetInputProducer(prevProducer)
-        merger.SetOutputProducer("ccMergedSmall" + str(i))
+        name = "cc"+str(merger_count).zfill(2)+"MergedSmall"
+        merger.SetOutputProducer(name)
         merger.SaveOutputCluster()
-        prevProducer = "ccMergedSmall" + str(i)
+        prevProducer = name
+        merger_count += 1
         procList.append(merger)
 
+
+    maxClosestDistances = [0.6, 0.8]
+    maxClusterSizes = [2,  3, ]
+
+    for i in range(0, len(maxClosestDistances)):
+        merger = getMergeToTrunk(
+            shortestDist=maxClosestDistances[i],
+            maxClusterSize=maxClusterSizes[i],
+            prohibitBig=True)
+        merger.SetInputProducer(prevProducer)
+        name = "cc"+str(merger_count).zfill(2)+"MergedSDnoBig"
+        merger.SetOutputProducer(name)
+        merger.SaveOutputCluster()
+        prevProducer=name
+        merger_count += 1
+        procList.append(merger)
+        
     # return procList
 
-    merger = getExtendBlobMerger(True)
+    merger = joinBrokenTracks()
     merger.SetInputProducer(prevProducer)
-    merger.SetOutputProducer("ccMergedExtendBlobNoBig")
-    prevProducer = "ccMergedExtendBlobNoBig"
+    name = "cc"+str(merger_count).zfill(2)+"JoinedTracks"
+    merger.SetOutputProducer(name)
+    prevProducer = name
+    merger_count += 1
     merger.SaveOutputCluster()
     procList.append(merger)
 
+    # merger = getExtendBlobMerger(True)
+    # merger.SetInputProducer(prevProducer)
+    # name = "cc"+str(merger_count).zfill(2)+"MergedExtendBlobNoBig"
+    # merger.SetOutputProducer(name)
+    # prevProducer = name
+    # merger.SaveOutputCluster()
+    # merger_count += 1
+    # procList.append(merger)
+
    # Add a DropSingles module:
     drop=larlite.DropSingles()
+    name = "cc"+str(merger_count).zfill(2)+"DropSingles"
     drop.SetInputProducer(prevProducer)
-    drop.SetOutputProducer("ccDropSingles")
-    prevProducer = "ccDropSingles"
+    drop.SetOutputProducer(name)
+    prevProducer = name
+    merger_count += 1
     procList.append(drop)
 
 
@@ -311,45 +373,39 @@ def argoMergeProcList(initProducer="cccluster", finalProducer="ccMergedFinal"):
     # Add the inline merger:
     inlineMerger = getInlineMerger(maxInlineDist=0.5)
     inlineMerger.SetInputProducer(prevProducer)
-    inlineMerger.SetOutputProducer("ccMergedInline")
-    prevProducer = "ccMergedInline"
+    name = "cc"+str(merger_count).zfill(2)+"MergedInline"
+    inlineMerger.SetOutputProducer(name)
+    prevProducer = name
     inlineMerger.SaveOutputCluster()
+    merger_count += 1
     procList.append(inlineMerger)
-
-    # maxClosestDistances = [0.6, 0.8, 1.2, 1.3, ]
-    # maxClusterSizes = [20,  20,  20,  20, ]
-
-    # for i in range(0, len(maxClosestDistances)):
-    #     merger = getMergeToTrunk(
-    #         shortestDist=maxClosestDistances[i],
-    #         maxClusterSize=maxClusterSizes[i],
-    #         prohibitBig=True)
-    #     merger.SetInputProducer(prevProducer)
-    #     merger.SetOutputProducer("ccMergedSDnoBig" + str(i))
-    #     merger.SaveOutputCluster()
-    #     prevProducer="ccMergedSDnoBig" + str(i)
-    #     procList.append(merger)
 
  
     merger=getStartTrackMerger()
     merger.SetInputProducer(prevProducer)
-    merger.SetOutputProducer("ccMergedStartTrack")
-    prevProducer="ccMergedStartTrack"
+    name = "cc"+str(merger_count).zfill(2)+"MergedStartTrack"
+    merger.SetOutputProducer(name)
     merger.SaveOutputCluster()
+    prevProducer=name
+    merger_count += 1
     procList.append(merger)
 
     merger=getExtendBlobMerger(False, 50, 1)
     merger.SetInputProducer(prevProducer)
-    merger.SetOutputProducer("ccMergedExtendBlob")
-    prevProducer="ccMergedExtendBlob"
+    name = "cc"+str(merger_count).zfill(2)+"MergedExtendBlob"
+    merger.SetOutputProducer(name)
+    prevProducer=name
     merger.SaveOutputCluster()
+    merger_count += 1
     procList.append(merger)
 
     merger=getExtendBlobMerger(False, 100, 1)
     merger.SetInputProducer(prevProducer)
     merger.SetOutputProducer(finalProducer)
     merger.SaveOutputCluster()
+    merger_count += 1
     procList.append(merger)
 
 
     return procList
+

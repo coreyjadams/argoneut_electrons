@@ -58,13 +58,15 @@ def main(**args):
 
   # Get the list of processes from argotool
   procs = merge.argoMergeProcList()
+  # procs = merge.argoJointrackProcList()
+
   for proc in procs:
     my_proc.add_process(proc)
 
   # my_proc.process_event(0)\
   if args['num_events'] != None:
       start=time.clock()
-      my_proc.run(4, nevents)
+      my_proc.run(0, nevents)
       end=time.clock()
       print "Processed ", nevents, " events in ", end-start, "seconds."
       print "Average per event: ", (end-start)/nevents, "seconds."

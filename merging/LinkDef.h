@@ -9,6 +9,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class argomerge::CBAlgoMergeBrokenTrack+;
 #pragma link C++ class argomerge::CBAlgoMergeSmallToTrack+;
 #pragma link C++ class argomerge::CBAlgoMergeSingleToBig+;
 #pragma link C++ class argomerge::CBAlgoMergeInline+;
@@ -29,7 +30,6 @@
 #pragma link C++ class larlite::HitToCluster+;
 #pragma link C++ class larlite::DropSingles+;
 #pragma link C++ class larlite::DropBadVertClusters+;
-#pragma link C++ class larlite::JoinTracks+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 
