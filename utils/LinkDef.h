@@ -11,8 +11,12 @@
 
 #pragma link C++ class argoutils::TrackShower+;
 #pragma link C++ class argoutils::GenFANNTrainingData+;
+#pragma link C++ class argoutils::BGCFileReader+;
+#pragma link C++ class argoutils::BGCGenerator+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
 
 
