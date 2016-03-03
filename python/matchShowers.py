@@ -2,21 +2,15 @@
 
 # Load libraries
 import sys
-import os
-import ROOT
-ROOT.PyConfig.IgnoreCommandLineOptions = True
-
-from ROOT import larlite, larutil
+from ROOT import *
 import argparse
 import time
 
-from argotool import merge
+from argotool import match, shower
 
 def main(**args):
 
   my_proc = larlite.ana_processor()
-
-  my_proc.enable_event_alignment(False)
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -35,13 +29,13 @@ def main(**args):
       quit()
 
   if args['data_output'] == None:
-      args['data_output'] = "default_merge_output.root"
+      args['data_output'] = "default_match_output.root"
       if args['verbose']:
           print "No event output file selected.  If necessary, output will go to: "
           print "\t"+args['data_output']
 
   if args['ana_output'] == None:
-      args['ana_output'] = "default_ana_output.root"
+      args['ana_output'] = "default_match_ana_output.root"
       if args['verbose']:
           print "No ana output file selected.  If necessary, output will go to:"
           print "\t"+args['ana_output']
@@ -59,11 +53,25 @@ def main(**args):
 
 
   # Get the list of processes from argotool
-  procs = merge.argoMergeProcList()
-  # procs = merge.argoJointrackProcList()
+  matchalg, priority = match.ArgoMatch()
 
-  for proc in procs:
-    my_proc.add_process(proc)
+  match_maker = larlite.ClusterMatcher()
+# #mgr.set_data_to_write(larlite.data.kCluster,"mccluster")
+# mgr.set_data_to_write(larlite.data.kPFParticle,match_producer)
+# mgr.set_data_to_write(larlite.data.kAssociation,match_producer)
+
+  match_maker.GetManager().AddPriorityAlgo(matchalg)
+  match_maker.GetManager().AddMatchAlgo(priority)
+
+  match_maker.SetClusterProducer("ccMergedFinal")
+  match_maker.SetOutputProducer("ccMatched")
+  match_maker.SaveOutputCluster(True)
+
+
+  # 
+  # Attach Matching algorithm
+  #
+  my_proc.add_process(match_maker)
 
   # my_proc.process_event(0)\
   if args['num_events'] != None:

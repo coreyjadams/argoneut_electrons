@@ -5,7 +5,7 @@
 
 # Import the libs needed:
 # from cpp_classes import argomerge
-from ROOT import larlite, cmtool, showerreco
+from ROOT import larlite, cmtool, showerreco, argocalo
 
 
 def getShowerRecoAlgModular():
@@ -34,30 +34,31 @@ def getShowerRecoAlgModular():
   axis3D.setThetaRangeMin(0.0005)
   axis3D.setNStepsStart(4)
   axis3D.setConvergeRate(0.85)
-  axis3D.setVerbosity(True)
+  axis3D.setVerbosity(False)
   axis3D.setSeedVectorErrorCutoff(0.1)
 
   energy = showerreco.LinearEnergy()
   energy.SetUseModBox(True)
   energy.setVerbosity(False)
 
-  dqdx = showerreco.dQdxModule()
+  dqdx = argocalo.ArgoChargeModule()
 
   dedx = showerreco.dEdxFromdQdx()
   dedx.SetUsePitch(False)
   dedx.setVerbosity(False)
 
   # alg.AddShowerRecoModule(axis3D)
-  alg.AddShowerRecoModule(showerreco.AxisFromTracks())
-  # alg.AddShowerRecoModule(showerreco.StartPoint3DModule()  )
-  # alg.AddShowerRecoModule(energy)
-  # alg.AddShowerRecoModule(dqdx)
-  # alg.AddShowerRecoModule(dedx)
+  alg.AddShowerRecoModule(axis3D)
+  alg.AddShowerRecoModule(showerreco.StartPoint3DModule()  )
+  alg.AddShowerRecoModule(showerreco.OtherStartPoint3D()  )
+  alg.AddShowerRecoModule(energy)
+  alg.AddShowerRecoModule(dqdx)
+  alg.AddShowerRecoModule(dedx)
   # alg.AddShowerRecoModule(showerreco.StartPoint2DModule()  )
   #alg.AddShowerRecoModule(showerreco.OtherStartPoint3D()  )
   # alg.AddShowerRecoModule(showerreco.ShowerChargeModule()  )
 
-  # alg.AddShowerRecoModule(showerreco.GeoModule())
+  alg.AddShowerRecoModule(showerreco.GeoModule())
 
   alg.PrintModuleList()
 

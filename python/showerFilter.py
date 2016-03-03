@@ -57,15 +57,18 @@ def main(**args):
   larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
 
-  showerfilter=argofilter.ShowerFilter()
-  showerfilter.SetInputProducer("ccMergedFinal")
-  showerfilter.SetOutputProducer("ccShowers")
+  # showerfilter=argofilter.ShowerFilter()
+  # showerfilter.SetInputProducer("ccMergedFinal")
+  # showerfilter.SetOutputProducer("ccShowers")
+  # 
+  showerfilter=argofilter.BasicFilter()
+  showerfilter.SetInputProducer("cccluster")
   my_proc.add_process(showerfilter)
 
 
   if args['num_events'] != None:
       start=time.clock()
-      my_proc.run(4, nevents)
+      my_proc.run(0, nevents)
       end=time.clock()
       print "Processed ", nevents, " events in ", end-start, "seconds."
       print "Average per event: ", (end-start)/nevents, "seconds."

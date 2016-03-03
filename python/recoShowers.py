@@ -51,10 +51,6 @@ def main(**args):
   my_proc.set_output_file(args['data_output'])
   larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
-
-  # Get the list of processes from argotool
-  matchalg, priority = match.ArgoMatch()
-
   # 
   # Get a Shower Reco algorithm
   # 
@@ -65,17 +61,11 @@ def main(**args):
   # 
   showerRecoUnit = larlite.ShowerReco3D()
   showerRecoUnit.AddShowerAlgo(showerRecoAlg)
-  showerRecoUnit.SetInputProducer("ccMergedFinal")
+  showerRecoUnit.SetInputProducer("ccMatched")
   showerRecoUnit.SetOutputProducer("showerreco")
 
-  # 
-  # Attach Matching algorithm
-  #
-  showerRecoUnit.GetManager().AddPriorityAlgo(matchalg)
-  showerRecoUnit.GetManager().AddMatchAlgo(priority)
   my_proc.add_process(showerRecoUnit)
 
-  # my_proc.process_event(0)\
   if args['num_events'] != None:
       start=time.clock()
       my_proc.run(0, nevents)
