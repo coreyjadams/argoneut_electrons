@@ -45,8 +45,6 @@ namespace argomerge {
     virtual bool Bool(const ::cluster::cluster_params &cluster1,
                       const ::cluster::cluster_params &cluster2);
 
-
-
     bool isInFrontOf(          const ::cluster::cluster_params &cluster1,
                                const ::cluster::cluster_params &cluster2);
 

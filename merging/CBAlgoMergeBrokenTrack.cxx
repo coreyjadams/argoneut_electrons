@@ -13,7 +13,7 @@ CBAlgoMergeBrokenTrack::CBAlgoMergeBrokenTrack() : CBoolAlgoBase()
   // Set parameters for merging candadates
 
   _max_wire_gap = 3 * 0.4; // centimeters
-  _max_time_gap = 2; // centimeters
+  _max_time_gap = 0.4; // centimeters
   _max_dist_gap = 2.0 * 0.4;
   _min_cos_angle_diff = 0.98;
 
@@ -55,11 +55,11 @@ bool CBAlgoMergeBrokenTrack::Bool(
   //   _debug = true;
 
   if (_debug) {
-    std::cout << "\nWire1: " << wire1 / 0.4
-              << "\ttime1: " << time1 
+    std::cout << "\nWire1: " << wire1
+              << "\ttime1: " << time1
               << "\tn_hits: " << cluster1.hit_vector.size() << "\n"
-              << "wire2: " << wire2 / 0.4
-              << "\ttime2: " << time2 
+              << "wire2: " << wire2
+              << "\ttime2: " << time2
               << "\tn_hits: " << cluster2.hit_vector.size() << "\n"
               << " gap_w: " << _wire_gap
               << "\t gap_t: " << time_gap
@@ -78,15 +78,15 @@ bool CBAlgoMergeBrokenTrack::Bool(
       // Allowing exception to reach across the gap plus or minus 1 wire
 
       if (wire1 < wire2) {
-        if (fabs( (wire1 ) - 0.4*_deadWireStart ) < 0.5 &&
-            fabs( (wire2 ) - 0.4*_deadWireEnd ) < 0.5) {
+        if (fabs( (wire1 ) - 0.4 * _deadWireStart ) < 0.5 &&
+            fabs( (wire2 ) - 0.4 * _deadWireEnd ) < 0.5) {
           _gap_exception = true;
         }
 
 
       } else {
-        if (fabs( (wire2 ) - 0.4*_deadWireStart ) < 0.5 &&
-            fabs( (wire1 ) - 0.4*_deadWireEnd ) < 0.5) {
+        if (fabs( (wire2 ) - 0.4 * _deadWireStart ) < 0.5 &&
+            fabs( (wire1 ) - 0.4 * _deadWireEnd ) < 0.5) {
           _gap_exception = true;
         }
       }
@@ -240,21 +240,21 @@ bool CBAlgoMergeBrokenTrack::Bool(
 }
 
 
-int CBAlgoMergeBrokenTrack::getWireGap(cluster::cluster_params clust_i,
-                                       cluster::cluster_params clust_j,
-                                       size_t & index_i,
-                                       size_t & index_j
-                                      ) {
+float CBAlgoMergeBrokenTrack::getWireGap(cluster::cluster_params clust_i,
+    cluster::cluster_params clust_j,
+    size_t & index_i,
+    size_t & index_j
+                                        ) {
   // First, determine the upper and lower wire bounds of each cluster
   // if they aren't [lower_i, upper_i, lower_j,upper_j] (or i <-> j)
   // then they are overlapping, and return -1
 
   auto geom = larutil::Geometry::GetME();
 
-  unsigned int lower_i(clust_i.hit_vector.front().w);
-  unsigned int lower_j(clust_j.hit_vector.front().w);
-  unsigned int upper_i(clust_i.hit_vector.back().w);
-  unsigned int upper_j(clust_j.hit_vector.back().w);
+  float lower_i(clust_i.hit_vector.front().w);
+  float lower_j(clust_j.hit_vector.front().w);
+  float upper_i(clust_i.hit_vector.back().w);
+  float upper_j(clust_j.hit_vector.back().w);
 
   size_t lower_i_index(0);
   size_t lower_j_index(0);
@@ -263,7 +263,7 @@ int CBAlgoMergeBrokenTrack::getWireGap(cluster::cluster_params clust_i,
 
   size_t index = 0;
   for (auto hit : clust_i.hit_vector) {
-    unsigned int wire = hit.w;
+    float wire = hit.w;
     if (wire < lower_i) {
       lower_i = wire;
       lower_i_index = index;
@@ -277,7 +277,7 @@ int CBAlgoMergeBrokenTrack::getWireGap(cluster::cluster_params clust_i,
 
   index = 0;
   for (auto hit : clust_j.hit_vector) {
-    unsigned int wire = hit.w;
+    float wire = hit.w;
     if (wire < lower_j) {
       lower_j = wire;
       lower_j_index = index;
@@ -301,7 +301,7 @@ int CBAlgoMergeBrokenTrack::getWireGap(cluster::cluster_params clust_i,
 
   // At this point, the wires regions don't overlap;
   // Figure out how many wires apart they are:
-  int _wire_gap(0);
+  float _wire_gap(0);
   if (lower_j < lower_i) {
     _wire_gap = lower_i - upper_j;
     index_i = lower_i_index;

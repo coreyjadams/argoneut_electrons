@@ -43,15 +43,18 @@ public:
   float closestApproach(const ::cluster::cluster_params &cluster1,
                         const ::cluster::cluster_params &cluster2);
 
-  int getWireGap(cluster::cluster_params clust1,
-                 cluster::cluster_params clust2,
-                 size_t & index_i,
-                 size_t & index_j);
+  float getWireGap(cluster::cluster_params clust1,
+                   cluster::cluster_params clust2,
+                   size_t & index_i,
+                   size_t & index_j);
 
-  void setMinCosThetaCut(float f){_min_cos_angle_diff = f;}
+  void setMinCosThetaCut(float f) {_min_cos_angle_diff = f;}
 
-  void setDebug(bool b){_debug = b;}
-  void setMinHits(int b){_min_hits = b;}
+  void setDebug(bool b) {_debug = b;}
+  void setMinHits(int b) {_min_hits = b;}
+
+  void setMaxWireGap(float g) {_max_wire_gap = g;}
+  void setMaxTimeGap(float g) {_max_time_gap = g;}
 
 private:
 
