@@ -1,0 +1,19 @@
+To do for the argoneut shower finding
+
+1) Look at extendBlobMerger to see why it misses so many things. - DONE 
+1a) make track joining a little more aggressive. - DONE1
+
+2) Remove crossing muons from data sooner
+
+3) Run over more data events, find another electron shower.
+
+4) Develop a matching algorithm maybe based on recon'd tracks
+   Maybe based on time overlap, whatever.
+
+5) Run found shower clusters through shower reconstruction
+  -> gotta either make space points or fix up start point modules
+
+6) Run through shower reco on mc for signal and beam MC for eff, mis ID
+    -> Sort out misIDs by background
+
+7) Run over all of neutrino mode and scan the output, run over an equivalent MC production
