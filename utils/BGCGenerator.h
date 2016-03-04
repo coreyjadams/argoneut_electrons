@@ -21,6 +21,8 @@
 
 #include "DataFormat/hit.h"
 #include "DataFormat/cluster.h"
+#include "DataFormat/pfpart.h"
+#include "DataFormat/vertex.h"
 
 namespace argoutils {
 /**

@@ -2,6 +2,8 @@
 #define LARLITE_BGCGENERATOR_CXX
 
 #include "BGCGenerator.h"
+#include "LArUtil/Geometry.h"
+#include "LArUtil/GeometryHelper.h"
 
 namespace argoutils {
 
@@ -36,9 +38,10 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
 
 
   auto out_cluster_v = storage->get_data<larlite::event_cluster>("bootleg");
-  auto out_pfpart_v = storage->get_data<larlite::event_cluster>("bootleg");
+  auto out_pfpart_v = storage->get_data<larlite::event_pfpart>("bootleg");
+  auto out_vertex_v = storage->get_data<larlite::event_vertex>("bootleg");
   auto ev_ass = storage->get_data<larlite::event_ass>(out_cluster_v->name());
-  auto ev_ass = storage->get_data<larlite::event_ass>(out_pfpart_v->name());
+
   // std::cout << "Initial id is " << out_cluster_v -> event_id() << std::endl;
 
   // set event ID through storage manager
@@ -50,6 +53,7 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
   int run = ev_hit->run();
   int event = ev_hit->event_id();
   larlite::AssSet_t hit_ass;
+  larlite::AssSet_t pfpart_ass;
 
   // Now, check to see if this event is actually in the data from BGC:
   if (_clusterData.find( run ) != _clusterData.end() ) {
@@ -58,20 +62,115 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
       // in this case, it has this run AND this event.
       // Do the cluster building:
       auto & bg_clusters = _clusterData[run][event];
-      std::cout << "This event has " << bg_clusters.size()
-                << "clusters." << std::endl;
+      // std::cout << "This event has " << bg_clusters.size()
+      //           << "clusters." << std::endl;
 
       // Now go through the hit information and find the real hits
       // that best match:
       for (auto & bgclust : bg_clusters) {
         std::vector<unsigned int> hit_indexes = buildCluster(bgclust, ev_hit);
         out_cluster_v->push_back(larlite::cluster());
-        std::cout << "found " << hit_indexes.size() << " hits." << std::endl;
         hit_ass.push_back(hit_indexes);
       }
 
       ev_ass->set_association(out_cluster_v->id(), ev_hit->id(), hit_ass);
 
+
+      // If we've gotten this far, it means that clusters have been made.
+      // In that case, match the clusters across planes using start point info
+      // The indexes of the clusters in bgcluster and out_cluster_v match
+
+      // Keep track of which clusters have been matched:
+      std::vector<unsigned int> matched_clusters;
+      for (size_t i_clust = 0; i_clust < bg_clusters.size(); i_clust ++) {
+        // std::cout << "Trying to make matches to cluster " << i_clust << std::endl;
+        // Check to see if there are hits associated with this cluster:
+        if (hit_ass.at(i_clust).size() == 0) {
+          continue;
+        }
+
+        // Check to see if i is matched already:
+        if (std::find(matched_clusters.begin(),
+                      matched_clusters.end(),
+                      i_clust) != matched_clusters.end()) {
+          continue;
+        }
+
+        for (size_t j_clust = i_clust + 1; j_clust < bg_clusters.size(); j_clust ++) {
+
+          // Check to see if there are hits associated with this cluster:
+          if (hit_ass.at(j_clust).size() == 0) {
+            continue;
+          }
+
+          // Check to see if j is matched already:
+          if (std::find(matched_clusters.begin(),
+                        matched_clusters.end(),
+                        j_clust) != matched_clusters.end()) {
+            continue;
+          }
+
+          // If the clusters are from the same planes, skip it:
+          if (bg_clusters.at(i_clust).currplane ==
+              bg_clusters.at(j_clust).currplane) {
+            continue;
+          }
+          // At this point, each cluster has hits and is from a separate plane.
+          // If the start points are reasonably close in time, call it a match
+          //
+          double i_start_time = bg_clusters.at(i_clust).starthit[1];
+          double j_start_time = bg_clusters.at(j_clust).starthit[1];
+
+          // std::cout << "Comparing start times "
+          //           << i_start_time << ", " << j_start_time
+          //           << std::endl;
+
+          if (fabs(i_start_time - j_start_time) < 35) {
+            // Make a match!
+            // std::cout << "Successful match!!" << std::endl;
+            out_pfpart_v -> push_back(::larlite::pfpart());
+            pfpart_ass.push_back(std::vector<unsigned int>());
+            pfpart_ass.back().push_back(i_clust);
+            pfpart_ass.back().push_back(j_clust);
+
+            // make a vertex by comparing their start times and wires
+            double i_start_wire = bg_clusters.at(i_clust).starthit[0];
+            double j_start_wire = bg_clusters.at(j_clust).starthit[0];
+
+            std::cout << "Plane " << bg_clusters.at(i_clust).currplane
+                      << ", start point (" << i_start_wire << ", "
+                      << i_start_time << ")\n"
+                      << "Plane " << bg_clusters.at(j_clust).currplane
+                      << ", start point (" << j_start_wire << ", "
+                      << j_start_time << ")\n";
+
+
+            double xyz[3];
+
+            // // Use this method:
+            // from geometry
+            auto geom = larutil::Geometry::GetME();
+            auto geomHelper = larutil::GeometryHelper::GetME();
+            geom -> IntersectionPoint(i_start_wire,  j_start_wire,
+                                      bg_clusters.at(i_clust).currplane,
+                                      bg_clusters.at(j_clust).currplane,
+                                      xyz[1], xyz[2]);
+
+            xyz[0] = 0.5 * (i_start_time + j_start_time) * geomHelper->TimeToCm();
+            out_vertex_v->push_back(::larlite::vertex(xyz));
+            std::cout << "Vertex is (" << xyz[0]
+                      << ", " << xyz[1]
+                      << ", " << xyz[2]
+                      << ")\n";
+
+
+          }
+        }
+
+        ev_ass -> set_association(out_pfpart_v->id(),
+                                  out_cluster_v->id(),
+                                  pfpart_ass);
+      }
 
     }
     else return false;
@@ -79,18 +178,34 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
   else return false;
 
 
+
+
+
+
   return true;
 }
 
 std::vector<unsigned int>  BGCGenerator::buildCluster(
-  const BCGData&  bgclust,
+  const BCGData &  bgclust,
   larlite::event_hit * ev_hit) {
+
 
   std::vector<unsigned int> returnVec;
 
   // For each hit in BGCluster, find the closest hit.
   // Require the same wire, and best match in time.
   // Oh and the same plane, obviously.
+
+  // A lot of these bootleg clusters have one hit that is
+  // really far in front of the rest.
+  // So, keeping track of the wire of the 3 leftmost hits.
+  // (and their indexes)
+  // If the wire gap is really huge after all the hits are added,
+  // drop that single hit.
+
+  double lowest_wire = 239;
+  double second_lowest_wire = 240;
+  size_t lowest_wire_index, second_lowest_wire_index;
 
   for (size_t i = 0; i < bgclust.hitwire.size(); i++) {
     double _wire = bgclust.hitwire.at(i);
@@ -121,6 +236,12 @@ std::vector<unsigned int>  BGCGenerator::buildCluster(
     // If there is just one match, use it:
     if ( matches.size() == 1 ) {
       returnVec.push_back(matches.at(0));
+      if (ev_hit->at(matches.at(0)).WireID().Wire < lowest_wire) {
+        second_lowest_wire = lowest_wire;
+        lowest_wire = ev_hit->at(matches.at(0)).WireID().Wire;
+        second_lowest_wire_index = lowest_wire_index;
+        lowest_wire_index = matches.at(0);
+      }
       continue;
     }
     else {
@@ -140,10 +261,26 @@ std::vector<unsigned int>  BGCGenerator::buildCluster(
         }
       }
       returnVec.push_back(best_match);
+      if (ev_hit->at(best_match).WireID().Wire < lowest_wire) {
+        second_lowest_wire = lowest_wire;
+        lowest_wire = ev_hit->at(best_match).WireID().Wire;
+        second_lowest_wire_index = lowest_wire_index;
+        lowest_wire_index = best_match;
+      }
     }
 
 
   }
+
+  // Now check out the wire gap:
+  if (second_lowest_wire - lowest_wire > 10) {
+    // Then remove the lowest wire's hit from the collection:
+    returnVec.erase(std::remove(returnVec.begin(),
+                                returnVec.end(),
+                                lowest_wire_index),
+                    returnVec.end());
+  }
+
 
   return returnVec;
 
