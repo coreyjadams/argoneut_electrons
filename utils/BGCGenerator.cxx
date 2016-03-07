@@ -63,7 +63,7 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
       // Do the cluster building:
       auto & bg_clusters = _clusterData[run][event];
       // std::cout << "This event has " << bg_clusters.size()
-      //           << "clusters." << std::endl;
+      //           << " clusters." << std::endl;
 
       // Now go through the hit information and find the real hits
       // that best match:
@@ -71,6 +71,7 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
         std::vector<unsigned int> hit_indexes = buildCluster(bgclust, ev_hit);
         out_cluster_v->push_back(larlite::cluster());
         hit_ass.push_back(hit_indexes);
+
       }
 
       ev_ass->set_association(out_cluster_v->id(), ev_hit->id(), hit_ass);
@@ -128,7 +129,7 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
           if (fabs(i_start_time - j_start_time) < 35) {
             // Make a match!
             // std::cout << "Successful match!!" << std::endl;
-            out_pfpart_v -> push_back(::larlite::pfpart());
+            out_pfpart_v -> push_back(::larlite::pfpart(11,0,0,std::vector<size_t>()));
             pfpart_ass.push_back(std::vector<unsigned int>());
             pfpart_ass.back().push_back(i_clust);
             pfpart_ass.back().push_back(j_clust);
@@ -137,12 +138,12 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
             double i_start_wire = bg_clusters.at(i_clust).starthit[0];
             double j_start_wire = bg_clusters.at(j_clust).starthit[0];
 
-            std::cout << "Plane " << bg_clusters.at(i_clust).currplane
-                      << ", start point (" << i_start_wire << ", "
-                      << i_start_time << ")\n"
-                      << "Plane " << bg_clusters.at(j_clust).currplane
-                      << ", start point (" << j_start_wire << ", "
-                      << j_start_time << ")\n";
+            // std::cout << "Plane " << bg_clusters.at(i_clust).currplane
+            //           << ", start point (" << i_start_wire << ", "
+            //           << i_start_time << ")\n"
+            //           << "Plane " << bg_clusters.at(j_clust).currplane
+            //           << ", start point (" << j_start_wire << ", "
+            //           << j_start_time << ")\n";
 
 
             double xyz[3];
@@ -158,10 +159,10 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
 
             xyz[0] = 0.5 * (i_start_time + j_start_time) * geomHelper->TimeToCm();
             out_vertex_v->push_back(::larlite::vertex(xyz));
-            std::cout << "Vertex is (" << xyz[0]
-                      << ", " << xyz[1]
-                      << ", " << xyz[2]
-                      << ")\n";
+            // std::cout << "Vertex is (" << xyz[0]
+            //           << ", " << xyz[1]
+            //           << ", " << xyz[2]
+            //           << ")\n";
 
 
           }
@@ -231,6 +232,9 @@ std::vector<unsigned int>  BGCGenerator::buildCluster(
       index ++;
     }
 
+    // std::cout << "Got " << matches.size() << " candidates" << std::endl;
+    if (matches.size() == 0 )
+      continue;
 
     // Now check all the plausible matches to see which has the best time.
     // If there is just one match, use it:
@@ -281,6 +285,7 @@ std::vector<unsigned int>  BGCGenerator::buildCluster(
                     returnVec.end());
   }
 
+  // std::cout << "Finished, returning " << returnVec.size() << " hits." << std::endl;
 
   return returnVec;
 
