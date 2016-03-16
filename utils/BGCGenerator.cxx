@@ -276,14 +276,14 @@ std::vector<unsigned int>  BGCGenerator::buildCluster(
 
   }
 
-  // Now check out the wire gap:
-  if (second_lowest_wire - lowest_wire > 10) {
-    // Then remove the lowest wire's hit from the collection:
-    returnVec.erase(std::remove(returnVec.begin(),
-                                returnVec.end(),
-                                lowest_wire_index),
-                    returnVec.end());
-  }
+  // // Now check out the wire gap:
+  // if (second_lowest_wire - lowest_wire > 10) {
+  //   // Then remove the lowest wire's hit from the collection:
+  //   returnVec.erase(std::remove(returnVec.begin(),
+  //                               returnVec.end(),
+  //                               lowest_wire_index),
+  //                   returnVec.end());
+  // }
 
   // std::cout << "Finished, returning " << returnVec.size() << " hits." << std::endl;
 

@@ -24,13 +24,15 @@ my_proc.enable_filter(True)
 
 # Specify output root file name
 # my_proc.set_ana_output_file("from_test_ana_you_can_remove_me.root");
-# my_proc.set_output_file("anu_electrons_bootleg.root");
-my_proc.set_output_file("anu_photons_bootleg.root");
+my_proc.set_output_file("anu_electrons_bootleg.root");
+# my_proc.set_output_file("jasaadi_photons_antineutrino_bootleg.root");
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
 
 bgcg = argoutils.BGCGenerator()
+# bgcg.setBGCFile("/home/cadams/larlite/UserDev/argoneut_electrons/ScanFilejasaadi_neutrino.root")
+# bgcg.setBGCFile("/home/cadams/larlite/UserDev/argoneut_electrons/ScanFilejasaadi_antineutrino.root")
 bgcg.setBGCFile("/home/cadams/larlite/UserDev/argoneut_electrons/ScanFileandrzejs.root")
 
 my_proc.add_process(bgcg)
