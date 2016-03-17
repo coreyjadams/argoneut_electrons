@@ -13,6 +13,37 @@ import numpy as np
 import pandas as pd
 from root_numpy import root2array
 
+electrons = dict()
+electrons.update({620 : [3756]})
+electrons.update({622 : [2738]})
+electrons.update({629 : [32812]})
+electrons.update({634 : [25212]})
+electrons.update({649 : [31328]})
+electrons.update({650 : [11366]})
+electrons.update({653 : [7810]})
+electrons.update({661 : [30777]})
+electrons.update({672 : [2470]})
+electrons.update({673 : [26021]})
+electrons.update({676 : [18344]})
+electrons.update({697 : [9815]})
+electrons.update({711 : [2465]})
+electrons.update({712 : [10189]})
+electrons.update({718 : [3716]})
+electrons.update({720 : [34843,4063]})
+electrons.update({721 : [27845]})
+electrons.update({724 : [13980,21713,22877]})
+electrons.update({738 : [3028,31324]})
+electrons.update({755 : [27529]})
+electrons.update({815 : [8471]})
+electrons.update({823 : [17611]})
+electrons.update({827 : [29437]})
+electrons.update({828 : [3901]})
+electrons.update({832 : [26531]})
+electrons.update({839 : [19489]})
+electrons.update({843 : [16160]})
+electrons.update({847 : [11704]})
+
+
 
 Q_AREA =  [0.8152236862020928, 0.8078780681936417]
 Q_AMP =   [9.207991314407435, 18.562195730195935]
@@ -20,6 +51,9 @@ E_AREA =  [185.00584273133333, 44.90267652367623]
 E_AMP =   [184.9556285310639, 45.1669419567248]
 
 def calcdEdx(df):
+
+    # df.info()
+    # print df
 
     df['c_hitcharges'] *= df["c_lifetime_corr"]
     df['c_hitpeaks'] *= df["c_lifetime_corr"]
@@ -118,7 +152,7 @@ def loopThroughEvents(df):
         photons=[4.6]*len(row['c_hitwires'])
         plt.close('all')
         # Two subplots, unpack the axes array immediately
-        f, (ax1, ax2) = plt.subplots(1, 2, sharey=True,figsize=[20,10])
+        f, (ax1, ax2) = plt.subplots(1, 2, sharey=True,figsize=[15,7.5])
         f.suptitle("dE/dx, Run {r}, Event {e}".format(r=row.run, e=row.event))
         ax1.set_title('Collection Plane')
         ax1.plot(row['c_hitwires'],row['c_charge_dedx_box'],marker = '+',markersize=20)
@@ -153,14 +187,30 @@ def loopThroughEvents(df):
 
 def plotdEdx(electrons_df,photons_df,branch_name):
 
-  electron_data = electrons_df[branch_name]
-  photon_data = electrons_df[branch_name]
+    electron_data = np.hist(electrons_df[branch_name])
+    photon_data = photons_df[branch_name]
 
-  f,ax = plt.subplots()
-  ax.hist(electron_data,bins=np.linspace(0,10,20),alpha=0.5)
-  # ax.hist(photon_data,bins=np.linspace(0,10,20),alpha=0.5)
+    f,ax = plt.subplots()
+    # ax.hist(electron_data,bins=np.linspace(0,10,20),alpha=0.5)
+    ax.hist([electron_data,photon_data],bins=np.linspace(0,10,20),alpha=0.5)
 
-  plt.show()
+    plt.show()
+
+
+def selectElectronEvents(df):
+
+  for index, row in df.iterrows():
+    print "looking for {r},{e}".format(r=row['run'],e=row['event'])
+    _pass = False
+    if row['run'] in electrons:
+      if row['event'] in electrons[row['run']]:
+        _pass = True
+    else:
+      print "{r} not in electrons!".format(r=row['run']) 
+    # Pop out this row if false
+    if not _pass:
+        print df[index]
+        df.pop(index)
 
 if __name__ == '__main__':
   print "Making dE/dx plots."
@@ -177,6 +227,14 @@ if __name__ == '__main__':
 
   for f in files:
     mydf= pd.DataFrame( root2array( f ) )
+
+    if 'electron' in f:
+      print mydf
+      selectElectronEvents(mydf)
+      mydf.info()
+      exit(0)
+
+
     calcdEdx(mydf)
     # mydf.info()
     # mydf.hist('i_charge_dedx_mean_no_outliers',bins=np.linspace(0,10,10))
@@ -193,8 +251,7 @@ if __name__ == '__main__':
   # loopThroughEvents(dataframes[0])
 
   # This function will make the dE/dx plot for electrons and photons:
-  plotdEdx(dataframes[0],dataframes[1],"c_charge_dedx_box_mean")
-
+  plotdEdx(dataframes[0],dataframes[1],"i_charge_dedx_box_mean_no_outliers")
 
       
 # i=np.linspace(1,12,12)
