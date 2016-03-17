@@ -42,16 +42,16 @@ bool dEdxShowerAna::initialize() {
         tree->Branch("c_hitcharges", &collection_hitcharges);
         tree->Branch("c_hitpeaks", &collection_hitpeaks);
         tree->Branch("c_starthit", &collection_starthit);
-        tree->Branch("c_lifetime_corr",&collection_lifetime_corr);
+        tree->Branch("c_lifetime_corr", &collection_lifetime_corr);
+        tree->Branch("c_pitch", &collection_pitch);
+        tree->Branch("c_pitch_err", &collection_pitch_err);
         tree->Branch("i_hittimes", &induction_hittimes);
         tree->Branch("i_hitwires", &induction_hitwires);
         tree->Branch("i_hitcharges", &induction_hitcharges);
         tree->Branch("i_hitpeaks", &induction_hitpeaks);
         tree->Branch("i_starthit", &induction_starthit);
-        tree->Branch("i_lifetime_corr",&induction_lifetime_corr);
-
-        tree->Branch("c_pitch", &collection_pitch);
-
+        tree->Branch("i_lifetime_corr", &induction_lifetime_corr);
+        tree->Branch("i_pitch_err", &induction_pitch_err);
         tree->Branch("i_pitch", &induction_pitch);
     }
 
@@ -99,6 +99,11 @@ bool dEdxShowerAna::analyze(storage_manager* storage) {
 
     auto ev_clus = storage -> get_data<larlite::event_cluster> ("bootleg");
 
+    if (ev_clus -> size() != 2){
+        std::cout << "Skipping event because there are " << ev_clus -> size() << " clusters." << std::endl;
+        return false;
+    }
+
     larlite::event_hit * ev_hit = nullptr;
     auto hit_ass = storage -> find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
 
@@ -145,8 +150,8 @@ bool dEdxShowerAna::analyze(storage_manager* storage) {
                 }
             }
         }
-        // Now we have the right bgc.
-        // Print out the start point from BGC:
+        // // Now we have the right bgc.
+        // // Print out the start point from BGC:
         // std::cout << "Start Point is: (" << this_bgcluster.starthit.front() << ", "
         //           << this_bgcluster.starthit.back() << ") "
         //           << std::endl;
@@ -165,6 +170,7 @@ bool dEdxShowerAna::analyze(storage_manager* storage) {
         getClosestHits(ev_hit, hit_indexes, close_hit_indexes, this_bgcluster.starthit);
 
         // std::cout << "Found " << close_hit_indexes.size() << " hits." << std::endl;
+        unwindVectors(ev_hit, close_hit_indexes);
 
         // // Print out the hits:
         // for (unsigned int i_hit = 0; i_hit < close_hit_indexes.size(); i_hit++) {
@@ -247,8 +253,17 @@ bool dEdxShowerAna::analyze(storage_manager* storage) {
 
     induction_pitch = getPitch(startDir, 0);
     collection_pitch = getPitch(startDir, 1);
+    // Compute the error on the pitch, which is generated from the uncertainty in
+    // the 3D axis projection compared to the 2D slope.
+    double induction_3D_slope = geomHelper->Slope_3Dto2D(startDir, 0);
+    double collection_3D_slope = geomHelper->Slope_3Dto2D(startDir, 1);
+
+    collection_pitch_err = fabs((collection_3D_slope - collection_slope) / collection_slope);
+    induction_pitch_err = fabs((induction_3D_slope - induction_slope) / induction_slope);
 
 
+    // std::cout << "Collection pitch is: " << collection_pitch << " +/- " << collection_pitch_err
+    // << "\nInduction pitch is " << induction_pitch <<  " +/- " << induction_pitch_err << std::endl;
 
     tree -> Fill();
 
@@ -308,7 +323,40 @@ void dEdxShowerAna::getClosestHits(larlite::event_hit * ev_hit, std::vector<unsi
     return;
 }
 
+void dEdxShowerAna::unwindVectors(larlite::event_hit * ev_hit, std::vector<size_t> & close_hit_indexes) {
 
+    // This function unwinds the vectors based on wire number so that they are,
+    // at least, in an order.
+    //
+    // It compares the first and last hit and sorts in ascending or descending order accordingly
+
+    // It runs right after finding the close hits, so that the actual sorted variables
+    // are the close hit indexes.
+
+    // Compare the wire of the first and last hit.
+    if (ev_hit -> at(close_hit_indexes.front()) < ev_hit -> at(close_hit_indexes.back())) {
+        //Sort ascending
+        // Don't need a complicated sorting algorithm here.
+        bool sorted = false;
+        while (! sorted) {
+            bool broke = false;
+            for (size_t i = 0; i < close_hit_indexes.size() - 1; i ++) {
+                if (ev_hit->at(close_hit_indexes.at(i)).WireID().Wire
+                        > ev_hit->at(close_hit_indexes.at(i + 1)).WireID().Wire )  {
+                    unsigned int temp = close_hit_indexes.at(i + 1);
+                    close_hit_indexes.at(i + 1) = close_hit_indexes.at(i);
+                    close_hit_indexes.at(i) = temp;
+                    broke = true;
+                    break;
+                }
+            }
+            if (! broke)
+                sorted = true;
+        }
+
+    }
+
+}
 
 double dEdxShowerAna::getPitch(const TVector3 & dir3D, int pl ) {
 

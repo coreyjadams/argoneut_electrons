@@ -62,7 +62,11 @@ public:
 
   double getPitch(const TVector3 & dir3D, int plane );
 
+
+
 protected:
+
+  void unwindVectors(larlite::event_hit * ev_hit, std::vector<size_t> & close_hit_indexes);
 
   std::map< int, std::map< int,  std::vector<argoutils::BCGData> > > bcgdata;
 
@@ -87,6 +91,7 @@ protected:
   std::vector<double> collection_lifetime_corr;
   double collection_slope;
   double collection_pitch;
+  double collection_pitch_err;
 
   std::vector<double> induction_hittimes;
   std::vector<double> induction_hitwires;
@@ -96,6 +101,7 @@ protected:
   std::vector<double> induction_lifetime_corr;
   double induction_slope;
   double induction_pitch;
+  double induction_pitch_err;
 
 
 };

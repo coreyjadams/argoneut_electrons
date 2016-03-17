@@ -11,7 +11,10 @@
 
 #pragma link C++ class larlite::MCElectronEstimate+;
 #pragma link C++ class larlite::MCShowerAna+;
+#pragma link C++ class larlite::dEdxShowerAna+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
 
