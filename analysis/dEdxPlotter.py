@@ -187,30 +187,77 @@ def loopThroughEvents(df):
 
 def plotdEdx(electrons_df,photons_df,branch_name):
 
-    electron_data = np.hist(electrons_df[branch_name])
-    photon_data = photons_df[branch_name]
+    bins = np.linspace(0,10,21)
+    electron_data, bin_edges = np.histogram(electrons_df[branch_name],bins)
+    photon_data, bin_edges = np.histogram(photons_df[branch_name],bins)
+
+    electron_err = []
+    electron_frac_err = []
+    photon_err = []
+    photon_frac_err = []
+    for e_val,p_val in zip(electron_data,photon_data):
+      electron_err.append(math.sqrt(e_val))
+      if e_val != 0:
+        electron_frac_err.append(math.sqrt(e_val) / e_val)
+      else:
+        electron_frac_err.append(0.0)
+
+      photon_err.append(math.sqrt(p_val))
+      if p_val != 0:
+        photon_frac_err.append(math.sqrt(p_val) / p_val)
+      else:
+        photon_frac_err.append(0.0)
+
+
+    x = bin_edges + 0.25
 
     f,ax = plt.subplots()
+    ax.set_title("Electron Photon separation, all events")
     # ax.hist(electron_data,bins=np.linspace(0,10,20),alpha=0.5)
-    ax.hist([electron_data,photon_data],bins=np.linspace(0,10,20),alpha=0.5)
+    ax.errorbar(x[:-1],electron_data,xerr=0.25,yerr=electron_err,label="Electrons")
+    ax.errorbar(x[:-1],photon_data,xerr=0.25,yerr=photon_err,label="Photons")
+    plt.xlabel("dE/dx [MeV/cm]")
+    plt.ylabel("Number of Events")
+    plt.legend()
+    plt.grid(True)
+
+    electron_data_norm, bin_edges = np.histogram(electrons_df[branch_name],bins,density=True)
+    photon_data_norm, bin_edges = np.histogram(photons_df[branch_name],bins,density=True)
+    
+    electron_err_norm = []
+    for e_val,frac_err in zip(electron_data_norm,electron_frac_err):
+      electron_err_norm.append(e_val*frac_err)
+    
+    photon_err_norm = []
+    for p_val,frac_err in zip(photon_data_norm,photon_frac_err):
+      photon_err_norm.append(p_val*frac_err)
+
+    f2,ax2 = plt.subplots()
+    ax2.set_title("Electron Photon separation, unit normalized")
+    ax2.errorbar(x[:-1],electron_data_norm,xerr=0.25,yerr=electron_err_norm,label="Electrons")
+    ax2.errorbar(x[:-1],photon_data_norm,xerr=0.25,yerr=photon_err_norm,label="Photons")
+    plt.xlabel("dE/dx [MeV/cm]")
+    plt.ylabel("Arbitrary Units")
+    plt.legend()
+    plt.grid(True)
 
     plt.show()
 
 
 def selectElectronEvents(df):
 
+  dropIndexes = []
   for index, row in df.iterrows():
-    print "looking for {r},{e}".format(r=row['run'],e=row['event'])
     _pass = False
     if row['run'] in electrons:
       if row['event'] in electrons[row['run']]:
         _pass = True
-    else:
-      print "{r} not in electrons!".format(r=row['run']) 
     # Pop out this row if false
-    if not _pass:
-        print df[index]
-        df.pop(index)
+    if _pass is False:
+        # print "Dropping {r},{e}, index {i}".format(i=index,r=row['run'],e=row['event'])
+        dropIndexes.append(index)
+
+  df.drop(df.index[dropIndexes],inplace=True)
 
 if __name__ == '__main__':
   print "Making dE/dx plots."
@@ -229,10 +276,7 @@ if __name__ == '__main__':
     mydf= pd.DataFrame( root2array( f ) )
 
     if 'electron' in f:
-      print mydf
       selectElectronEvents(mydf)
-      mydf.info()
-      exit(0)
 
 
     calcdEdx(mydf)
@@ -241,17 +285,19 @@ if __name__ == '__main__':
     # plt.show()
     
     # This allows to reject events where the uncertainty on the pitch is high:
-    mydf = mydf.query('i_pitch_err < 0.1 and c_pitch_err < 0.1')
+    # mydf = mydf.query('i_pitch_err < 0.1 and c_pitch_err < 0.1')
     
 
     dataframes.append(mydf)
 
 
   # This function will loop through the events and draw dEdx vs wire:
+
   # loopThroughEvents(dataframes[0])
 
   # This function will make the dE/dx plot for electrons and photons:
-  plotdEdx(dataframes[0],dataframes[1],"i_charge_dedx_box_mean_no_outliers")
+  plotdEdx(dataframes[0],dataframes[1],"i_charge_dedx_box_LMA")
+  plotdEdx(dataframes[0],dataframes[1],"i_charge_dedx_box_median")
 
       
 # i=np.linspace(1,12,12)
