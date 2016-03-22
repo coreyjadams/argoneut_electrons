@@ -3,6 +3,11 @@ import larlite
 from ROOT import larlite, larutil
 import sys
 
+area_q_constants = [0.8152236610976646, 0.8079060827478044]
+amp_q_constants  = [9.207990852976915, 18.562009816939195]
+
+area_e_constants = [185.00584273133333, 44.90267652367623]
+amp_e_constants  = [184.9556285310639, 45.1669419567248]
 
 def runCaloMuons(amp_q_constants, area_q_constants, amp_e_constants, area_e_constants, f):
 
@@ -82,6 +87,50 @@ def runCaloMuons(amp_q_constants, area_q_constants, amp_e_constants, area_e_cons
 
     return area_q_corrections, amp_q_corrections, area_e_corrections, amp_e_corrections
 
+def runCaloMuonsWires(f, wireCorrections=None):
+
+    larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
+
+    # Create ana_processor instance
+    my_proc = larlite.ana_processor()
+
+    # Set input root file
+    my_proc.add_input_file(f)
+
+    # Specify IO mode
+    my_proc.set_io_mode(larlite.storage_manager.kREAD)
+
+    # my_proc.set_output_file("out.root")
+
+    # Specify output root file name
+    my_proc.set_ana_output_file("from_test_ana_you_can_remove_me.root")
+
+    # Attach an analysis unit ... here we use a base class which does nothing.
+    # Replace with your analysis unit if you wish.
+    caloAlg = larlite.ArgoCaloXingMuons()
+
+    if wireCorrections is not None:
+        caloAlg.setWireCorrections(wireCorrections)
+
+    caloAlg.setAreaQConstant(area_q_constants[0], 0)
+    caloAlg.setAreaQConstant(area_q_constants[1], 1)
+    caloAlg.setAmpQConstant(amp_q_constants[0], 0)
+    caloAlg.setAmpQConstant(amp_q_constants[1], 1)
+
+    caloAlg.setAreaEConstant(area_e_constants[0], 0)
+    caloAlg.setAreaEConstant(area_e_constants[1], 1)
+    caloAlg.setAmpEConstant(amp_e_constants[0], 0)
+    caloAlg.setAmpEConstant(amp_e_constants[1], 1)
+
+    my_proc.add_process(caloAlg)
+
+    # Let's run it.
+    my_proc.run(0)
+
+    # get the wire corrections and return them:
+    return caloAlg.getWireCorrections()
+
+    # Target for dE/dx is fix at 2.3 MeV/cm
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
@@ -101,96 +150,117 @@ if __name__ == '__main__':
     area_q_constants = [0.8152236610976646, 0.8079060827478044]
     amp_q_constants  = [9.207990852976915, 18.562009816939195]
 
-    area_e_constants = [222.7151820208505, 59.975150719617496]
-    amp_e_constants  = [222.01797957837144, 59.63675122858065]
+    area_e_constants = [185.00584273133333, 44.90267652367623]
+    amp_e_constants  = [184.9556285310639, 45.1669419567248]
 
     worstCorrection = 0.5
 
-    it = 0
-    while worstCorrection > target_error:
+    # it = 0
+    # while worstCorrection > target_error:
 
-        corrections = runCaloMuons(amp_q_constants,
-                                   area_q_constants,
-                                   amp_e_constants,
-                                   area_e_constants,
-                                   f)
+    #     corrections = runCaloMuons(amp_q_constants,
+    #                                area_q_constants,
+    #                                amp_e_constants,
+    #                                area_e_constants,
+    #                                f)
 
-        area_q_corrections = corrections[0]
-        amp_q_corrections = corrections[1]
-        area_e_corrections = corrections[2]
-        amp_e_corrections = corrections[3]
+    #     area_q_corrections = corrections[0]
+    #     amp_q_corrections = corrections[1]
+    #     area_e_corrections = corrections[2]
+    #     amp_e_corrections = corrections[3]
 
-        # if abs(area_q_corrections[0] - 1.0) > worstCorrection:
-        worstCorrection = abs(area_q_corrections[0] - 1.0)
-        if abs(area_q_corrections[1] - 1.0) > worstCorrection:
-            worstCorrection = abs(area_q_corrections[1] - 1.0)
-        if abs(amp_q_corrections[0] - 1.0) > worstCorrection:
-            worstCorrection = abs(amp_q_corrections[0] - 1.0)
-        if abs(amp_q_corrections[1] - 1.0) > worstCorrection:
-            worstCorrection = abs(amp_q_corrections[1] - 1.0)
+    #     # if abs(area_q_corrections[0] - 1.0) > worstCorrection:
+    #     worstCorrection = abs(area_q_corrections[0] - 1.0)
+    #     if abs(area_q_corrections[1] - 1.0) > worstCorrection:
+    #         worstCorrection = abs(area_q_corrections[1] - 1.0)
+    #     if abs(amp_q_corrections[0] - 1.0) > worstCorrection:
+    #         worstCorrection = abs(amp_q_corrections[0] - 1.0)
+    #     if abs(amp_q_corrections[1] - 1.0) > worstCorrection:
+    #         worstCorrection = abs(amp_q_corrections[1] - 1.0)
 
-        print "Worst correction factor is ", worstCorrection
+    #     print "Worst correction factor is ", worstCorrection
 
-        # print "Correction factors:"
-        # print area_q_corrections
-        # print amp_q_corrections
-        # print area_e_corrections
-        # print amp_e_corrections
+    #     # print "Correction factors:"
+    #     # print area_q_corrections
+    #     # print amp_q_corrections
+    #     # print area_e_corrections
+    #     # print amp_e_corrections
 
-        area_q_constants[0] = area_q_constants[0] / area_q_corrections[0]
-        area_q_constants[1] = area_q_constants[1] / area_q_corrections[1]
+    #     area_q_constants[0] = area_q_constants[0] / area_q_corrections[0]
+    #     area_q_constants[1] = area_q_constants[1] / area_q_corrections[1]
 
-        amp_q_constants[0] = amp_q_constants[0] / amp_q_corrections[0]
-        amp_q_constants[1] = amp_q_constants[1] / amp_q_corrections[1]
+    #     amp_q_constants[0] = amp_q_constants[0] / amp_q_corrections[0]
+    #     amp_q_constants[1] = amp_q_constants[1] / amp_q_corrections[1]
 
-        it += 1
+    #     it += 1
 
-        if (it > 5):
-            break
-
-
+    #     if (it > 5):
+    #         break
 
 
 
+
+
+    # worstCorrection = 0.5
+
+    # it = 0
+    # while worstCorrection > target_error:
+
+    #     corrections = runCaloMuons(amp_q_constants,
+    #                                area_q_constants,
+    #                                amp_e_constants,
+    #                                area_e_constants,
+    #                                f)
+
+    #     area_q_corrections = corrections[0]
+    #     amp_q_corrections = corrections[1]
+    #     area_e_corrections = corrections[2]
+    #     amp_e_corrections = corrections[3]
+
+
+    #     # if abs(area_q_corrections[0] - 1.0) > worstCorrection:
+    #     worstCorrection = abs(area_e_corrections[0] - 1.0)
+    #     if abs(area_e_corrections[1] - 1.0) > worstCorrection:
+    #         worstCorrection = abs(area_e_corrections[1] - 1.0)
+    #     if abs(amp_e_corrections[0] - 1.0) > worstCorrection:
+    #         worstCorrection = abs(amp_e_corrections[0] - 1.0)
+    #     if abs(amp_e_corrections[1] - 1.0) > worstCorrection:
+    #         worstCorrection = abs(amp_e_corrections[1] - 1.0)
+
+    #     print "Worst correction factor is ", worstCorrection
+
+
+    #     area_e_constants[0] = area_e_constants[0] / area_e_corrections[0]
+    #     area_e_constants[1] = area_e_constants[1] / area_e_corrections[1]
+
+    #     amp_e_constants[0] = amp_e_constants[0] / amp_e_corrections[0]
+    #     amp_e_constants[1] = amp_e_constants[1] / amp_e_corrections[1]
+
+    #     it += 1
+
+    #     if (it > 5):
+    #         break
+    #     
+            
+
+
+    # Run in a mode where just wire-by-wire calibrations are computed
     worstCorrection = 0.5
-
     it = 0
-    while worstCorrection > target_error:
-
-        corrections = runCaloMuons(amp_q_constants,
-                                   area_q_constants,
-                                   amp_e_constants,
-                                   area_e_constants,
-                                   f)
-
-        area_q_corrections = corrections[0]
-        amp_q_corrections = corrections[1]
-        area_e_corrections = corrections[2]
-        amp_e_corrections = corrections[3]
-
-
-        # if abs(area_q_corrections[0] - 1.0) > worstCorrection:
-        worstCorrection = abs(area_e_corrections[0] - 1.0)
-        if abs(area_e_corrections[1] - 1.0) > worstCorrection:
-            worstCorrection = abs(area_e_corrections[1] - 1.0)
-        if abs(amp_e_corrections[0] - 1.0) > worstCorrection:
-            worstCorrection = abs(amp_e_corrections[0] - 1.0)
-        if abs(amp_e_corrections[1] - 1.0) > worstCorrection:
-            worstCorrection = abs(amp_e_corrections[1] - 1.0)
-
-        print "Worst correction factor is ", worstCorrection
-
-
-        area_e_constants[0] = area_e_constants[0] / area_e_corrections[0]
-        area_e_constants[1] = area_e_constants[1] / area_e_corrections[1]
-
-        amp_e_constants[0] = amp_e_constants[0] / amp_e_corrections[0]
-        amp_e_constants[1] = amp_e_constants[1] / amp_e_corrections[1]
-
+    wireCorrections = None
+    outfile = open("wire_calibrations.txt","w")    
+    while it < 1:      
+    
+        wireCorrections = runCaloMuonsWires(f,wireCorrections)
+        plane = 0
+        for planeVec in wireCorrections:
+            wire = 0
+            for corr in planeVec:
+                outfile.write("{p} {w} {c}\n".format(p=plane,w=wire,c=corr))
+                wire += 1
+            plane += 1
         it += 1
-
-        if (it > 5):
-            break
+    # with ind_wire
 
     print "Results of q constants:"
     print "AREA: ", area_q_constants

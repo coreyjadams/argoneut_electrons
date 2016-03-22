@@ -16,6 +16,76 @@ bool ArgoCaloXingMuons::initialize() {
   // here is a good place to create one on the heap (i.e. "new TH1D").
   //
 
+  std::cout << "Got Here" << std::endl;
+
+  _collection_dqdx_by_wire.resize(240);
+  _collection_dedx_by_wire.resize(240);
+  _induction_dqdx_by_wire.resize(240);
+  _induction_dedx_by_wire.resize(240);
+  _collection_dqdx_by_wire_count.resize(240);
+  _induction_dqdx_by_wire_count.resize(240);
+
+  _wire_calo_info.resize(2);
+  _wire_calo_info.at(0).resize(240);
+  _wire_calo_info.at(1).resize(240);
+
+
+  _wire_corrections.resize(2, std::vector<double>(240, 1.0));
+
+  unsigned int i = 0;
+  for (auto & wci : _wire_calo_info[0]) {
+    wci.plane = 0;
+    wci.wire = i;
+    wci._dQdx_area = new TH1F(Form("_dqdx_area_0_%i", i),
+                              Form("_dqdx_area_0_%i", i),
+                              100, 0, 400000);
+    wci._dQdx_amp = new TH1F(Form("_dQdx_amp_0_%i", i),
+                             Form("_dQdx_amp_0_%i", i),
+                             100, 0, 400000);
+    wci._dEdx_area = new TH1F(Form("_dEdx_area_0_%i", i),
+                              Form("_dEdx_area_0_%i", i),
+                              100, 0, 15);
+    wci._dEdx_amp = new TH1F(Form("_dEdx_amp_0_%i", i),
+                             Form("_dEdx_amp_0_%i", i),
+                             100, 0, 15);
+    i ++;
+  }
+  i = 0;
+  for (auto & wci : _wire_calo_info[1]) {
+    wci.plane = 1;
+    wci.wire = i;
+    wci._dQdx_area = new TH1F(Form("_dqdx_area_1_%i", i),
+                              Form("_dqdx_area_1_%i", i),
+                              100, 0, 400000);
+    wci._dQdx_amp = new TH1F(Form("_dQdx_amp_1_%i", i),
+                             Form("_dQdx_amp_1_%i", i),
+                             100, 0, 400000);
+    wci._dEdx_area = new TH1F(Form("_dEdx_area_1_%i", i),
+                              Form("_dEdx_area_1_%i", i),
+                              100, 0, 15);
+    wci._dEdx_amp = new TH1F(Form("_dEdx_amp_1_%i", i),
+                             Form("_dEdx_amp_1_%i", i),
+                             100, 0, 15);
+    i ++;
+  }
+
+
+  _collection_wire_dqdx =
+    new TH1F("_collection_wire_dqdx",
+             "_collection_wire_dqdx",
+             240, 0, 240);
+  _collection_wire_dedx =
+    new TH1F("_collection_wire_dedx",
+             "_collection_wire_dedx",
+             240, 0, 240);
+  _induction_wire_dqdx =
+    new TH1F("_induction_wire_dqdx",
+             "_induction_wire_dqdx",
+             240, 0, 240);
+  _induction_wire_dedx =
+    new TH1F("_induction_wire_dedx",
+             "_induction_wire_dedx",
+             240, 0, 240);
   _collection_calo_dqdx =
     new TH1F("_collection_calo_dqdx",
              "_collection_calo_dqdx",
@@ -218,6 +288,11 @@ bool ArgoCaloXingMuons::analyze(storage_manager* storage) {
 
     double pitch = track.PitchInView(hit.View(), i_traj);
 
+    if (pitch == 0 || std::isnan(pitch)) {
+      // std::cout << "Pitch is zero or NaN!" << std::endl;
+      continue;
+    }
+
     // std::cout << "hit.Integral() " << hit.Integral() << std::endl;
     // std::cout << "hit.PeakAmplitude() " << hit.PeakAmplitude() << std::endl;
 
@@ -229,7 +304,7 @@ bool ArgoCaloXingMuons::analyze(storage_manager* storage) {
     Q_amp *= _calo_alg.LifetimeCorrection(hit.PeakTime());
 
 
-    double Q_area_e = Q_area * area_e_corrections[hit.WireID().Plane]; 
+    double Q_area_e = Q_area * area_e_corrections[hit.WireID().Plane];
     double Q_amp_e = Q_amp * amp_e_corrections[hit.WireID().Plane];
 
     //Do the correction:
@@ -242,17 +317,59 @@ bool ArgoCaloXingMuons::analyze(storage_manager* storage) {
     // std::cout << "dEdx_area: " << dEdx_area << std::endl;
     // std::cout << "dEdx_amp: " << dEdx_amp << std::endl;
 
+    unsigned int plane = hit.WireID().Plane;
+    unsigned int wire = hit.WireID().Wire;
+
+    Q_area *= _wire_corrections[plane][wire];
+    Q_amp *= _wire_corrections[plane][wire];
+    Q_area_e *= _wire_corrections[plane][wire];
+    Q_amp_e *= _wire_corrections[plane][wire];
+
+    _wire_calo_info[plane][wire].Q_area.push_back(Q_area);
+    _wire_calo_info[plane][wire].Q_amp.push_back(Q_amp);
+
+    _wire_calo_info[plane][wire].Q_area_e.push_back(Q_area_e);
+    _wire_calo_info[plane][wire].dQdx_area_e.push_back(Q_area_e / pitch);
+
+    _wire_calo_info[plane][wire].Q_amp_e.push_back(Q_amp_e);
+    _wire_calo_info[plane][wire].dQdx_amp_e.push_back(Q_amp_e / pitch);
+
+    _wire_calo_info[plane][wire].dEdx_area.push_back(dEdx_area);
+    _wire_calo_info[plane][wire].dEdx_amp.push_back(dEdx_amp);
+
+    _wire_calo_info[plane][wire].n_hits ++;
+
+    _wire_calo_info[plane][wire]._dQdx_area -> Fill(Q_area_e / pitch);
+    _wire_calo_info[plane][wire]._dQdx_amp -> Fill(Q_amp_e / pitch);
+    _wire_calo_info[plane][wire]._dEdx_area -> Fill(dEdx_area);
+    _wire_calo_info[plane][wire]._dEdx_amp -> Fill(dEdx_amp);
+
     if (hit.WireID().Plane == 0) {
       _induction_caloAlg_dqdx_area -> Fill(Q_area / pitch);
       _induction_caloAlg_dEdx_area -> Fill(dEdx_area);
       _induction_caloAlg_dqdx_amp -> Fill(Q_amp / pitch);
       _induction_caloAlg_dEdx_amp -> Fill(dEdx_amp);
+      _induction_dedx_by_wire[hit.WireID().Wire] += dEdx_area;
+      _induction_dqdx_by_wire[hit.WireID().Wire] +=  Q_area / pitch;
+      _induction_dqdx_by_wire_count[hit.WireID().Wire] +=  1;
     }
     else if (hit.WireID().Plane == 1) {
       _collection_caloAlg_dqdx_area -> Fill(Q_area / pitch);
       _collection_caloAlg_dEdx_area -> Fill(dEdx_area);
       _collection_caloAlg_dqdx_amp -> Fill(Q_amp / pitch);
       _collection_caloAlg_dEdx_amp -> Fill(dEdx_amp);
+      _collection_dedx_by_wire[hit.WireID().Wire] += dEdx_area;
+      _collection_dqdx_by_wire[hit.WireID().Wire] +=  Q_area / pitch;
+      _collection_dqdx_by_wire_count[hit.WireID().Wire] +=  1;
+      // if (hit.WireID().Wire == 43) {
+
+      //   if (std::isnan(_collection_dqdx_by_wire[hit.WireID().Wire]) ) {
+      //     std::cout << "Adding " << Q_area << " / " <<  pitch
+      //               << " to get " << _collection_dqdx_by_wire[hit.WireID().Wire]
+      //               << std::endl;
+      //     exit(-1);
+      //   }
+      // }
     }
 
   }
@@ -297,6 +414,62 @@ bool ArgoCaloXingMuons::finalize() {
   _collection_e_target_mean = _collection_calo_dEdx -> GetMean();
 
 
+  for (size_t wire = 0; wire < 240; wire ++) {
+
+    // Figure out the wire-by-wire corrections:
+
+    _collection_wire_dqdx->SetBinContent(wire + 1,
+                                         _wire_calo_info[1][wire]._dQdx_area->GetMean() );
+    _collection_wire_dedx->SetBinContent(wire + 1,
+                                         _wire_calo_info[1][wire]._dEdx_area->GetMean() );
+    _induction_wire_dqdx->SetBinContent(wire + 1,
+                                        _wire_calo_info[0][wire]._dQdx_area->GetMean() );
+    _induction_wire_dedx->SetBinContent(wire + 1,
+                                        _wire_calo_info[0][wire]._dEdx_area->GetMean() );
+  }
+
+  // Fit to those histograms above for the mean values
+  _collection_wire_dqdx -> Fit("pol0");
+  _induction_wire_dqdx -> Fit("pol0");
+
+  TF1 * c_fit = _collection_wire_dqdx->GetFunction("pol0");
+  TF1 * i_fit = _induction_wire_dqdx->GetFunction("pol0");
+// value of the first parameter
+  double c_p0 = c_fit -> GetParameter(0);
+  double i_p0 = i_fit -> GetParameter(0);
+
+  std::cout << "c_p0 is " << c_p0 << std::endl;
+  std::cout << "i_p0 is " << i_p0 << std::endl;
+
+  double _collection_target, _induction_target;
+
+  for (size_t wire = 0; wire < 240; wire ++) {
+
+    // Require at least 500 points
+    if (_wire_calo_info[0][wire].n_hits > 500) {
+      _wire_calo_info[0][wire]._correction_factor = c_p0 /
+          _wire_calo_info[0][wire]._dQdx_area->GetMean();
+      _wire_corrections[0][wire] = _wire_calo_info[0][wire]._correction_factor;
+    }
+    if (_wire_calo_info[1][wire].n_hits > 500) {
+      _wire_calo_info[1][wire]._correction_factor = i_p0 /
+          _wire_calo_info[1][wire]._dQdx_area->GetMean();
+      _wire_corrections[1][wire] = _wire_calo_info[1][wire]._correction_factor;
+    }
+  }
+
+  for (size_t wire = 0; wire < 240; wire ++) {
+
+    // Figure out the wire-by-wire corrections:
+
+    _collection_wire_dqdx->SetBinContent(wire + 1,
+                                         _wire_calo_info[1][wire]._dQdx_area->GetMean() *
+                                         _wire_calo_info[1][wire]._correction_factor );
+    _induction_wire_dqdx->SetBinContent(wire + 1,
+                                        _wire_calo_info[0][wire]._dQdx_area->GetMean() *
+                                        _wire_calo_info[0][wire]._correction_factor );
+  }
+
   if (_fout) {
     _fout -> cd();
     _collection_calo_dqdx -> Write();
@@ -311,8 +484,19 @@ bool ArgoCaloXingMuons::finalize() {
     _collection_caloAlg_dEdx_area -> Write();
     _collection_caloAlg_dqdx_amp -> Write();
     _collection_caloAlg_dEdx_amp -> Write();
-  }
+    _collection_wire_dqdx -> Write();
+    _induction_wire_dqdx -> Write();
+    _collection_wire_dedx -> Write();
+    _induction_wire_dedx -> Write();
 
+    // // Write out the histograms from the individual wires:
+    // for (size_t plane = 0; plane < 2; plane ++) {
+    //   for (size_t wire = 0; wire < 240; wire++) {
+    //     _wire_calo_info[plane][wire]._dQdx_area -> Write();
+    //   }
+    // }
+
+  }
 
 
   return true;
