@@ -70,7 +70,7 @@ void BGCFileReader::readData() {
     // if (Cut(ientry) < 0) continue;
 
     // Now add this entry to the data list
-    _clusterData[run][event].push_back(BCGData());
+    _clusterData[run][event].push_back(BGCData());
 
     _clusterData[run][event].back().run =  run;
     _clusterData[run][event].back().subrun =  subrun;

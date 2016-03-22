@@ -38,7 +38,7 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
 
 
   auto out_cluster_v = storage->get_data<larlite::event_cluster>("bootleg");
-  auto out_pfpart_v = storage->get_data<larlite::event_pfpart>("bootleg");
+  // auto out_pfpart_v = storage->get_data<larlite::event_pfpart>("bootleg");
   auto out_vertex_v = storage->get_data<larlite::event_vertex>("bootleg");
   auto ev_ass = storage->get_data<larlite::event_ass>(out_cluster_v->name());
 
@@ -69,6 +69,13 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
       // that best match:
       for (auto & bgclust : bg_clusters) {
         std::vector<unsigned int> hit_indexes = buildCluster(bgclust, ev_hit);
+        // for (size_t i = 0; i < bgclust.hitwire.size(); i ++) {
+        //   std::cout << "Matched the bgc hit at (" << bgclust.hitwire.at(i)
+        //             << ", " << bgclust.hittime.at(i) << ") "
+        //             << " to the larsoft hit at ("
+        //             << ev_hit->at(hit_indexes.at(i)).WireID().Wire
+        //             << ", " << ev_hit->at(hit_indexes.at(i)).PeakTime() << ")" << std::endl;
+        // }
         out_cluster_v->push_back(larlite::cluster());
         hit_ass.push_back(hit_indexes);
 
@@ -81,97 +88,97 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
       // In that case, match the clusters across planes using start point info
       // The indexes of the clusters in bgcluster and out_cluster_v match
 
-      // Keep track of which clusters have been matched:
-      std::vector<unsigned int> matched_clusters;
-      for (size_t i_clust = 0; i_clust < bg_clusters.size(); i_clust ++) {
-        // std::cout << "Trying to make matches to cluster " << i_clust << std::endl;
-        // Check to see if there are hits associated with this cluster:
-        if (hit_ass.at(i_clust).size() == 0) {
-          continue;
-        }
+      // // Keep track of which clusters have been matched:
+      // std::vector<unsigned int> matched_clusters;
+      // for (size_t i_clust = 0; i_clust < bg_clusters.size(); i_clust ++) {
+      //   // std::cout << "Trying to make matches to cluster " << i_clust << std::endl;
+      //   // Check to see if there are hits associated with this cluster:
+      //   if (hit_ass.at(i_clust).size() == 0) {
+      //     continue;
+      //   }
 
-        // Check to see if i is matched already:
-        if (std::find(matched_clusters.begin(),
-                      matched_clusters.end(),
-                      i_clust) != matched_clusters.end()) {
-          continue;
-        }
+      //   // Check to see if i is matched already:
+      //   if (std::find(matched_clusters.begin(),
+      //                 matched_clusters.end(),
+      //                 i_clust) != matched_clusters.end()) {
+      //     continue;
+      //   }
 
-        for (size_t j_clust = i_clust + 1; j_clust < bg_clusters.size(); j_clust ++) {
+      //   for (size_t j_clust = i_clust + 1; j_clust < bg_clusters.size(); j_clust ++) {
 
-          // Check to see if there are hits associated with this cluster:
-          if (hit_ass.at(j_clust).size() == 0) {
-            continue;
-          }
+      //     // Check to see if there are hits associated with this cluster:
+      //     if (hit_ass.at(j_clust).size() == 0) {
+      //       continue;
+      //     }
 
-          // Check to see if j is matched already:
-          if (std::find(matched_clusters.begin(),
-                        matched_clusters.end(),
-                        j_clust) != matched_clusters.end()) {
-            continue;
-          }
+      //     // Check to see if j is matched already:
+      //     if (std::find(matched_clusters.begin(),
+      //                   matched_clusters.end(),
+      //                   j_clust) != matched_clusters.end()) {
+      //       continue;
+      //     }
 
-          // If the clusters are from the same planes, skip it:
-          if (bg_clusters.at(i_clust).currplane ==
-              bg_clusters.at(j_clust).currplane) {
-            continue;
-          }
-          // At this point, each cluster has hits and is from a separate plane.
-          // If the start points are reasonably close in time, call it a match
-          //
-          double i_start_time = bg_clusters.at(i_clust).starthit[1];
-          double j_start_time = bg_clusters.at(j_clust).starthit[1];
+      //     // If the clusters are from the same planes, skip it:
+      //     if (bg_clusters.at(i_clust).currplane ==
+      //         bg_clusters.at(j_clust).currplane) {
+      //       continue;
+      //     }
+      //     // At this point, each cluster has hits and is from a separate plane.
+      //     // If the start points are reasonably close in time, call it a match
+      //     //
+      //     double i_start_time = bg_clusters.at(i_clust).starthit[1];
+      //     double j_start_time = bg_clusters.at(j_clust).starthit[1];
 
-          // std::cout << "Comparing start times "
-          //           << i_start_time << ", " << j_start_time
-          //           << std::endl;
+      //     // std::cout << "Comparing start times "
+      //     //           << i_start_time << ", " << j_start_time
+      //     //           << std::endl;
 
-          if (fabs(i_start_time - j_start_time) < 35) {
-            // Make a match!
-            // std::cout << "Successful match!!" << std::endl;
-            out_pfpart_v -> push_back(::larlite::pfpart(11,0,0,std::vector<size_t>()));
-            pfpart_ass.push_back(std::vector<unsigned int>());
-            pfpart_ass.back().push_back(i_clust);
-            pfpart_ass.back().push_back(j_clust);
+      //     if (fabs(i_start_time - j_start_time) < 35) {
+      //       // Make a match!
+      //       // std::cout << "Successful match!!" << std::endl;
+      //       out_pfpart_v -> push_back(::larlite::pfpart(11,0,0,std::vector<size_t>()));
+      //       pfpart_ass.push_back(std::vector<unsigned int>());
+      //       pfpart_ass.back().push_back(i_clust);
+      //       pfpart_ass.back().push_back(j_clust);
 
-            // make a vertex by comparing their start times and wires
-            double i_start_wire = bg_clusters.at(i_clust).starthit[0];
-            double j_start_wire = bg_clusters.at(j_clust).starthit[0];
+      //       // make a vertex by comparing their start times and wires
+      //       double i_start_wire = bg_clusters.at(i_clust).starthit[0];
+      //       double j_start_wire = bg_clusters.at(j_clust).starthit[0];
 
-            // std::cout << "Plane " << bg_clusters.at(i_clust).currplane
-            //           << ", start point (" << i_start_wire << ", "
-            //           << i_start_time << ")\n"
-            //           << "Plane " << bg_clusters.at(j_clust).currplane
-            //           << ", start point (" << j_start_wire << ", "
-            //           << j_start_time << ")\n";
-
-
-            double xyz[3];
-
-            // // Use this method:
-            // from geometry
-            auto geom = larutil::Geometry::GetME();
-            auto geomHelper = larutil::GeometryHelper::GetME();
-            geom -> IntersectionPoint(i_start_wire,  j_start_wire,
-                                      bg_clusters.at(i_clust).currplane,
-                                      bg_clusters.at(j_clust).currplane,
-                                      xyz[1], xyz[2]);
-
-            xyz[0] = 0.5 * (i_start_time + j_start_time) * geomHelper->TimeToCm();
-            out_vertex_v->push_back(::larlite::vertex(xyz));
-            // std::cout << "Vertex is (" << xyz[0]
-            //           << ", " << xyz[1]
-            //           << ", " << xyz[2]
-            //           << ")\n";
+      //       // std::cout << "Plane " << bg_clusters.at(i_clust).currplane
+      //       //           << ", start point (" << i_start_wire << ", "
+      //       //           << i_start_time << ")\n"
+      //       //           << "Plane " << bg_clusters.at(j_clust).currplane
+      //       //           << ", start point (" << j_start_wire << ", "
+      //       //           << j_start_time << ")\n";
 
 
-          }
-        }
+      //       double xyz[3];
 
-        ev_ass -> set_association(out_pfpart_v->id(),
-                                  out_cluster_v->id(),
-                                  pfpart_ass);
-      }
+      //       // // Use this method:
+      //       // from geometry
+      //       auto geom = larutil::Geometry::GetME();
+      //       auto geomHelper = larutil::GeometryHelper::GetME();
+      //       geom -> IntersectionPoint(i_start_wire,  j_start_wire,
+      //                                 bg_clusters.at(i_clust).currplane,
+      //                                 bg_clusters.at(j_clust).currplane,
+      //                                 xyz[1], xyz[2]);
+
+      //       xyz[0] = 0.5 * (i_start_time + j_start_time) * geomHelper->TimeToCm();
+      //       out_vertex_v->push_back(::larlite::vertex(xyz));
+      //       // std::cout << "Vertex is (" << xyz[0]
+      //       //           << ", " << xyz[1]
+      //       //           << ", " << xyz[2]
+      //       //           << ")\n";
+
+
+      //     }
+      //   }
+
+      //   ev_ass -> set_association(out_pfpart_v->id(),
+      //                             out_cluster_v->id(),
+      //                             pfpart_ass);
+      // }
 
     }
     else return false;
@@ -187,7 +194,7 @@ bool BGCGenerator::analyze(larlite::storage_manager* storage) {
 }
 
 std::vector<unsigned int>  BGCGenerator::buildCluster(
-  const BCGData &  bgclust,
+  const BGCData &  bgclust,
   larlite::event_hit * ev_hit) {
 
 
@@ -257,6 +264,7 @@ std::vector<unsigned int>  BGCGenerator::buildCluster(
         // std::cout << "Comparing " << _time << " to "
         //           << ev_hit -> at(_match_index).PeakTime() << " +/- "
         //           << ev_hit -> at(_match_index).RMS()
+        //           << " on wire " <<  ev_hit -> at(_match_index).WireID().Wire
         //           << std::endl;
         float dist = fabs(_time - ev_hit -> at(_match_index).PeakTime());
         if (dist < _closest_dist) {

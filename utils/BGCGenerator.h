@@ -58,12 +58,12 @@ public:
 
 protected:
 
-  std::vector<unsigned int> buildCluster(const BCGData&  bgclust,
+  std::vector<unsigned int> buildCluster(const BGCData&  bgclust,
                                          larlite::event_hit * ev_hit);
 
   BGCFileReader _bfr;
 
-  std::map< int, std::map< int,  std::vector<BCGData> > > _clusterData;
+  std::map< int, std::map< int,  std::vector<BGCData> > > _clusterData;
 
 
 };

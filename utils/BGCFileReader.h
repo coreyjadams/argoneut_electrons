@@ -29,7 +29,7 @@
 
 namespace argoutils{
 
-class BCGData {
+class BGCData {
 
 
 public:
@@ -68,11 +68,11 @@ public:
 
   long LoadTree(long entry);
 
-  std::map< int, std::map< int,  std::vector<BCGData> > > getData(){return _clusterData;}
+  std::map< int, std::map< int,  std::vector<BGCData> > > getData(){return _clusterData;}
 
 private:
 
-  std::vector< BCGData > _bgc_data_set;
+  std::vector< BGCData > _bgc_data_set;
 
   std::string _input_file;
 
@@ -80,7 +80,7 @@ private:
 
   // Storing the cluster info in a map of [run][event][vectorOfClusters]
 
-  std::map< int, std::map< int,  std::vector<BCGData> > > _clusterData;
+  std::map< int, std::map< int,  std::vector<BGCData> > > _clusterData;
 
 
   // Declaration of leaf types
