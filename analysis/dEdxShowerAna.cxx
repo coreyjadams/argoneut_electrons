@@ -22,9 +22,9 @@ bool dEdxShowerAna::initialize() {
 
 
     argoutils::BGCFileReader bgcreader;
-    bgcreader.setInputFile("/data_linux/dedx_files/ScanFileandrzejs.root");
+    // bgcreader.setInputFile("/data_linux/dedx_files/ScanFileandrzejs.root");
     // bgcreader.setInputFile("/data_linux/dedx_files/ScanFilejasaadi_antineutrino.root");
-    // bgcreader.setInputFile("/data_linux/dedx_files/ScanFilejasaadi_neutrino.root");
+    bgcreader.setInputFile("/data_linux/dedx_files/ScanFilejasaadi_neutrino.root");
     bgcreader.readData();
 
     bgcdata = bgcreader.getData();
@@ -158,6 +158,7 @@ bool dEdxShowerAna::analyze(storage_manager* storage) {
         induction_starthit.clear();
         fDCosStart.clear();
         collection_lifetime_corr.clear();
+        induction_lifetime_corr.clear();
         collection_dist_from_start.clear();
         induction_dist_from_start.clear();
         collection_slope = 0.0;
