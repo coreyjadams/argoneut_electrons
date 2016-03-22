@@ -57,18 +57,23 @@ public:
   virtual bool finalize();
 
   void getClosestHits(larlite::event_hit * ev_hit, std::vector<unsigned int> hits_to_consider,
-                      std::vector<size_t> & close_hit_indexes, 
+                      std::vector<size_t> & close_hit_indexes,
                       std::vector<double> starthit);
 
   double getPitch(const TVector3 & dir3D, int plane );
 
+  std::vector<std::pair<int, int> > makeMatches(const std::vector<argoutils::BGCData> &);
 
+  std::vector<std::pair<int, int> > matchBCG_to_LL(const std::vector<std::pair<int, int> > & bgcmatches,
+      const std::vector<argoutils::BGCData> &,
+      larlite::event_hit *,
+      const std::vector<std::vector<unsigned int> > & hit_ass );
 
 protected:
 
   void unwindVectors(larlite::event_hit * ev_hit, std::vector<size_t> & close_hit_indexes);
 
-  std::map< int, std::map< int,  std::vector<argoutils::BCGData> > > bcgdata;
+  std::map< int, std::map< int,  std::vector<argoutils::BGCData> > > bgcdata;
 
   const larutil::Geometry * geom;
 
@@ -89,6 +94,7 @@ protected:
   std::vector<double> collection_hitpeaks;
   std::vector<double> collection_starthit;
   std::vector<double> collection_lifetime_corr;
+  std::vector<double> collection_dist_from_start;
   double collection_slope;
   double collection_pitch;
   double collection_pitch_err;
@@ -99,6 +105,7 @@ protected:
   std::vector<double> induction_hitpeaks;
   std::vector<double> induction_starthit;
   std::vector<double> induction_lifetime_corr;
+  std::vector<double> induction_dist_from_start;
   double induction_slope;
   double induction_pitch;
   double induction_pitch_err;
