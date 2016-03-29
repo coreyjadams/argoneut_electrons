@@ -53,7 +53,7 @@ def getShowerRecoAlgModular():
   alg.AddShowerRecoModule(showerreco.OtherStartPoint3D()  )
   alg.AddShowerRecoModule(energy)
   alg.AddShowerRecoModule(dqdx)
-  alg.AddShowerRecoModule(dedx)
+  # alg.AddShowerRecoModule(dedx)
   # alg.AddShowerRecoModule(showerreco.StartPoint2DModule()  )
   #alg.AddShowerRecoModule(showerreco.OtherStartPoint3D()  )
   # alg.AddShowerRecoModule(showerreco.ShowerChargeModule()  )
