@@ -8,11 +8,12 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 from larlite import larlite as fmwk
-from ROOT import larutil
+from ROOT import larutil, argosps
 larutil.LArUtilManager.Reconfigure(fmwk.geo.kArgoNeuT)
 
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
+my_proc.enable_event_alignment(False)
 
 # Set input root file
 for x in xrange(len(sys.argv)-1):
@@ -27,14 +28,14 @@ my_proc.set_output_file("sps.root");
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-my_proc.add_process(fmwk.ProductSps())
+my_proc.add_process(argosps.ShowerSPS())
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
 # Let's run it.
-my_proc.run(2,1);
+my_proc.run(0,1);
 
 # done!
 print
