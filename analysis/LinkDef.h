@@ -9,9 +9,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class larlite::MCElectronEstimate+;
-#pragma link C++ class larlite::MCShowerAna+;
-#pragma link C++ class larlite::dEdxShowerAna+;
+#pragma link C++ class argoana::dEdxPfPartAna+;
+// #pragma link C++ class larlite::MCElectronEstimate+;
+// #pragma link C++ class larlite::MCShowerAna+;
+// #pragma link C++ class larlite::dEdxShowerAna+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 
