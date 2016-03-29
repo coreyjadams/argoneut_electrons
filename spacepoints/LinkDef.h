@@ -11,6 +11,7 @@
 
 
 #pragma link C++ class larlite::ProductSps+;
+#pragma link C++ class argosps::ShowerSPS+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 
