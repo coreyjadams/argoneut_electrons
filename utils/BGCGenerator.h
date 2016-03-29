@@ -23,6 +23,7 @@
 #include "DataFormat/cluster.h"
 #include "DataFormat/pfpart.h"
 #include "DataFormat/vertex.h"
+#include "DataFormat/endpoint2d.h"
 
 namespace argoutils {
 /**

@@ -9,6 +9,7 @@ void BGCFileReader::setInputFile(std::string s) {
   _input_file = s;
 
   TFile *f = new TFile(_input_file.c_str());
+  std::cout << "fChain is " << fChain << std::endl;
   f->GetObject("BootLegGraphClusterTree", fChain);
 
 
