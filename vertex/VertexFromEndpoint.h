@@ -1,9 +1,9 @@
 /**
- * \file VertexPlaneMatch.h
+ * \file VertexFromEndpoint.h
  *
  * \ingroup vertex
  * 
- * \brief Class def header for a class VertexPlaneMatch
+ * \brief Class def header for a class VertexFromEndpoint
  *
  * @author cadams
  */
@@ -12,42 +12,50 @@
 
     @{*/
 
-#ifndef LARLITE_VERTEXPLANEMATCH_H
-#define LARLITE_VERTEXPLANEMATCH_H
+#ifndef LARLITE_VERTEXFROMENDPOINT_H
+#define LARLITE_VERTEXFROMENDPOINT_H
+
+#include "DataFormat/vertex.h"
+#include "DataFormat/endpoint2d.h"
+#include "DataFormat/cluster.h"
+#include "DataFormat/hit.h"
+#include "DataFormat/pfpart.h"
 
 #include "Analysis/ana_base.h"
 
-namespace larlite {
+namespace argovertex {
   /**
-     \class VertexPlaneMatch
+     \class VertexFromEndpoint
      User custom analysis class made by SHELL_USER_NAME
    */
-  class VertexPlaneMatch : public ana_base{
+  class VertexFromEndpoint : public larlite::ana_base{
   
   public:
 
     /// Default constructor
-    VertexPlaneMatch(){ _name="VertexPlaneMatch"; _fout=0;}
+    VertexFromEndpoint(){ _name="VertexFromEndpoint"; _fout=0;}
 
     /// Default destructor
-    virtual ~VertexPlaneMatch(){}
+    virtual ~VertexFromEndpoint(){}
 
-    /** IMPLEMENT in VertexPlaneMatch.cc!
+    /** IMPLEMENT in VertexFromEndpoint.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in VertexPlaneMatch.cc! 
+    /** IMPLEMENT in VertexFromEndpoint.cc! 
         Analyze a data event-by-event  
     */
-    virtual bool analyze(storage_manager* storage);
+    virtual bool analyze(larlite::storage_manager* storage);
 
-    /** IMPLEMENT in VertexPlaneMatch.cc! 
+    /** IMPLEMENT in VertexFromEndpoint.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
   protected:
+
+    double ind_plane_offset, coll_plane_offset;
     
   };
 }
