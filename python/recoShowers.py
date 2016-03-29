@@ -61,7 +61,14 @@ def main(**args):
   # 
   showerRecoUnit = larlite.ShowerReco3D()
   showerRecoUnit.AddShowerAlgo(showerRecoAlg)
-  showerRecoUnit.SetInputProducer("ccMatched")
+
+  # Get ArgoneutParamsAlg for this:
+  paramsAlg = argoutils.ArgoneutParamsAlg()
+
+  showerRecoUnit.GetProtoShowerHelper().SetClusterParamsAlg(paramsAlg)
+
+  # showerRecoUnit.SetInputProducer("ccMatched")
+  showerRecoUnit.SetInputProducer("bootlegMatched")
   showerRecoUnit.SetOutputProducer("showerreco")
 
   my_proc.add_process(showerRecoUnit)

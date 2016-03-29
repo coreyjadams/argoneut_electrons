@@ -63,8 +63,8 @@ def main(**args):
   match_maker.GetManager().AddPriorityAlgo(matchalg)
   match_maker.GetManager().AddMatchAlgo(priority)
 
-  match_maker.SetClusterProducer("ccMergedFinal")
-  match_maker.SetOutputProducer("ccMatched")
+  match_maker.SetClusterProducer("bootleg")
+  match_maker.SetOutputProducer("bootlegMatched")
   match_maker.SaveOutputCluster(True)
 
 
