@@ -138,8 +138,8 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
       std::vector<unsigned int> close_hit_indexes =
         geoHelper -> SelectLocalPointList( _params_v.at(i_clust).hit_vector,
                                            startingHit,
-                                           4.0,
-                                           1.0,
+                                           2.5,
+                                           0.5,
                                            slope,
                                            averagePoint);
 
@@ -245,13 +245,14 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
     for (auto & _p_sps : _protoSPS.at(cluster_to_adjust)) {
       restrictRange(_p_sps, min, max, range_plane);
     }
+    stretchSpacePoints(_protoSPS.at(cluster_to_adjust), range_plane);
 
 
     // // Use the hits that are selected for space points from the target cluster
     // // to make the target slope:
-    // double slope = getSlope(_params_v.at(match_target_cluster), _protoSPS.at(match_target_cluster));
+    // double slope = getSlope(_params_v.at(cluster_to_adjust), _protoSPS.at(cluster_to_adjust));
 
-    // fitPointsToSlope(_protoSPS.at(match_target_cluster), slope, target_plane);
+    // fitPointsToSlope(_protoSPS.at(cluster_to_adjust), slope, range_plane);
 
 
 
@@ -281,12 +282,15 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
       restrictRange(_p_sps, min, max, range_plane);
     }
 
+    // Stretch the spacepoints out a bit:
+    stretchSpacePoints(_protoSPS.at(cluster_to_adjust), range_plane);
+
 
     // // Use the hits that are selected for space points from the target cluster
     // // to make the target slope:
-    // slope = getSlope(_params_v.at(match_target_cluster), _protoSPS.at(match_target_cluster));
+    // slope = getSlope(_params_v.at(cluster_to_adjust), _protoSPS.at(cluster_to_adjust));
 
-    // fitPointsToSlope(_protoSPS.at(match_target_cluster), slope, target_plane);
+    // fitPointsToSlope(_protoSPS.at(cluster_to_adjust), slope, range_plane);
 
   }
 
@@ -352,7 +356,7 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
       for (size_t i_sps = 0; i_sps < _protoSPS.at(i_clust).size(); i_sps ++) {
         // Just as a test, skip hits starting from collection plane
         if (_protoSPS.at(i_clust).at(i_sps)._origin_plane == 1) {
-          continue;
+          // continue;
         }
         auto & proto_sps = _protoSPS.at(i_clust).at(i_sps);
         ev_sps->push_back(larlite::spacepoint(id_index,
@@ -366,22 +370,22 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
 
         // This is the limiting points:
 
-        ev_sps->push_back(larlite::spacepoint(id_index,
-                                              (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).X(),
-                                              (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Y(),
-                                              (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Z(),
-                                              0, 0, 0, 0));
-        spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
-        pfpToSpsAss.at(i_pfpart).push_back(id_index);
-        id_index ++;
-        ev_sps->push_back(larlite::spacepoint(id_index,
-                                              (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).X(),
-                                              (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Y(),
-                                              (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Z(),
-                                              0, 0, 0, 0));
-        spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
-        pfpToSpsAss.at(i_pfpart).push_back(id_index);
-        id_index ++;
+        // ev_sps->push_back(larlite::spacepoint(id_index,
+        //                                       (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).X(),
+        //                                       (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Y(),
+        //                                       (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Z(),
+        //                                       0, 0, 0, 0));
+        // spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
+        // pfpToSpsAss.at(i_pfpart).push_back(id_index);
+        // id_index ++;
+        // ev_sps->push_back(larlite::spacepoint(id_index,
+        //                                       (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).X(),
+        //                                       (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Y(),
+        //                                       (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Z(),
+        //                                       0, 0, 0, 0));
+        // spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
+        // pfpToSpsAss.at(i_pfpart).push_back(id_index);
+        // id_index ++;
 
         //////
       }
@@ -431,8 +435,24 @@ double ShowerSPS::getSlope(const ::cluster::cluster_params & _params,
   double slope = ((* fPrincipal.GetEigenVectors())[1][0]) / ((* fPrincipal.GetEigenVectors())[0][0]);
   return slope;
 
-
 }
+
+void ShowerSPS::stretchSpacePoints(std::vector<ProtoSps> & _proto_sps_v, unsigned int plane) {
+
+  // This function takes the list of space points and stretches them in a plane.
+  // It basically sets the alpha value to evenly spaced values between a points max and min
+  double step_size = 1.0 / _proto_sps_v.size();
+  double step = 0.0;
+  for (auto & sps : _proto_sps_v){
+    double range = (sps._max_alpha - sps._min_alpha);
+    sps.alpha = sps._min_alpha + (step_size*step)*range;
+    step += 1;
+  }
+}
+
+
+
+
 
 void ShowerSPS::restrictRange(ProtoSps & _proto_sps, double wireMin, double wireMax, unsigned int plane) {
 
@@ -560,224 +580,218 @@ void ShowerSPS::restrictRange(ProtoSps & _proto_sps, double wireMin, double wire
 
 
   // Lastly, set the "real" alpha to the average of the max and min...
-  _proto_sps.alpha = 0.5*(_proto_sps._min_alpha + _proto_sps._max_alpha);
+  _proto_sps.alpha = 0.5 * (_proto_sps._min_alpha + _proto_sps._max_alpha);
 
 }
 
-// void ShowerSPS::fitPointsToSlope(std::vector<ProtoSps> & _proto_sps_v,
-//                                  double slope, unsigned int target_plane) {
+/*
 
-//   // Basically, start with the first point in the vector of proto_sps.
-//   // Then, adjust the next point until the slope of the two points matches the target slope.
-//   // Then, adjust the next point ...
-//   // Continue until all points have been fitted to the slope.
-//   // It's expected that a perfect fit isn't possible, so each point will
-//   // just walk along it's allowed values until it has reached a minimum in it's error
+void ShowerSPS::fitPointsToSlope(std::vector<ProtoSps> & _proto_sps_v,
+                                 double slope, unsigned int range_plane) {
 
-//   // Need a collection of sps that are already in the fit:
-//   std::vector<unsigned int> _used_sps;
-//   // definitely use the first one!
-//   _used_sps.push_back(0);
+  // Basically, start with the first point in the vector of proto_sps.
+  // Then, adjust the next point until the slope of the two points matches the target slope.
+  // Then, adjust the next point ...
+  // Continue until all points have been fitted to the slope.
+  // It's expected that a perfect fit isn't possible, so each point will
+  // just walk along it's allowed values until it has reached a minimum in it's error
 
-//   // note the target point:
-//   unsigned int target_index = _used_sps.back() + 1;
-//   auto geoHelper = larutil::GeometryHelper::GetME();
+  // But at no point can it go outside it's max values!
 
+  // Need a collection of sps that are already in the fit:
+  std::vector<unsigned int> _used_sps;
+  // definitely use the first one!
+  _used_sps.push_back(0);
 
-//   while (_used_sps.size() < _proto_sps_v.size()) {
-//     double alpha = 5.0;
-//     while (alpha > 0.5) {
-
-//       // Make a TPrincipal for each point already used, plus the new one.
-//       TPrincipal fPrincipal_nominal(2, "D");
-//       TPrincipal fPrincipal_plus(2, "D");
-//       TPrincipal fPrincipal_minus(2, "D");
-//       for (auto & index : _used_sps ) {
-//         double data[2];
-//         auto point
-//           = geoHelper -> Point_3Dto2D(_proto_sps_v.at(index).xyz.X(),
-//                                       _proto_sps_v.at(index).xyz.Y(),
-//                                       _proto_sps_v.at(index).xyz.Z(),
-//                                       target_plane);
-//         data[0] = point.w;
-//         data[1] = point.t;
-//         fPrincipal_nominal.AddRow(data);
-//         fPrincipal_plus.AddRow(data);
-//         fPrincipal_minus.AddRow(data);
-//       }
-
-//       // And add the target index point:
-//       double data[2];
-//       auto point_nominal
-//         = geoHelper -> Point_3Dto2D(_proto_sps_v.at(target_index).xyz.X(),
-//                                     _proto_sps_v.at(target_index).xyz.Y(),
-//                                     _proto_sps_v.at(target_index).xyz.Z(),
-//                                     target_plane);
-//       auto plus_center = _proto_sps_v.at(target_index).xyz + alpha * _proto_sps_v.at(target_index).freeDirection;
-//       auto minus_center = _proto_sps_v.at(target_index).xyz - alpha * _proto_sps_v.at(target_index).freeDirection;
-//       auto point_plus
-//         = geoHelper -> Point_3Dto2D(plus_center.X(),
-//                                     plus_center.Y(),
-//                                     plus_center.Z(),
-//                                     target_plane);
-//       auto point_minus
-//         = geoHelper -> Point_3Dto2D(minus_center.X(),
-//                                     minus_center.Y(),
-//                                     minus_center.Z(),
-//                                     target_plane);
-//       data[0] = point_nominal.w;
-//       data[1] = point_nominal.t;
-//       fPrincipal_nominal.AddRow(data);
-//       data[0] = point_plus.w;
-//       data[1] = point_plus.t;
-//       fPrincipal_plus.AddRow(data);
-//       data[0] = point_minus.w;
-//       data[1] = point_minus.t;
-//       fPrincipal_minus.AddRow(data);
-
-//       // Now make the principals and get the slopes:
-//       fPrincipal_nominal.MakePrincipals();
-//       fPrincipal_plus.MakePrincipals();
-//       fPrincipal_minus.MakePrincipals();
-//       double slope_nominal
-//         = ((* fPrincipal_nominal.GetEigenVectors())[1][0]) /
-//           ((* fPrincipal_nominal.GetEigenVectors())[0][0]);
-//       double slope_plus
-//         = ((* fPrincipal_plus.GetEigenVectors())[1][0]) /
-//           ((* fPrincipal_plus.GetEigenVectors())[0][0]);
-//       double slope_minus
-//         = ((* fPrincipal_minus.GetEigenVectors())[1][0]) /
-//           ((* fPrincipal_minus.GetEigenVectors())[0][0]);
+  // note the target point:
+  unsigned int target_index = _used_sps.back() + 1;
+  auto geoHelper = larutil::GeometryHelper::GetME();
 
 
-//       // Next, compare the slopes to the target slope.
-//       // Choose the one with the smallest error.  If it's an edge one, move the proto sps to that point.
-//       // if it's the center one, keep alpha as it is.
-
-//       double error_nominal = (slope_nominal - slope) / slope;
-//       double error_plus = (slope_plus - slope) / slope;
-//       double error_minus = (slope_minus - slope) / slope;
-
-//       // std::cout << "alpha is " << alpha << std::endl;
-
-//       // Pick the minimum:
-//       if (error_plus < error_nominal && error_plus < error_minus) {
-//         _proto_sps_v.at(target_index).xyz += alpha * _proto_sps_v.at(target_index).freeDirection;
-//         continue;
-//       }
-//       else if (error_minus < error_nominal && error_minus < error_plus) {
-//         _proto_sps_v.at(target_index).xyz -= alpha * _proto_sps_v.at(target_index).freeDirection;
-//         continue;
-//       }
-//       else {
-//         alpha *= 0.75;
-//       }
-//     }
-//     // If this point is reached, the above fit converged.  So add the index.
-//     _used_sps.push_back(target_index);
-//     target_index += 1;
-//   }
+  // Can't ever let points go beyond their allowed range.
+  // So, scan the allowed values of their alpha parameter and take the best one.
 
 
-//   // Now, at this point, go through the entire list of hits again
-//   // and refit all of them just varying one hit at a time.
-//   for (size_t _sps_index = 0; _sps_index < _proto_sps_v.size(); _sps_index ++){
+  while (_used_sps.size() < _proto_sps_v.size()) {
+    double alpha = 5.0;
+    while (alpha > 0.5) {
 
-//     double alpha = 5.0;
-//     while (alpha > 0.5) {
-//       // Make a TPrincipal for each point already used, plus the new one.
-//       TPrincipal fPrincipal_nominal(2, "D");
-//       TPrincipal fPrincipal_plus(2, "D");
-//       TPrincipal fPrincipal_minus(2, "D");
-//       for (size_t index = 0; index <_proto_sps_v.size();index ++ ) {
-//         if (index == _sps_index){
-//           continue;
-//         }
-//         double data[2];
-//         auto point
-//           = geoHelper -> Point_3Dto2D(_proto_sps_v.at(index).xyz.X(),
-//                                       _proto_sps_v.at(index).xyz.Y(),
-//                                       _proto_sps_v.at(index).xyz.Z(),
-//                                       target_plane);
-//         data[0] = point.w;
-//         data[1] = point.t;
-//         fPrincipal_nominal.AddRow(data);
-//         fPrincipal_plus.AddRow(data);
-//         fPrincipal_minus.AddRow(data);
-//       }
+      // Make a TPrincipal for each point already used, plus the new one.
+      TPrincipal fPrincipal_nominal(2, "D");
+      TPrincipal fPrincipal_plus(2, "D");
+      TPrincipal fPrincipal_minus(2, "D");
+      for (auto & index : _used_sps ) {
+        double data[2];
+        auto point
+          = geoHelper -> Point_3Dto2D(_proto_sps_v.at(index).xyz(),
+                                      range_plane);
+        data[0] = point.w;
+        data[1] = point.t;
+        fPrincipal_nominal.AddRow(data);
+        fPrincipal_plus.AddRow(data);
+        fPrincipal_minus.AddRow(data);
+      }
 
-//       // And add the target index point:
-//       double data[2];
-//       auto point_nominal
-//         = geoHelper -> Point_3Dto2D(_proto_sps_v.at(_sps_index).xyz.X(),
-//                                     _proto_sps_v.at(_sps_index).xyz.Y(),
-//                                     _proto_sps_v.at(_sps_index).xyz.Z(),
-//                                     target_plane);
-//       auto plus_center = _proto_sps_v.at(_sps_index).xyz + alpha * _proto_sps_v.at(_sps_index).freeDirection;
-//       auto minus_center = _proto_sps_v.at(_sps_index).xyz - alpha * _proto_sps_v.at(_sps_index).freeDirection;
-//       auto point_plus
-//         = geoHelper -> Point_3Dto2D(plus_center.X(),
-//                                     plus_center.Y(),
-//                                     plus_center.Z(),
-//                                     target_plane);
-//       auto point_minus
-//         = geoHelper -> Point_3Dto2D(minus_center.X(),
-//                                     minus_center.Y(),
-//                                     minus_center.Z(),
-//                                     target_plane);
-//       data[0] = point_nominal.w;
-//       data[1] = point_nominal.t;
-//       fPrincipal_nominal.AddRow(data);
-//       data[0] = point_plus.w;
-//       data[1] = point_plus.t;
-//       fPrincipal_plus.AddRow(data);
-//       data[0] = point_minus.w;
-//       data[1] = point_minus.t;
-//       fPrincipal_minus.AddRow(data);
+      // And add the target index point:
+      double data[2];
+      auto point_nominal
+        = geoHelper -> Point_3Dto2D(_proto_sps_v.at(target_index).xyz(),
+                                    range_plane);
+      auto plus_center = _proto_sps_v.at(target_index).xyz() + alpha * _proto_sps_v.at(target_index).freeDirection;
+      auto minus_center = _proto_sps_v.at(target_index).xyz() - alpha * _proto_sps_v.at(target_index).freeDirection;
+      auto point_plus
+        = geoHelper -> Point_3Dto2D(plus_center,
+                                    range_plane);
+      auto point_minus
+        = geoHelper -> Point_3Dto2D(minus_center,
+                                    range_plane);
+      data[0] = point_nominal.w;
+      data[1] = point_nominal.t;
+      fPrincipal_nominal.AddRow(data);
+      data[0] = point_plus.w;
+      data[1] = point_plus.t;
+      fPrincipal_plus.AddRow(data);
+      data[0] = point_minus.w;
+      data[1] = point_minus.t;
+      fPrincipal_minus.AddRow(data);
 
-//       // Now make the principals and get the slopes:
-//       fPrincipal_nominal.MakePrincipals();
-//       fPrincipal_plus.MakePrincipals();
-//       fPrincipal_minus.MakePrincipals();
-//       double slope_nominal
-//         = ((* fPrincipal_nominal.GetEigenVectors())[1][0]) /
-//           ((* fPrincipal_nominal.GetEigenVectors())[0][0]);
-//       double slope_plus
-//         = ((* fPrincipal_plus.GetEigenVectors())[1][0]) /
-//           ((* fPrincipal_plus.GetEigenVectors())[0][0]);
-//       double slope_minus
-//         = ((* fPrincipal_minus.GetEigenVectors())[1][0]) /
-//           ((* fPrincipal_minus.GetEigenVectors())[0][0]);
+      // Now make the principals and get the slopes:
+      fPrincipal_nominal.MakePrincipals();
+      fPrincipal_plus.MakePrincipals();
+      fPrincipal_minus.MakePrincipals();
+      double slope_nominal
+        = ((* fPrincipal_nominal.GetEigenVectors())[1][0]) /
+          ((* fPrincipal_nominal.GetEigenVectors())[0][0]);
+      double slope_plus
+        = ((* fPrincipal_plus.GetEigenVectors())[1][0]) /
+          ((* fPrincipal_plus.GetEigenVectors())[0][0]);
+      double slope_minus
+        = ((* fPrincipal_minus.GetEigenVectors())[1][0]) /
+          ((* fPrincipal_minus.GetEigenVectors())[0][0]);
 
 
-//       // Next, compare the slopes to the target slope.
-//       // Choose the one with the smallest error.  If it's an edge one, move the proto sps to that point.
-//       // if it's the center one, keep alpha as it is.
+      // Next, compare the slopes to the target slope.
+      // Choose the one with the smallest error.  If it's an edge one, move the proto sps to that point.
+      // if it's the center one, keep alpha as it is.
 
-//       double error_nominal = (slope_nominal - slope) / slope;
-//       double error_plus = (slope_plus - slope) / slope;
-//       double error_minus = (slope_minus - slope) / slope;
+      double error_nominal = (slope_nominal - slope) / slope;
+      double error_plus = (slope_plus - slope) / slope;
+      double error_minus = (slope_minus - slope) / slope;
 
-//       // std::cout << "alpha is " << alpha << std::endl;
+      // std::cout << "alpha is " << alpha << std::endl;
 
-//       // Pick the minimum:
-//       if (error_plus < error_nominal && error_plus < error_minus) {
-//         _proto_sps_v.at(_sps_index).xyz += alpha * _proto_sps_v.at(_sps_index).freeDirection;
-//         continue;
-//       }
-//       else if (error_minus < error_nominal && error_minus < error_plus) {
-//         _proto_sps_v.at(_sps_index).xyz -= alpha * _proto_sps_v.at(_sps_index).freeDirection;
-//         continue;
-//       }
-//       else {
-//         alpha *= 0.75;
-//       }
-//     }
-//   }
+      // Pick the minimum:
+      if (error_plus < error_nominal && error_plus < error_minus) {
+        _proto_sps_v.at(target_index).xyz() += alpha * _proto_sps_v.at(target_index).freeDirection;
+        continue;
+      }
+      else if (error_minus < error_nominal && error_minus < error_plus) {
+        _proto_sps_v.at(target_index).xyz() -= alpha * _proto_sps_v.at(target_index).freeDirection;
+        continue;
+      }
+      else {
+        alpha *= 0.75;
+      }
+    }
+    // If this point is reached, the above fit converged.  So add the index.
+    _used_sps.push_back(target_index);
+    target_index += 1;
+  }
 
 
-//   return;
-// }
+  // Now, at this point, go through the entire list of hits again
+  // and refit all of them just varying one hit at a time.
+  for (size_t _sps_index = 0; _sps_index < _proto_sps_v.size(); _sps_index ++) {
+
+    double alpha = 5.0;
+    while (alpha > 0.5) {
+      // Make a TPrincipal for each point already used, plus the new one.
+      TPrincipal fPrincipal_nominal(2, "D");
+      TPrincipal fPrincipal_plus(2, "D");
+      TPrincipal fPrincipal_minus(2, "D");
+      for (size_t index = 0; index < _proto_sps_v.size(); index ++ ) {
+        if (index == _sps_index) {
+          continue;
+        }
+        double data[2];
+        auto point
+          = geoHelper -> Point_3Dto2D(_proto_sps_v.at(index).xyz(),
+                                      range_plane);
+        data[0] = point.w;
+        data[1] = point.t;
+        fPrincipal_nominal.AddRow(data);
+        fPrincipal_plus.AddRow(data);
+        fPrincipal_minus.AddRow(data);
+      }
+
+      // And add the target index point:
+      double data[2];
+      auto point_nominal
+        = geoHelper -> Point_3Dto2D(_proto_sps_v.at(_sps_index).xyz(),
+                                    range_plane);
+      auto plus_center = _proto_sps_v.at(_sps_index).xyz + alpha * _proto_sps_v.at(_sps_index).freeDirection;
+      auto minus_center = _proto_sps_v.at(_sps_index).xyz - alpha * _proto_sps_v.at(_sps_index).freeDirection;
+      auto point_plus
+        = geoHelper -> Point_3Dto2D(plus_center,
+                                    range_plane);
+      auto point_minus
+        = geoHelper -> Point_3Dto2D(minus_center,
+                                    range_plane);
+      data[0] = point_nominal.w;
+      data[1] = point_nominal.t;
+      fPrincipal_nominal.AddRow(data);
+      data[0] = point_plus.w;
+      data[1] = point_plus.t;
+      fPrincipal_plus.AddRow(data);
+      data[0] = point_minus.w;
+      data[1] = point_minus.t;
+      fPrincipal_minus.AddRow(data);
+
+      // Now make the principals and get the slopes:
+      fPrincipal_nominal.MakePrincipals();
+      fPrincipal_plus.MakePrincipals();
+      fPrincipal_minus.MakePrincipals();
+      double slope_nominal
+        = ((* fPrincipal_nominal.GetEigenVectors())[1][0]) /
+          ((* fPrincipal_nominal.GetEigenVectors())[0][0]);
+      double slope_plus
+        = ((* fPrincipal_plus.GetEigenVectors())[1][0]) /
+          ((* fPrincipal_plus.GetEigenVectors())[0][0]);
+      double slope_minus
+        = ((* fPrincipal_minus.GetEigenVectors())[1][0]) /
+          ((* fPrincipal_minus.GetEigenVectors())[0][0]);
+
+
+      // Next, compare the slopes to the target slope.
+      // Choose the one with the smallest error.  If it's an edge one, move the proto sps to that point.
+      // if it's the center one, keep alpha as it is.
+
+      double error_nominal = (slope_nominal - slope) / slope;
+      double error_plus = (slope_plus - slope) / slope;
+      double error_minus = (slope_minus - slope) / slope;
+
+      // std::cout << "alpha is " << alpha << std::endl;
+
+      // Pick the minimum:
+      if (error_plus < error_nominal && error_plus < error_minus) {
+        _proto_sps_v.at(_sps_index).xyz += alpha * _proto_sps_v.at(_sps_index).freeDirection;
+        continue;
+      }
+      else if (error_minus < error_nominal && error_minus < error_plus) {
+        _proto_sps_v.at(_sps_index).xyz -= alpha * _proto_sps_v.at(_sps_index).freeDirection;
+        continue;
+      }
+      else {
+        alpha *= 0.75;
+      }
+    }
+  }
+
+
+  return;
+}
+
+*/
 
 bool ShowerSPS::finalize() {
 

@@ -89,6 +89,8 @@ protected:
 
   void restrictRange(ProtoSps & _proto_sps, double wireMin, double wireMax, unsigned int plane);
 
+  void stretchSpacePoints(std::vector<ProtoSps> & _proto_sps, unsigned int plane);
+
 };
 }
 #endif
