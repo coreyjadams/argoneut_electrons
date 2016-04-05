@@ -24,6 +24,27 @@ E_AREA = [185.00584273133333, 44.90267652367623]
 E_AMP = [184.9556285310639, 45.1669419567248]
 
 
+correction = dict()
+correction.update({'c': dict()})
+correction.update({'i': dict()})
+correction['c'].update({'charge': Q_AREA[1]*E_AREA[1]})
+correction['i'].update({'charge': Q_AREA[0]*E_AREA[0]})
+correction['c'].update({'peak': Q_AMP[1]*E_AMP[1]})
+correction['i'].update({'peak': Q_AMP[0]*E_AMP[0]})
+
+
+planes = ["c","i"]
+measures = ["charge","peak"]
+recombs = ["const","birks","box"]
+dists = [2.75]
+# dists = np.arange(0.71,3.51,0.02)
+# dists = [2.0]
+
+# planes = ["c",]
+# measures = [ "peak"]
+# recombs = ["birks"]
+# dists = [1.0]
+
 def readElectrons():
 
     # photons = dict()
@@ -86,42 +107,29 @@ def calcdEdx(df):
 
         # df.info()
 
-    df['c_hitcharges'] *= df["c_lifetime_corr"]
-    df['c_hitpeaks'] *= df["c_lifetime_corr"]
-    df['i_hitcharges'] *= df["i_lifetime_corr"]
-    df['i_hitpeaks'] *= df["i_lifetime_corr"]
+    for plane in planes:
+        for measure in measures:
+            df["{}_hit{}s".format(
+                plane, measure)] *= df["{}_lifetime_corr".format(plane)]
 
-    df["c_startwire"] = df["c_starthit"].apply(selectWire)
-    df["i_startwire"] = df["i_starthit"].apply(selectWire)
+        df["{}_startwire".format(plane)] = df[
+            "{}_starthit".format(plane)].apply(selectWire)
 
-    df['c_wire_corrections'] = df['c_hitwires'].apply(wireCorrC)
-    df['i_wire_corrections'] = df['i_hitwires'].apply(wireCorrI)
+        df['{}_wire_corrections'.format(plane)] = df[
+            '{}_hitwires'.format(plane)].apply(wireCorrC)
 
-    df['c_dist_from_start'] = (
-        df['c_hitwires'] - df['c_startwire'])*df['c_pitch']
-    df['i_dist_from_start'] = (
-        df['i_hitwires'] - df['i_startwire'])*df['i_pitch']
+        df['{}_dist_from_start'.format(plane)] = (df['{}_hitwires'.format(
+            plane)] - df['{}_startwire'.format(plane)])*df['{}_pitch'.format(plane)]
 
-    df['c_hitcharges'] *= df['c_wire_corrections']
-    df['i_hitcharges'] *= df['i_wire_corrections']
+        for measure in measures:
 
-    df['c_hitcharges_q'] = df['c_hitcharges'] * Q_AREA[1]
-    df['c_hitpeaks_q'] = df['c_hitpeaks'] * Q_AMP[1]
-    df['i_hitcharges_q'] = df['i_hitcharges'] * Q_AREA[0]
-    df['i_hitpeaks_q'] = df['i_hitpeaks'] * Q_AMP[0]
-    df['c_hitcharges_dq'] = df['c_hitcharges_q'] * E_AREA[1]
-    df['c_hitpeaks_dq'] = df['c_hitpeaks_q'] * E_AMP[1]
-    df['i_hitcharges_dq'] = df['i_hitcharges_q'] * E_AREA[0]
-    df['i_hitpeaks_dq'] = df['i_hitpeaks_q'] * E_AMP[0]
-    df['c_charge_dqdx'] = df['c_hitcharges_dq'] / df['c_pitch']
-    df['c_peak_dqdx'] = df['c_hitpeaks_dq'] / df['c_pitch']
-    df['i_charge_dqdx'] = df['i_hitcharges_dq'] / df['i_pitch']
-    df['i_peak_dqdx'] = df['i_hitpeaks_dq'] / df['i_pitch']
-
-    # df['c_charge_dedx_box'] = df['c_charge_dqdx'].apply(boxCorrection)
-    # df['i_charge_dedx_box'] = df['i_charge_dqdx'].apply(boxCorrection)
-    # df['c_charge_dedx_birks'] = df['c_charge_dqdx'].apply(birksCorrection)
-    # df['i_charge_dedx_birks'] = df['i_charge_dqdx'].apply(birksCorrection)
+            df['{}_hit{}s'.format(
+                plane, measure)] *= df['{}_wire_corrections'.format(plane)]
+            # df['{}_hit{}s_q'.format(plane,measure)] =  df['{}_hit{}s_q'.format(plane,measure)]* Q_AREA
+            df['{}_hit{}s_dq'.format(plane, measure)] = df[
+                '{}_hit{}s'.format(plane, measure)]*correction[plane][measure]
+            df['{}_{}_dqdx'.format(plane, measure)] = df[
+                '{}_hit{}s_dq'.format(plane, measure)] / df['{}_pitch'.format(plane)]
 
     df = df.apply(dqdx_to_dedx_all, 1)
 
@@ -132,10 +140,14 @@ def calcdEdx(df):
 
 def dqdx_to_dedx_all(s):
 
-    s['c_charge_dedx_box'] = boxCorrection(s['c_charge_dqdx'])
-    s['i_charge_dedx_box'] = boxCorrection(s['i_charge_dqdx'])
-    s['c_charge_dedx_birks'] = birksCorrection(s['c_charge_dqdx'])
-    s['i_charge_dedx_birks'] = birksCorrection(s['i_charge_dqdx'])
+    for plane in planes:
+        for measure in measures:
+            s['{}_{}_dedx_box'.format(plane, measure)] = boxCorrection(
+                s['{}_{}_dqdx'.format(plane, measure)])
+            s['{}_{}_dedx_birks'.format(plane, measure)] = birksCorrection(
+                s['{}_{}_dqdx'.format(plane, measure)])
+            s['{}_{}_dedx_const'.format(plane, measure)] = constCorrection(
+                s['{}_{}_dqdx'.format(plane, measure)])
 
     return s
 
@@ -146,6 +158,11 @@ def boxCorrection(dqdx_v):
         result.append(larutil.LArProperties.GetME().ModBoxCorrection(x))
     return result
 
+def constCorrection(dqdx_v):
+    result = []
+    for x in dqdx_v:
+        result.append(3.40e-05 * x)
+    return result
 
 def birksCorrection(dqdx_v):
     result = []
@@ -184,47 +201,33 @@ def dEdxFunctions(s):
         # First, cut out any hits that are at negative distance
         # print s
 
-    s['c_charge_dedx_box_mean'] = dEdx_mean(s['c_charge_dedx_box'])
-    s['c_charge_dedx_birks_mean'] = dEdx_mean(s['c_charge_dedx_birks'])
-    s['i_charge_dedx_box_mean'] = dEdx_mean(s['i_charge_dedx_box'])
-    s['i_charge_dedx_birks_mean'] = dEdx_mean(s['i_charge_dedx_birks'])
+    for plane in planes:
+        for measure in measures:
+            for rec in recombs:
+                s['{}_{}_dedx_{}_mean'.format(plane, measure, rec)] = dEdx_mean(
+                    s['{}_{}_dedx_{}'.format(plane, measure, rec)])
 
-    cut=1.6
-    s['c_charge_dedx_box_mean_no_outliers'] = dEdx_mean_no_outliers(
-        s['c_charge_dedx_box'], s['c_dist_from_start'],cut)
-    s['c_charge_dedx_birks_mean_no_outliers'] = dEdx_mean_no_outliers(
-        s['c_charge_dedx_birks'], s['c_dist_from_start'],cut)
-    s['i_charge_dedx_box_mean_no_outliers'] = dEdx_mean_no_outliers(
-        s['i_charge_dedx_box'], s['i_dist_from_start'],cut)
-    s['i_charge_dedx_birks_mean_no_outliers'] = dEdx_mean_no_outliers(
-        s['i_charge_dedx_birks'], s['i_dist_from_start'],cut)
+                s['{}_{}_dedx_{}_LMA'.format(plane, measure, rec)] = dEdx_lowest_moving_average(
+                    s['{}_{}_dedx_{}'.format(plane, measure, rec)])
 
-    s['c_charge_dedx_box_median'] = dEdx_median(
-        s['c_charge_dedx_box'], s['c_dist_from_start'],cut)
-    s['c_charge_dedx_birks_median'] = dEdx_median(
-        s['c_charge_dedx_birks'], s['c_dist_from_start'],cut)
-    s['i_charge_dedx_box_median'] = dEdx_median(
-        s['i_charge_dedx_box'], s['i_dist_from_start'],cut)
-    s['i_charge_dedx_birks_median'] = dEdx_median(
-        s['i_charge_dedx_birks'], s['i_dist_from_start'],cut)
-
-    s['c_charge_dedx_box_LMA'] = dEdx_lowest_moving_average(
-        s['c_charge_dedx_box'])
-    s['c_charge_dedx_birks_LMA'] = dEdx_lowest_moving_average(
-        s['c_charge_dedx_birks'])
-    s['i_charge_dedx_box_LMA'] = dEdx_lowest_moving_average(
-        s['i_charge_dedx_box'])
-    s['i_charge_dedx_birks_LMA'] = dEdx_lowest_moving_average(
-        s['i_charge_dedx_birks'])
+                for dist in dists:
+                    s['{}_{}_dedx_{}_mean_no_outliers_{}'.format(
+                        plane, measure, rec, dist)] = dEdx_mean_no_outliers(
+                            s['{}_{}_dedx_{}'.format(plane, measure, rec)],
+                            s['{}_dist_from_start'.format(plane)], dist)
+                    s['{}_{}_dedx_{}_median_{}'.format(
+                        plane, measure, rec, dist)] = dEdx_median(
+                            s['{}_{}_dedx_{}'.format(plane, measure, rec)],
+                            s['{}_dist_from_start'.format(plane)], dist)
 
     return s
 
 
-def dEdx_mean_no_outliers(dedx_v, dist_v, dist_cut=2.4):
+def dEdx_mean_no_outliers(dedx_v, dist_v, dist_cut=2.4, startindex=1):
 
     # Pick out values with dist >= 0, < dist_cut
     points_within_dist = []
-    for val, d in zip(dedx_v, dist_v):
+    for val, d in zip(dedx_v[startindex:], dist_v[startindex:]):
         if d > 0 and d < dist_cut:
             points_within_dist.append(val)
 
@@ -236,7 +239,7 @@ def dEdx_mean_no_outliers(dedx_v, dist_v, dist_cut=2.4):
     val = 0.0
     n = 0
     if dev == 0.0:
-      return mean
+        return mean
     for dedx in points_within_dist:
         if abs(mean-dedx) < 2.0*dev and dedx < 10:
             val += dedx
@@ -247,9 +250,11 @@ def dEdx_mean_no_outliers(dedx_v, dist_v, dist_cut=2.4):
         return 0.0
 
 
-def dEdx_lowest_moving_average(dedx_v, N=5):
+def dEdx_lowest_moving_average(dedx_v, N=3, startindex=1):
     vals = []
     for i in xrange(len(dedx_v) - N):
+        if i < startindex:
+            continue
         vals.append(0.0)
         for v in xrange(N):
             vals[-1] += dedx_v[i+v]
@@ -260,11 +265,11 @@ def dEdx_lowest_moving_average(dedx_v, N=5):
         return 0
 
 
-def dEdx_median(dedx_v, dist_v, dist_cut=2.4):
+def dEdx_median(dedx_v, dist_v, dist_cut=2.4, startindex=1):
 
     # Pick out values with dist >= 0, < dist_cut
     points_within_dist = []
-    for val, d in zip(dedx_v, dist_v):
+    for val, d in zip(dedx_v[startindex:], dist_v[startindex:]):
         if d > 0 and d < dist_cut:
             points_within_dist.append(val)
 
@@ -306,6 +311,8 @@ def loopThroughEvents(df, n=1):
                  'i_charge_dedx_box'], marker='+', markersize=20)
         ax2.plot(row['i_dist_from_start'], row[
                  'i_charge_dedx_birks'], marker='x', markersize=20)
+        electrons = [2.3]*len(row['i_dist_from_start'])
+        photons = [4.6]*len(row['i_dist_from_start'])
         ax2.plot(row['i_dist_from_start'], electrons, linestyle='--')
         ax2.plot(row['i_dist_from_start'], photons, linestyle='--')
         ax2.grid(True)
@@ -325,9 +332,11 @@ def loopThroughEvents(df, n=1):
             return
 
 
-def plotdEdx(electrons_df, photons_df, branch_name):
+def plotdEdx(electrons_df, photons_df,branch_name,info=None):
 
-    bins = np.linspace(0, 10, 41)
+
+    binwidth = 0.4
+    bins = np.arange(0, 10 + binwidth, binwidth)
     electron_data, bin_edges = np.histogram(electrons_df[branch_name], bins)
     photon_data, bin_edges = np.histogram(photons_df[branch_name], bins)
 
@@ -348,19 +357,19 @@ def plotdEdx(electrons_df, photons_df, branch_name):
         else:
             photon_frac_err.append(0.0)
 
-    x = bin_edges + 0.25
+    x = bin_edges + binwidth*0.5
 
-    f, ax = plt.subplots()
-    ax.set_title("Electron Photon separation, {s}".format(s=branch_name))
-    # ax.hist(electron_data,bins=np.linspace(0,10,20),alpha=0.5)
-    ax.errorbar(x[:-1], electron_data, xerr=0.25*0.5,
-                yerr=electron_err, label="Electrons")
-    ax.errorbar(
-        x[:-1], photon_data, xerr=0.25*0.5, yerr=photon_err, label="Photons")
-    plt.xlabel("dE/dx [MeV/cm]")
-    plt.ylabel("Number of Events")
-    plt.legend()
-    plt.grid(True)
+    # f, ax = plt.subplots(figsize=(8, 4))
+    # ax.set_title("Electron Photon separation, {s}".format(s=branch_name))
+    # # ax.hist(electron_data,bins=np.linspace(0,10,20),alpha=0.5)
+    # ax.errorbar(x[:-1], electron_data, xerr=0.25*0.5,
+    #             yerr=electron_err, label="Electrons")
+    # ax.errorbar(
+    #     x[:-1], photon_data, xerr=0.25*0.5, yerr=photon_err, label="Photons")
+    # plt.xlabel("dE/dx [MeV/cm]")
+    # plt.ylabel("Number of Events")
+    # plt.legend()
+    # plt.grid(True)
 
     electron_data_norm, bin_edges = np.histogram(
         electrons_df[branch_name], bins, density=True)
@@ -375,27 +384,54 @@ def plotdEdx(electrons_df, photons_df, branch_name):
     for p_val, frac_err in zip(photon_data_norm, photon_frac_err):
         photon_err_norm.append(p_val*frac_err)
 
-    f2, ax2 = plt.subplots()
-    ax2.set_title("Electron Photon separation, unit normalized")
+    f2, ax2 = plt.subplots(figsize=(15, 8))
+    ax2.set_title("Electron Photon Separation",fontsize=30)
     ax2.errorbar(x[:-1], electron_data_norm, xerr=0.25*0.5,
                  yerr=electron_err_norm, label="Electrons")
     ax2.errorbar(x[:-1], photon_data_norm, xerr=0.25*0.5,
                  yerr=photon_err_norm, label="Photons")
-    plt.xlabel("dE/dx [MeV/cm]")
-    plt.ylabel("Arbitrary Units")
+    plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
+    plt.ylabel("Unit Normalized",fontsize=20)
+    
+    for tick in ax2.xaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
+    for tick in ax2.yaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
+
+    # Now draw a line at the place that gives the best dEdx cut:
+
+    point, purity, tup = optimizeCut(
+        electronDataFrame, photonDataFrame, branch_name)
+    # print "c_charge_dedx_box_LMA @ {}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}\n\t{}".format(
+    #   point,
+    #   tup[0][0],tup[0][1],
+    #   tup[1][0],tup[1][1],
+    #   purity)
+
+    dEdxLine_y = np.linspace(0, 1, 10)
+    dEdxLine_x = [point]*10
+    plt.plot(dEdxLine_x, dEdxLine_y, linewidth=2,linestyle="--",label="Cut at {} MeV/cm".format(point))
+    plt.text(6.05,0.67,"Electron Efficiency:",size=20,)
+    plt.text(9.95,0.67,"{:.2} +/- {:.2}".format(tup[0][0],tup[0][1]),size=20,horizontalalignment='right')
+    plt.text(6.05,0.61,"Photon Mis. ID:",size=20,)
+    plt.text(9.95,0.61,"{:.2} +/- {:.2}".format(tup[1][0],tup[1][1]),size=20,horizontalalignment='right')
+    if info is not None:
+        plt.text(6.05,0.405,info,size=18)
+
     plt.legend()
     plt.grid(True)
-
     plt.show()
+    # plt.savefig("/data_linux/dedx_plots/1D/dedx_1D_"+branch_name+".png")
+    plt.close(f2)
 
-
-def dEdxCorrelation(electrons_df, photons_df, branch_name_x, branch_name_y,cut_dist=-1):
-
+def dEdxCorrelation(electrons_df, photons_df, branch_name_x, branch_name_y, cut_dist=-1):
 
     binwidth = 0.5
     bins = np.arange(0, 10 + binwidth, binwidth)
-    electron_data_x, bin_edges = np.histogram(electrons_df[branch_name_x], bins)
-    electron_data_y, bin_edges = np.histogram(electrons_df[branch_name_y], bins)
+    electron_data_x, bin_edges = np.histogram(
+        electrons_df[branch_name_x], bins)
+    electron_data_y, bin_edges = np.histogram(
+        electrons_df[branch_name_y], bins)
     photon_data_x, bin_edges = np.histogram(photons_df[branch_name_x], bins)
     photon_data_y, bin_edges = np.histogram(photons_df[branch_name_y], bins)
 
@@ -422,7 +458,6 @@ def dEdxCorrelation(electrons_df, photons_df, branch_name_x, branch_name_y,cut_d
         else:
             photon_frac_err_y.append(0.0)
 
-
     x = bin_edges + 0.25
 
     electron_data_norm_x, bin_edges = np.histogram(
@@ -448,12 +483,8 @@ def dEdxCorrelation(electrons_df, photons_df, branch_name_x, branch_name_y,cut_d
     for p_val, frac_err in zip(photon_data_norm_y, photon_frac_err_y):
         photon_err_norm_y.append(p_val*frac_err)
 
-
     # If cut_val is not -1, it means a cut on abs(ind - col) was made
     # Display this with a box on the plots.
-
-#############
-
 
     # definitions for the axes
     left, width = 0.1, 0.65
@@ -466,7 +497,6 @@ def dEdxCorrelation(electrons_df, photons_df, branch_name_x, branch_name_y,cut_d
 
     # start with a rectangular Figure
     plt.figure(1, figsize=(8, 8))
-
 
     axScatter = plt.axes(rect_scatter)
     plt.xlabel("dE/dx [MeV/cm], {l}".format(l=branch_name_x))
@@ -483,18 +513,16 @@ def dEdxCorrelation(electrons_df, photons_df, branch_name_x, branch_name_y,cut_d
     axHisty.xaxis.set_major_formatter(nullfmt)
     axHisty.yaxis.set_major_formatter(nullfmt)
 
-
     # the scatter plot:
     axScatter.scatter(electrons_df[branch_name_x],
                       electrons_df[branch_name_y],
                       marker="o",
-                      label="Electrons",c="blue")
+                      label="Electrons", c="blue")
 
     axScatter.scatter(photons_df[branch_name_x],
                       photons_df[branch_name_y],
                       marker="x",
-                      label="Photons",c="green")
-
+                      label="Photons", c="green")
 
     # Set limits for dE/dx values
     axScatter.set_xlim((0, 10))
@@ -507,52 +535,82 @@ def dEdxCorrelation(electrons_df, photons_df, branch_name_x, branch_name_y,cut_d
 
     # axHistx.set_title("Electron Photon separation, normalized")
     axHistx.errorbar(x[:-1], electron_data_norm_x, xerr=binwidth*0.5,
-                 yerr=electron_err_norm_x, label="Electrons")
+                     yerr=electron_err_norm_x, label="Electrons")
     axHistx.errorbar(x[:-1], photon_data_norm_x, xerr=binwidth*0.5,
-                 yerr=photon_err_norm_x, label="Photons")
-
+                     yerr=photon_err_norm_x, label="Photons")
 
     axHisty.grid(True)
     # axHisty.set_title("Electron Photon separation, normalized")
-    axHisty.errorbar(electron_data_norm_y,x[:-1], yerr=binwidth*0.5,
-                 xerr=electron_err_norm_y, label="Electrons")
-    axHisty.errorbar(photon_data_norm_y,x[:-1], yerr=binwidth*0.5,
-                 xerr=photon_err_norm_y, label="Photons")
+    axHisty.errorbar(electron_data_norm_y, x[:-1], yerr=binwidth*0.5,
+                     xerr=electron_err_norm_y, label="Electrons")
+    axHisty.errorbar(photon_data_norm_y, x[:-1], yerr=binwidth*0.5,
+                     xerr=photon_err_norm_y, label="Photons")
     # plt.legend()
     plt.grid(True)
-
 
     plt.show()
 
 
-def makeLandau(df):
+def makeLandau(df,measure,recomb,title):
 
-    hits = []
+    c_hits = []
+    i_hits = []
+
+    name = measure + "_dedx_" + recomb
 
     # Need to dig out all the hit information from each event:
     for index, row in df.iterrows():
-        cand_hits = row["c_charge_dedx_box"]
+        i_cand_hits = row["i_"+name]
+        c_cand_hits = row["c_"+name]
         dists = row['c_dist_from_start']
-        for hit, dist in zip(cand_hits, dists):
-            if dist > 0 and dist < 2.4:
-                hits.append(hit)
+        for hit, dist in zip(c_cand_hits, dists):
+            if dist > 0 and dist < 3.5:
+                c_hits.append(hit)
+        dists = row['i_dist_from_start']
+        for hit, dist in zip(i_cand_hits, dists):
+            if dist > 0 and dist < 3.5:
+                i_hits.append(hit)
 
     bins = np.linspace(0, 10, 21)
-    electron_data, bin_edges = np.histogram(hits, bins)
+    c_data, bin_edges = np.histogram(c_hits, bins)
+    i_data, bin_edges = np.histogram(i_hits, bins)
+    c_err = []
+    i_err = []
+    for point in c_data:
+        try:
+            c_err.append(1.0/math.sqrt(point))
+        except:
+            c_err.append(0.0)
+    for point in i_data:
+        try: 
+            i_err.append(1.0/math.sqrt(point))
+        except:
+            i_err.append(0.0)
+
+    c_data, bin_edges = np.histogram(c_hits, bins,density=True)
+    i_data, bin_edges = np.histogram(i_hits, bins,density=True)
+
+    c_err *= c_data
+    i_err *= i_data
 
     x = bin_edges + 0.25
 
     f, ax = plt.subplots()
 
-    ax.plot(x[:-1], electron_data, label="Electron Hits")
-    ax.set_title("Electron Hits")
+    ax.errorbar(x[:-1], c_data, yerr=c_err, xerr=0.25, label="Collection Hits")
+    ax.errorbar(x[:-1], i_data, yerr=i_err, xerr=0.25, label="Induction Hits")
+    ax.set_title(title)
 
     plt.xlabel("dE/dx [MeV/cm]")
-    plt.ylabel("All Hits")
+    plt.ylabel("")
     plt.legend()
     plt.grid(True)
-    plt.show()
-
+    # plt.show()
+    if "Electron" in title:
+        plt.savefig("/data_linux/dedx_plots/Landau/landau_electrons_"+name+".png")
+    if "Photon" in title:
+        plt.savefig("/data_linux/dedx_plots/Landau/landau_photons_"+name+".png")
+    plt.close(f)
 
 def selectElectronEvents(df):
 
@@ -587,83 +645,91 @@ def selectPhotonEvents(df):
 
     df.drop(df.index[dropIndexes], inplace=True)
 
-def optimizeCut(electron_df,photon_df,branch_name):
 
-  # Basically, loop through and find the value that optimizes the ratio of electrons to photons:
-  # Setting lower and upper limits just to stop the edge effects:
-  lower_limit = 0.0
-  upper_limit = 10
+def optimizeCut(electron_df, photon_df, branch_name):
 
-  # Here's the plan.  take a value, x, and a step alpha.
-  # Get the eff at x, x - alpha and x + alpha.
-  # Set x to the one with the best eff.  If it's x, decrease alpha.
-  # 
-  # When alpha is small, stop.
-  # 
-  # To ensure it doesn't hit a local max, start by scanning over a few points
-  # and use the max value.
-  points = np.arange(lower_limit,upper_limit,0.25)
-  vals = []
-  for point in points:
-    purity, tup = makeCut(electron_df,photon_df,branch_name,point)
-    # vals.append(makeCut(electron_df,photon_df,branch_name,point))
-    print "{}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}".format(
-      point,
-      tup[0][0],tup[0][1],
-      tup[1][0],tup[1][1])
-    print "\tPurity: {}".format(purity)
+    # Basically, loop through and find the value that optimizes the ratio of electrons to photons:
+    # Setting lower and upper limits just to stop the edge effects:
+    lower_limit = 1.0
+    upper_limit = 10
 
+    # Here's the plan.  take a value, x, and a step alpha.
+    # Get the eff at x, x - alpha and x + alpha.
+    # Set x to the one with the best eff.  If it's x, decrease alpha.
+    #
+    # When alpha is small, stop.
+    #
+    # To ensure it doesn't hit a local max, start by scanning over a few points
+    # and use the max value.
+    points = np.arange(lower_limit, upper_limit, 0.1)
+    vals = []
+    max_purity = 0.0
+    max_tup = []
+    max_point = 0
+    for point in points:
+        purity, tup = makeCut(electron_df, photon_df, branch_name, point)
+        if purity > max_purity and tup[0][0] > 0.5:
+            max_point = point
+            max_tup = tup
+            max_purity = purity
 
+        # print "\tPurity: {}".format(purity)
+
+    return max_point, max_purity, max_tup
 
 
 def makeCut(electron_df, photon_df, branch_name, cut_value):
-  """
-  This function will make a cut at the value specified on the branch_name specified
-  It calculates the percent of each sample left on each side, and returns ???
-  """
+    """
+    This function will make a cut at the value specified on the branch_name specified
+    It calculates the percent of each sample left on each side, and returns ???
+    """
 
-  bins = [0, cut_value, 10]
+    bins = [0, cut_value, 10]
 
-  # First, get the arrays of data:
-  electrons = electron_df[branch_name].values
-  photons = photon_df[branch_name].values
+    # First, get the arrays of data:
+    electrons = electron_df[branch_name].values
+    photons = photon_df[branch_name].values
 
-  # Use a histogram to slice this into two sections, one above the cut value and one below
-  electrons, junk = np.histogram(electron_df[branch_name], bins)
-  photons, junk = np.histogram(photon_df[branch_name], bins)
+    # Use a histogram to slice this into two sections, one above the cut value
+    # and one below
+    electrons, junk = np.histogram(electron_df[branch_name], bins)
+    photons, junk = np.histogram(photon_df[branch_name], bins)
 
-  electron_eff = (1.0*electrons[0])/(electrons[0] + electrons[1])
-  photon_eff = (1.0*photons[0])/(photons[0] + photons[1])
+    electron_eff = (1.0*electrons[0])/(electrons[0] + electrons[1])
+    photon_eff = (1.0*photons[0])/(photons[0] + photons[1])
 
-  try:
-    purity = 1.0*electrons[0] / (electrons[0] + photons[0])
-  except:
-    purity = 0.0
+    try:
+        purity = 1.0*electrons[0] / (electrons[0] + photons[0])
+    except:
+        purity = 0.0
 
-  try:
-    electron_eff_stat_err = electron_eff * math.sqrt(1.0/electrons[0] + 1.0/(electrons[0] + electrons[1]))
-  except:
-    electron_eff_stat_err = 999
+    try:
+        electron_eff_stat_err = electron_eff * \
+            math.sqrt(1.0/electrons[0] + 1.0/(electrons[0] + electrons[1]))
+    except:
+        electron_eff_stat_err = 999
 
-  try:
-    photon_eff_stat_err = photon_eff * math.sqrt(1.0/photons[0] + 1.0/(photons[0] + photons[1]))
-  except:
-    photon_eff_stat_err = 999
+    try:
+        photon_eff_stat_err = photon_eff * \
+            math.sqrt(1.0/photons[0] + 1.0/(photons[0] + photons[1]))
+    except:
+        photon_eff_stat_err = 999
 
+    try:
+        opt = electron_eff / photon_eff
+    except:
+        opt = 0.0
 
-  try:
-    opt = electron_eff / photon_eff
-  except:
-    opt = 0.0
+    try:
+        opt_err = opt * \
+            math.sqrt(
+                electron_eff_stat_err/electron_eff + photon_eff_stat_err / photon_eff)
+    except:
+        opt_err = 999
 
-  try:
-    opt_err = opt * math.sqrt( electron_eff_stat_err/electron_eff + photon_eff_stat_err/ photon_eff)
-  except:
-    opt_err = 999
+    return purity, [[electron_eff, electron_eff_stat_err], [photon_eff, photon_eff_stat_err]]
 
-  return purity, [[electron_eff, electron_eff_stat_err],[photon_eff, photon_eff_stat_err]]  
-
-  # electron_stat_err = 
+    # electron_stat_err =
 
 
 if __name__ == '__main__':
@@ -676,16 +742,17 @@ if __name__ == '__main__':
     larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
     # Need the files to work on, which are basic root ttrees
-    #
 
-    electronFiles = ["anatrees/anu_electrons_anatree.root",
-                     "anatrees/nu_electrons_anatree.root",
-                     "anatrees/misc_bootleg_anatree.root"]
-    photonFiles = ["anatrees/misc_bootleg_anatree.root",
-                   # "anatrees/nu_pi0_anatree.root",
-                   # "anatrees/anu_pi0_anatree.root",
-                   "anatrees/nu_photons_anatree.root"
-                   ]
+    # electronFiles = ["anatrees/anu_electrons_anatree.root",
+    #                  "anatrees/nu_electrons_anatree.root",
+    #                  "anatrees/misc_bootleg_anatree.root"]
+    # photonFiles = ["anatrees/misc_bootleg_anatree.root",
+    #                # "anatrees/nu_pi0_anatree.root",
+    #                # "anatrees/anu_pi0_anatree.root",
+    #                "anatrees/nu_photons_anatree.root"
+    #                ]
+    electronFiles = ["anatrees/electrons_anatree.root"]
+    photonFiles = ["anatrees/photons_anatree.root"]
     # photonFiles = ["anatrees/nu_pi0_anatree.root",
     #                "anatrees/anu_pi0_anatree.root"]
 
@@ -714,30 +781,11 @@ if __name__ == '__main__':
     electronDataFrame = calcdEdx(electronDataFrame)
     photonDataFrame = calcdEdx(photonDataFrame)
 
-    print "dEdx calculated."
-
-    electronDataFrame = electronDataFrame.query(
-        'i_pitch_err < 0.1 or c_pitch_err < 0.1')
-    photonDataFrame = photonDataFrame.query(
-        'i_pitch_err < 0.1 or c_pitch_err < 0.1')
-
-    # electronDataFrameCut = electronDataFrame.query("abs(c_charge_dedx_box_LMA - i_charge_dedx_box_LMA) > 1")
-    # photonDataFrameCut = photonDataFrame.query("abs(c_charge_dedx_box_LMA - i_charge_dedx_box_LMA) > 1")
-
-
-
-    # electronDataFrame = electronDataFrame.query("abs(c_charge_dedx_box_LMA - i_charge_dedx_box_LMA) < 1")
-    # photonDataFrame = photonDataFrame.query("abs(c_charge_dedx_box_LMA - i_charge_dedx_box_LMA) < 1")
-
-
-    # electronDataFrame = electronDataFrame.query("abs(c_charge_dedx_box_mean_no_outliers - i_charge_dedx_box_mean_no_outliers) < 1")
-    # photonDataFrame = photonDataFrame.query("abs(c_charge_dedx_box_mean_no_outliers - i_charge_dedx_box_mean_no_outliers) < 1")
-
     print "Analysis finished, making plots."
 
     # This function will loop through the events and draw dEdx vs wire:
 
-    # loopThroughEvents(electronDataFrameCut,20)
+    # loopThroughEvents(electronDataFrame,20)
     # loopThroughEvents(photonDataFrame,20)
 
     # # This function will make the dE/dx plot for electrons and photons:
@@ -750,59 +798,151 @@ if __name__ == '__main__':
     # plotdEdx(electronDataFrame, photonDataFrame,
     #          "c_charge_dedx_box_mean_no_outliers")
 
-    # makeLandau(electronDataFrame)
-    # makeLandau(photonDataFrame)
+    # Make the 1D plots
+    
+    # electronDataFrame.info()
 
-    # print optimizeCut(electronDataFrame,photonDataFrame,"c_charge_dedx_box_LMA")
-    # print optimizeCut(electronDataFrame,photonDataFrame,"i_charge_dedx_box_LMA")
-    # print optimizeCut(electronDataFrame,photonDataFrame,"c_charge_dedx_box_median")
-    # print optimizeCut(electronDataFrame,photonDataFrame,"i_charge_dedx_box_median")
-    # print optimizeCut(electronDataFrame,photonDataFrame,"c_charge_dedx_box_mean_no_outliers")
-    # print optimizeCut(electronDataFrame,photonDataFrame,"i_charge_dedx_box_mean_no_outliers")
-    # dEdxCorrelation(electronDataFrameCut,
-    #                 photonDataFrameCut,
+    # print electronDataFrame.info()
+    # print photonDataFrame.info()
+
+    if False:
+        for plane in planes:
+            for measure in measures:
+                for recomb in recombs:
+                    info=""
+                    if plane is "c":
+                        info = "Collection Plane\n"
+                    else:
+                        info = "Induction Plane\n"
+                    if measure is "charge":
+                        info += "Area, "
+                    else:
+                        info += "Amp., "
+                    if recomb is "birks":
+                        info += "Birks"
+                    elif recomb is "box":
+                        info += "Box"
+                    else:
+                        info += "Const. Recomb."
+
+
+                    base = "{}_{}_dedx_{}_".format(plane,measure,recomb)
+                    # LMA doesn't get a dist:
+                    plotdEdx(electronDataFrame,photonDataFrame,base+"LMA",info+"\nL.M.A.")
+                    for dist in dists:
+                        plotdEdx(electronDataFrame,
+                                photonDataFrame,
+                                base+"median_{}".format(dist),
+                                info+"\nMedian, {}cm".format(dist))
+                        # plotdEdx(electronDataFrame,
+                        #         photonDataFrame,
+                        #         base+"mean_no_outliers_{}".format(dist),
+                        #         info+"\nMod. Mean, {}cm".format(dist))
+
+
+
+    if True:
+        for measure in measures:
+            for recomb in recombs:
+             
+                info=""
+                if measure is "charge":
+                    info += "Area, "
+                else:
+                    info += "Amp., "
+                if recomb is "birks":
+                    info += "Birks"
+                elif recomb is "box":
+                    info += "Box"
+                else:
+                    info += "Const. Recomb."
+
+                title = "All Electron Hits, " + info
+                makeLandau(electronDataFrame,measure,recomb,title)
+                title = "All Photon Hits, " + info
+                makeLandau(photonDataFrame,measure,recomb,title)
+
+    # point, purity, tup = optimizeCut(electronDataFrame,photonDataFrame,"c_charge_dedx_box_LMA")
+    # print "c_charge_dedx_box_LMA @ {}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}\n\t{}".format(
+    #   point,
+    #   tup[0][0],tup[0][1],
+    #   tup[1][0],tup[1][1],
+    #   purity)
+    # point, purity, tup = optimizeCut(electronDataFrame,photonDataFrame,"i_charge_dedx_box_LMA")
+    # print "i_charge_dedx_box_LMA @ {}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}\n\t{}".format(
+    #   point,
+    #   tup[0][0],tup[0][1],
+    #   tup[1][0],tup[1][1],
+    #   purity)
+    # point, purity, tup = optimizeCut(electronDataFrame,photonDataFrame,"c_charge_dedx_box_median")
+    # print "c_charge_dedx_box_median @ {}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}\n\t{}".format(
+    #   point,
+    #   tup[0][0],tup[0][1],
+    #   tup[1][0],tup[1][1],
+    #   purity)
+    # point, purity, tup = optimizeCut(electronDataFrame,photonDataFrame,"i_charge_dedx_box_median")
+    # print "i_charge_dedx_box_median @ {}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}\n\t{}".format(
+    #   point,
+    #   tup[0][0],tup[0][1],
+    #   tup[1][0],tup[1][1],
+    #   purity)
+    # point, purity, tup = optimizeCut(electronDataFrame,photonDataFrame,"c_charge_dedx_box_mean_no_outliers")
+    # print "c_charge_dedx_box_mean_no_outliers @ {}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}\n\t{}".format(
+    #   point,
+    #   tup[0][0],tup[0][1],
+    #   tup[1][0],tup[1][1],
+    #   purity)
+    # point, purity, tup = optimizeCut(electronDataFrame,photonDataFrame,"i_charge_dedx_box_mean_no_outliers")
+    # print "i_charge_dedx_box_mean_no_outliers @ {}: \n\tElectrons: {} +/- {}\n\tPhotons: {} +/- {}\n\t{}".format(
+    #   point,
+    #   tup[0][0],tup[0][1],
+    #   tup[1][0],tup[1][1],
+    #   purity)
+
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
     #                 "c_charge_dedx_box_LMA",
     #                 "c_charge_dedx_box_mean_no_outliers")
 
-    # dEdxCorrelation(electronDataFrameCut,
-    #                 photonDataFrameCut,
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
     #                 "c_charge_dedx_box_median",
     #                 "c_charge_dedx_box_mean_no_outliers")
 
-    # dEdxCorrelation(electronDataFrameCut,
-    #                 photonDataFrameCut,
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
     #                 "c_charge_dedx_box_median",
     #                 "c_charge_dedx_box_LMA")
 
-    # dEdxCorrelation(electronDataFrameCut,
-    #                 photonDataFrameCut,
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
     #                 "i_charge_dedx_box_LMA",
     #                 "i_charge_dedx_box_mean_no_outliers")
 
-    # dEdxCorrelation(electronDataFrameCut,
-    #                 photonDataFrameCut,
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
     #                 "i_charge_dedx_box_median",
     #                 "i_charge_dedx_box_mean_no_outliers")
 
-    # dEdxCorrelation(electronDataFrameCut,
-    #                 photonDataFrameCut,
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
     #                 "i_charge_dedx_box_median",
     #                 "i_charge_dedx_box_LMA")
 
-    dEdxCorrelation(electronDataFrame,
-                    photonDataFrame,
-                    "c_charge_dedx_box_median",
-                    "i_charge_dedx_box_median")
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
+    #                 "c_charge_dedx_box_median",
+    #                 "i_charge_dedx_box_median")
 
-    dEdxCorrelation(electronDataFrame,
-                    photonDataFrame,
-                    "c_charge_dedx_box_mean_no_outliers",
-                    "i_charge_dedx_box_mean_no_outliers")
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
+    #                 "c_charge_dedx_box_mean_no_outliers",
+    #                 "i_charge_dedx_box_mean_no_outliers")
 
-    dEdxCorrelation(electronDataFrame,
-                    photonDataFrame,
-                    "c_charge_dedx_box_LMA",
-                    "i_charge_dedx_box_LMA")
+    # dEdxCorrelation(electronDataFrame,
+    #                 photonDataFrame,
+    #                 "c_charge_dedx_box_LMA",
+    #                 "i_charge_dedx_box_LMA")
 
     # for index,row in electronDataFrameCut.iterrows():
     #   print "{},{}".format(row.run,row.event)

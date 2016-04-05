@@ -20,12 +20,15 @@
 #include "DataFormat/cluster.h"
 #include "DataFormat/hit.h"
 #include "DataFormat/pfpart.h"
+#include "DataFormat/vertex.h"
 #include "DataFormat/endpoint2d.h"
 #include "LArUtil/Geometry.h"
 #include "TVector3.h"
 
-// #include "ClusterRecoUtil/Alg/DefaultParamsAlg.h"
-// #include "ClusterRecoUtil/Base/CRUHelper.h"
+#include "ClusterRecoUtil/Alg/DefaultParamsAlg.h"
+#include "ClusterRecoUtil/Base/CRUHelper.h"
+#include "Cluster3DRecoUtil/Alg/Default3DParamsAlg.h"
+#include "Cluster3DRecoUtil/Base/CRU3DHelper.h"
 
 #include "TTree.h"
 
@@ -70,12 +73,16 @@ protected:
 
   void unwindVectors(larlite::event_hit * ev_hit, std::vector<size_t> & close_hit_indexes);
 
-
+  Point2D findClosestHit(std::vector<Hit2D> hit_vector,
+                         std::vector<unsigned int> hit_indexes,
+                         Point2D start_point);
+  
   const larutil::Geometry * geom;
 
-
-  // ::cluster::CRUHelper _cru_helper;
-  // ::cluster::DefaultParamsAlg _params_alg;
+  ::cluster::CRUHelper _cru_helper;
+  ::cluster::DefaultParamsAlg _params_alg;
+  ::cluster3D::CRU3DHelper _cru3D_helper;
+  ::cluster3D::Default3DParamsAlg _params3D_alg;
 
   TTree * tree;
 

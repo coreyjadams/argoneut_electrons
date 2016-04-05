@@ -63,14 +63,18 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
 
 
     // Get the endpoint2ds:
-    auto ev_endpoint = storage -> get_data<larlite::event_endpoint2d>("bootleg");
-    
+    // auto ev_endpoint = storage -> get_data<larlite::event_endpoint2d>("bootleg");
+
 
     // Get the pfparticles
     auto ev_pfpart = storage -> get_data<larlite::event_pfpart>("bootlegMatched");
     larlite::event_cluster * ev_clus = nullptr;
     auto clus_ass = storage -> find_one_ass(ev_pfpart->id(), ev_clus, ev_pfpart->name());
 
+    auto ev_vertex = storage -> get_data<larlite::event_vertex>("bootlegVertex");
+
+    // larlite::event_vertex * ev_vertex = nullptr;
+    // auto vertex_ass = storage -> find_one_ass(ev_pfpart->id(), ev_vertex, ev_pfpart->name());
 
     // Get the hits associated with the clusters too
     larlite::event_hit * ev_hit = nullptr;
@@ -87,7 +91,29 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
 
     // std::cout << "Run " << run << " event " << event << "." << std::endl;
 
-    for (size_t i_pfpart = 0; i_pfpart < ev_pfpart -> size(); i_pfpart ++){
+    /// Generate: Params vector from event storage by specifying pfpart type
+    std::vector<cluster3D::cluster3D_params> _params3D_v;
+    try {
+        _cru3D_helper.GenerateParams3D(storage,
+                                       ev_pfpart->name(),
+                                       _params3D_v);
+    }
+    catch ( ... ) {
+        std::cout << "Caught exception on run " << run << ", event " << event << std::endl;
+        return false;
+    }
+
+    std::vector<cluster::cluster_params> _params_v;
+
+    _cru_helper.GenerateParams(storage,
+                               ev_clus->name(),
+                               _params_v);
+
+    auto geoHelper = larutil::GeometryHelper::GetME();
+
+    for (size_t i_pfpart = 0; i_pfpart < ev_pfpart -> size(); i_pfpart ++) {
+
+        _params3D_alg.FillParams(_params3D_v.at(i_pfpart));
 
 
         collection_hittimes.clear();
@@ -113,7 +139,7 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         std::vector<unsigned int > &  clust_indexes = clus_ass.at(i_pfpart);
 
         // Should be exactly two clusters
-        if (clust_indexes.size() != 2){
+        if (clust_indexes.size() != 2) {
             std::cout << "Not exactly two clusters!" << std::endl;
             continue;
         }
@@ -126,66 +152,78 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         ind_clust_index = clust_indexes.back();
 
         // Check if it's right, and if it's not swap it:
-        if (ev_hit->at(hit_ass[coll_clust_index].front()).WireID().Plane == 0 ){
+        if (ev_hit->at(hit_ass[coll_clust_index].front()).WireID().Plane == 0 ) {
             std::swap(coll_clust_index, ind_clust_index);
         }
 
+        // Fill the params of the clusters:
+        _params_alg.FillParams(_params_v.at(coll_clust_index));
+        _params_alg.FillParams(_params_v.at(ind_clust_index));
 
-        // Because of the way the clusters were created, the endpoint 2d indexes 
-        // are 1-1 with the clusters
-        
-        // Get the endpoint2ds:
-        larlite::endpoint2d & coll_endpoint2d = ev_endpoint->at(coll_clust_index);
-        larlite::endpoint2d & ind_endpoint2d = ev_endpoint->at(ind_clust_index);
+        // getClosestHits(_params_v.at(i_clust),close_hit_indexes,ev_vertex->at(i_pfpart));
+        auto vertex = ev_vertex->at(i_pfpart);
+        double xyz[3];
+        vertex.XYZ(xyz);
+        auto coll_start_point = geoHelper->Point_3Dto2D(xyz, _params_v.at(coll_clust_index).plane_id.Plane);
+        Hit2D startingHit;
+        startingHit.w = coll_start_point.w;
+        startingHit.t = coll_start_point.t;
 
-        
-        // // Use cluster params to compute the mean of these clusters and such
-        
-        // ::cluster::cluster_params _coll_params, _ind_params;
-        // _cru_helper.GenerateParams(hit_ass.at(coll_clust_index, ev_hit, _coll_params));
-        // _cru_helper.GenerateParams(hit_ass.at(ind_clust_index, ev_hit, _ind_params));
+        float slope = coll_start_point.t - _params_v.at(coll_clust_index).mean_y;
+        slope /= coll_start_point.w - _params_v.at(coll_clust_index).mean_x;
 
-        // _params_alg.FillParams(_coll_params);
-        // _params_alg.FillParams(_ind_params);
+        Hit2D averagePoint;
+
+
+        std::vector<unsigned int> coll_close_hit_indexes =
+            geoHelper -> SelectLocalPointList( _params_v.at(coll_clust_index).hit_vector,
+                                               startingHit,
+                                               4.0,
+                                               0.5,
+                                               slope,
+                                               averagePoint);
+
+        coll_start_point = findClosestHit(_params_v.at(coll_clust_index).hit_vector,
+                                          coll_close_hit_indexes,
+                                          coll_start_point);
+
+        // Now do the induction plane:
+
+        auto ind_start_point = geoHelper->Point_3Dto2D(xyz, _params_v.at(ind_clust_index).plane_id.Plane);
+        startingHit.w = ind_start_point.w;
+        startingHit.t = ind_start_point.t;
+        slope = ind_start_point.t - _params_v.at(ind_clust_index).mean_y;
+        slope /= ind_start_point.w - _params_v.at(ind_clust_index).mean_x;
 
 
         // Here, get the N closest hits to the start point from the cluster (sorted):
-        std::vector<size_t> ind_close_hit_indexes;
-        std::vector<size_t> coll_close_hit_indexes;
-        // std::cout << "ev_hit -> size(): " << ev_hit -> size() << std::endl;
-        // std::cout << "ind_hit_set.size(): " << ind_hit_set.size() << std::endl;
-        // for (auto & index : ind_hit_set)
-            // std::cout << "index: " << index << std::endl;
-        // std::cout << "ind_close_hit_indexes.size(): " << ind_close_hit_indexes.size() << std::endl;
-        getClosestHits(ev_hit, hit_ass.at(ind_clust_index), ind_close_hit_indexes, ind_endpoint2d);
-        getClosestHits(ev_hit, hit_ass.at(coll_clust_index), coll_close_hit_indexes, coll_endpoint2d);
+        std::vector<unsigned int> ind_close_hit_indexes =
+            geoHelper -> SelectLocalPointList( _params_v.at(ind_clust_index).hit_vector,
+                                               startingHit,
+                                               4.0,
+                                               0.5,
+                                               slope,
+                                               averagePoint);
 
-        // std::cout << "Found " << close_hit_indexes.size() << " hits." << std::endl;
-        unwindVectors(ev_hit, ind_close_hit_indexes);
-        unwindVectors(ev_hit, coll_close_hit_indexes);
-
-
-        // Use TPrincipal to calculate the direction in the plane of this list of hits
-        TPrincipal c_fPrincipal(2, "D");
-        TPrincipal i_fPrincipal(2, "D");
-        for (auto & index : coll_close_hit_indexes) {
-            double data[2];
-            data[0] = ev_hit->at(index).WireID().Wire * geomHelper -> WireToCm();
-            data[1] = ev_hit->at(index).PeakTime() * geomHelper -> TimeToCm();
-            c_fPrincipal.AddRow(data);
-        }
-        for (auto & index : ind_close_hit_indexes) {
-            double data[2];
-            data[0] = ev_hit->at(index).WireID().Wire * geomHelper -> WireToCm();
-            data[1] = ev_hit->at(index).PeakTime() * geomHelper -> TimeToCm();
-            i_fPrincipal.AddRow(data);
-        }
+        // Find the closest hit to the start point, to use as the actual start point
+        ind_start_point = findClosestHit(_params_v.at(ind_clust_index).hit_vector,
+                                         ind_close_hit_indexes,
+                                         ind_start_point);
 
 
-        i_fPrincipal.MakePrincipals();
-        c_fPrincipal.MakePrincipals();
-        double i_slope = ((* i_fPrincipal.GetEigenVectors())[1][0]) / ((* i_fPrincipal.GetEigenVectors())[0][0]);
-        double c_slope = ((* c_fPrincipal.GetEigenVectors())[1][0]) / ((* c_fPrincipal.GetEigenVectors())[0][0]);
+        // Get the spacepoints associated with each particle, and use
+        // their 3D axis for the 3D axis of the shower.
+
+        // unwindVectors(ev_hit, ind_close_hit_indexes);
+        // unwindVectors(ev_hit, coll_close_hit_indexes);
+
+        // std::cout << "Run " << run << ", event " << event
+        //           << ", start point in coll is (" <<  coll_start_point.w
+        //           << ", " << coll_start_point.t << ") "
+        //           << std::endl;
+
+
+        TVector3 startDir = _params3D_v.at(i_pfpart).principal_dir;
 
         // std::cout << "Slope is " << slope << std::endl;
         double _tau = LArProp->ElectronLifetime();
@@ -193,11 +231,12 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
 
         // Figure out the pitch:
         // induction_pitch = getPitch(shower.Direction(), plane);
-        induction_starthit.push_back(ind_endpoint2d.Wire());
-        induction_starthit.push_back(ind_endpoint2d.DriftTime());
-        induction_slope = i_slope;
+        induction_starthit.push_back(ind_start_point.w / geoHelper -> WireToCm());
+        induction_starthit.push_back(ind_start_point.t / geoHelper -> TimeToCm());
+        // induction_slope = i_slope;
         // Fill in the hit information:
-        for (auto & index : ind_close_hit_indexes) {
+        for (auto & i : ind_close_hit_indexes) {
+            size_t index = hit_ass.at(ind_clust_index).at(i);
             auto & hit = ev_hit->at(index);
             induction_lifetime_corr.push_back(exp(hit.PeakTime() * timetick / _tau));
             induction_hittimes.push_back(hit.PeakTime());
@@ -206,10 +245,11 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
             induction_hitpeaks.push_back(hit.PeakAmplitude());
         }
         // collection_pitch = getPitch(shower.Direction(), plane);
-        collection_starthit.push_back(coll_endpoint2d.Wire());
-        collection_starthit.push_back(coll_endpoint2d.DriftTime());
-        collection_slope = c_slope;
-        for (auto & index : coll_close_hit_indexes) {
+        collection_starthit.push_back(coll_start_point.w / geoHelper -> WireToCm());
+        collection_starthit.push_back(coll_start_point.t / geoHelper -> TimeToCm());
+        // collection_slope = c_slope;
+        for (auto & i : coll_close_hit_indexes) {
+            size_t index = hit_ass.at(coll_clust_index).at(i);
             auto & hit = ev_hit->at(index);
             collection_lifetime_corr.push_back(exp(hit.PeakTime() * timetick / _tau));
             collection_hittimes.push_back(hit.PeakTime());
@@ -219,28 +259,6 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         }
 
 
-
-        // What's left is to get the 3D Axis from the 2D slopes.
-        double phi, theta;
-        double induction_angle = atan(induction_slope);
-        double collection_angle = atan(collection_slope);
-        geomHelper->Get3DAxisN(0, 1,
-                               induction_angle, collection_angle,
-                               phi, theta);
-
-        TVector3 startDir;
-        fDCosStart.resize(3);
-        fDCosStart[1] = sin(theta);
-        fDCosStart[0] = cos(theta) * sin(phi);
-        fDCosStart[2] = cos(theta) * cos(phi);
-        startDir[1] = sin(theta);
-        startDir[0] = cos(theta) * sin(phi);
-        startDir[2] = cos(theta) * cos(phi);
-        // std::cout << "Direction is found to be: ("
-        //           <<  fDCosStart[0] << ", "
-        //           <<  fDCosStart[1] << ", "
-        //           <<  fDCosStart[2] << ") " << std::endl;
-
         // Assign the pitch to collection and induction planes:
 
         induction_pitch = getPitch(startDir, 0);
@@ -249,6 +267,11 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         // the 3D axis projection compared to the 2D slope.
         double induction_3D_slope = geomHelper->Slope_3Dto2D(startDir, 0);
         double collection_3D_slope = geomHelper->Slope_3Dto2D(startDir, 1);
+
+        fDCosStart.resize(3);
+        fDCosStart[0] = startDir.X();
+        fDCosStart[1] = startDir.Y();
+        fDCosStart[2] = startDir.Z();
 
         collection_pitch_err = fabs((collection_3D_slope - collection_slope) / collection_slope);
         induction_pitch_err = fabs((induction_3D_slope - induction_slope) / induction_slope);
@@ -266,6 +289,28 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
     return true;
 }
 
+Point2D dEdxPfPartAna::findClosestHit(std::vector<Hit2D> hit_vector,
+                                      std::vector<unsigned int> hit_indexes,
+                                      Point2D start_point) {
+
+    float shortest_dist = 999;
+    size_t shortest_index = 0;
+    for (auto & index : hit_indexes) {
+        double dist = pow(hit_vector.at(index).w - start_point.w, 2);
+        dist += pow(hit_vector.at(index).t - start_point.t, 2);
+        // std::cout << "Dist is " << dist << std::endl;
+        if (dist < shortest_dist) {
+            shortest_dist = dist;
+            shortest_index = index;
+        }
+    }
+
+    Point2D returnP;
+    returnP.w = hit_vector.at(shortest_index).w;
+    returnP.t = hit_vector.at(shortest_index).t;
+    return returnP;
+
+}
 
 void dEdxPfPartAna::getClosestHits(larlite::event_hit * ev_hit, std::vector<unsigned int>  hits_to_consider,
                                    std::vector<size_t> & close_hit_indexes,
@@ -287,7 +332,7 @@ void dEdxPfPartAna::getClosestHits(larlite::event_hit * ev_hit, std::vector<unsi
 
     unsigned int n_targethits = 15;
 
-    if (hits_to_consider.size() < n_targethits){
+    if (hits_to_consider.size() < n_targethits) {
         n_targethits = hits_to_consider.size();
     }
 
@@ -309,7 +354,7 @@ void dEdxPfPartAna::getClosestHits(larlite::event_hit * ev_hit, std::vector<unsi
         for (auto & index : hits_to_consider ) {
             // std::cout << "Working on index " << index << std::endl;
             dist = pow((ev_hit->at(index).PeakTime() - target_point[1]) * geomHelper->TimeToCm(), 2);
-            dist +=  pow((1.0*ev_hit->at(index).WireID().Wire - target_point[0]) * geomHelper->WireToCm(), 2);
+            dist +=  pow((1.0 * ev_hit->at(index).WireID().Wire - target_point[0]) * geomHelper->WireToCm(), 2);
             // std::cout << "dist is " << dist << std::endl;
             if (dist < shortest_dist) {
                 // Check that this hit isn't already used:
@@ -351,7 +396,7 @@ void dEdxPfPartAna::unwindVectors(larlite::event_hit * ev_hit, std::vector<size_
     // It runs right after finding the close hits, so that the actual sorted variables
     // are the close hit indexes.
 
-    if (close_hit_indexes.size() == 0){
+    if (close_hit_indexes.size() == 0) {
         return;
     }
 

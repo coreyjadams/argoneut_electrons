@@ -81,6 +81,7 @@ protected:
   ::cluster::CRUHelper _cru_helper;
   ::cluster::DefaultParamsAlg _params_alg;
 
+
   double getSlope(const ::cluster::cluster_params & _params,
                   const std::vector<ProtoSps> & _proto_sps_v);
 
