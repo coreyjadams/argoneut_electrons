@@ -16,6 +16,9 @@ def getNdarrayFromHist(hist):
     _y[i_bin] = hist.GetBinContent(i_bin+1)
   return _x, _y
 
+def convland_wrapper(x, mu, sigma_l, sigma_g, scale):
+    return _landau.convlangau(x,mu,sigma_l,sigma_g)*scale
+
 if __name__ == '__main__':
 
 
@@ -36,8 +39,6 @@ if __name__ == '__main__':
     _max = x_axis[x_axis.size-1]
     stepsize = (_max - _min) / 100.0
     x = numpy.arange(_min,_max, stepsize)
-    y = _landau.convlangau(x,mu,sigma_landau,sigma_gauss)
-    y /= numpy.sum(y)
 
     # Try to fit to the y_data:
 
@@ -46,11 +47,10 @@ if __name__ == '__main__':
     # bounds.append((0,10)) # sigma Landau
     # bounds.append((0,10)) # sigma Gauss
     # bounds.append((0,100)) # scale
-    # popt, pcov = opt.curve_fit(convolvedLandau_arr,x_axis,y_axis,bounds=(0,[10,10,10,100]))
+    popt, pcov = opt.curve_fit(convland_wrapper,x_axis,y_axis,bounds=(0,[10,10,10,10]) )
 
-    # print popt
-    # convLandau = v_convLandau(x, popt[0],popt[1],popt[2],popt[3])
-    # convLandau /= numpy.sum(convLandau)
+    print popt
+    y = _landau.convlangau(x,popt[0],popt[1],popt[2])*popt[3]
 
 
     plt.plot(x_axis, y_axis, label="Actual Data",ls="none",marker="x")
