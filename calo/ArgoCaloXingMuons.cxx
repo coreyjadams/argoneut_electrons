@@ -428,47 +428,47 @@ bool ArgoCaloXingMuons::finalize() {
                                         _wire_calo_info[0][wire]._dEdx_area->GetMean() );
   }
 
-  // Fit to those histograms above for the mean values
-  _collection_wire_dqdx -> Fit("pol0");
-  _induction_wire_dqdx -> Fit("pol0");
+//   // Fit to those histograms above for the mean values
+//   _collection_wire_dqdx -> Fit("pol0");
+//   _induction_wire_dqdx -> Fit("pol0");
 
-  TF1 * c_fit = _collection_wire_dqdx->GetFunction("pol0");
-  TF1 * i_fit = _induction_wire_dqdx->GetFunction("pol0");
-// value of the first parameter
-  double c_p0 = c_fit -> GetParameter(0);
-  double i_p0 = i_fit -> GetParameter(0);
+//   TF1 * c_fit = _collection_wire_dqdx->GetFunction("pol0");
+//   TF1 * i_fit = _induction_wire_dqdx->GetFunction("pol0");
+// // value of the first parameter
+//   double c_p0 = c_fit -> GetParameter(0);
+//   double i_p0 = i_fit -> GetParameter(0);
 
-  std::cout << "c_p0 is " << c_p0 << std::endl;
-  std::cout << "i_p0 is " << i_p0 << std::endl;
+//   std::cout << "c_p0 is " << c_p0 << std::endl;
+//   std::cout << "i_p0 is " << i_p0 << std::endl;
 
   double _collection_target, _induction_target;
 
-  for (size_t wire = 0; wire < 240; wire ++) {
+  // for (size_t wire = 0; wire < 240; wire ++) {
 
-    // Require at least 500 points
-    if (_wire_calo_info[0][wire].n_hits > 500) {
-      _wire_calo_info[0][wire]._correction_factor = c_p0 /
-          _wire_calo_info[0][wire]._dQdx_area->GetMean();
-      _wire_corrections[0][wire] = _wire_calo_info[0][wire]._correction_factor;
-    }
-    if (_wire_calo_info[1][wire].n_hits > 500) {
-      _wire_calo_info[1][wire]._correction_factor = i_p0 /
-          _wire_calo_info[1][wire]._dQdx_area->GetMean();
-      _wire_corrections[1][wire] = _wire_calo_info[1][wire]._correction_factor;
-    }
-  }
+  //   // Require at least 500 points
+  //   if (_wire_calo_info[0][wire].n_hits > 500) {
+  //     _wire_calo_info[0][wire]._correction_factor = c_p0 /
+  //         _wire_calo_info[0][wire]._dQdx_area->GetMean();
+  //     _wire_corrections[0][wire] = _wire_calo_info[0][wire]._correction_factor;
+  //   }
+  //   if (_wire_calo_info[1][wire].n_hits > 500) {
+  //     _wire_calo_info[1][wire]._correction_factor = i_p0 /
+  //         _wire_calo_info[1][wire]._dQdx_area->GetMean();
+  //     _wire_corrections[1][wire] = _wire_calo_info[1][wire]._correction_factor;
+  //   }
+  // }
 
-  for (size_t wire = 0; wire < 240; wire ++) {
+  // for (size_t wire = 0; wire < 240; wire ++) {
 
-    // Figure out the wire-by-wire corrections:
+  //   // Figure out the wire-by-wire corrections:
 
-    _collection_wire_dqdx->SetBinContent(wire + 1,
-                                         _wire_calo_info[1][wire]._dQdx_area->GetMean() *
-                                         _wire_calo_info[1][wire]._correction_factor );
-    _induction_wire_dqdx->SetBinContent(wire + 1,
-                                        _wire_calo_info[0][wire]._dQdx_area->GetMean() *
-                                        _wire_calo_info[0][wire]._correction_factor );
-  }
+  //   _collection_wire_dqdx->SetBinContent(wire + 1,
+  //                                        _wire_calo_info[1][wire]._dQdx_area->GetMean() *
+  //                                        _wire_calo_info[1][wire]._correction_factor );
+  //   _induction_wire_dqdx->SetBinContent(wire + 1,
+  //                                       _wire_calo_info[0][wire]._dQdx_area->GetMean() *
+  //                                       _wire_calo_info[0][wire]._correction_factor );
+  // }
 
   if (_fout) {
     _fout -> cd();

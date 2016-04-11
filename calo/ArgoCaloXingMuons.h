@@ -130,6 +130,8 @@ public:
   void setWireCorrections(std::vector<std::vector<double> > corr){_wire_corrections = corr;}
   std::vector<std::vector<double> > getWireCorrections(){return _wire_corrections;}
 
+  wireCaloInfo getWireCaloInfo(int plane, int wire){return _wire_calo_info[plane][wire];}
+
 protected:
 
   std::vector<double> _collection_dqdx_by_wire;
