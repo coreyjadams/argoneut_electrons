@@ -93,6 +93,8 @@ protected:
   int event;
   std::vector<double> fDCosStart; // the 3D axis
 
+  double displacement;
+
   std::vector<double> collection_hittimes;
   std::vector<double> collection_hitwires;
   std::vector<double> collection_hitcharges;

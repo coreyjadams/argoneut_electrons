@@ -33,6 +33,7 @@ bool dEdxPfPartAna::initialize() {
         tree->Branch("run", &run);
         tree->Branch("event", &event);
         tree->Branch("axis3D", &fDCosStart);
+        tree->Branch("displacement",&displacement);
 
         tree->Branch("c_hittimes", &collection_hittimes);
         tree->Branch("c_hitwires", &collection_hitwires);
@@ -72,6 +73,10 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
     auto clus_ass = storage -> find_one_ass(ev_pfpart->id(), ev_clus, ev_pfpart->name());
 
     auto ev_vertex = storage -> get_data<larlite::event_vertex>("bootlegVertex");
+
+    // Get the showers associated with the clusters
+    larlite::event_shower * ev_shower = nullptr;
+    auto shower_ass = storage -> find_one_ass(ev_pfpart->id(),ev_shower,ev_pfpart->name());
 
     // larlite::event_vertex * ev_vertex = nullptr;
     // auto vertex_ass = storage -> find_one_ass(ev_pfpart->id(), ev_vertex, ev_pfpart->name());
@@ -135,6 +140,7 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         collection_pitch = 0.0;
         induction_slope = 0.0;
         induction_pitch = 0.0;
+        displacement = 0;
 
         std::vector<unsigned int > &  clust_indexes = clus_ass.at(i_pfpart);
 
@@ -224,6 +230,16 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
 
 
         TVector3 startDir = _params3D_v.at(i_pfpart).principal_dir;
+
+        // Get the direction from the shower too:
+        auto shower = ev_shower -> at(shower_ass.at(i_pfpart).front());
+        startDir = shower.Direction();
+
+        // Calculate the displacement:
+        displacement = pow(xyz[0] - shower.ShowerStart().X(),2);
+        displacement += pow(xyz[1] - shower.ShowerStart().Y(),2);
+        displacement += pow(xyz[2] - shower.ShowerStart().Z(),2);
+        displacement = sqrt(displacement);
 
         // std::cout << "Slope is " << slope << std::endl;
         double _tau = LArProp->ElectronLifetime();
