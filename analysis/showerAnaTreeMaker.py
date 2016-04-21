@@ -64,8 +64,8 @@ if __name__ == '__main__':
         "photon_shower_reco.root"
     ]
     output_files = [
-        "anatrees/electrons_anatree.root",
-        "anatrees/photons_anatree.root"
+        "anatrees/electrons_anatree_fix.root",
+        "anatrees/photons_anatree_fix.root"
     ]
 
 

@@ -96,17 +96,17 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
 
     // std::cout << "Run " << run << " event " << event << "." << std::endl;
 
-    /// Generate: Params vector from event storage by specifying pfpart type
-    std::vector<cluster3D::cluster3D_params> _params3D_v;
-    try {
-        _cru3D_helper.GenerateParams3D(storage,
-                                       ev_pfpart->name(),
-                                       _params3D_v);
-    }
-    catch ( ... ) {
-        std::cout << "Caught exception on run " << run << ", event " << event << std::endl;
-        return false;
-    }
+    // /// Generate: Params vector from event storage by specifying pfpart type
+    // std::vector<cluster3D::cluster3D_params> _params3D_v;
+    // try {
+    //     _cru3D_helper.GenerateParams3D(storage,
+    //                                    ev_pfpart->name(),
+    //                                    _params3D_v);
+    // }
+    // catch ( ... ) {
+    //     std::cout << "Caught exception on run " << run << ", event " << event << std::endl;
+    //     return false;
+    // }
 
     std::vector<cluster::cluster_params> _params_v;
 
@@ -118,7 +118,7 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
 
     for (size_t i_pfpart = 0; i_pfpart < ev_pfpart -> size(); i_pfpart ++) {
 
-        _params3D_alg.FillParams(_params3D_v.at(i_pfpart));
+        // _params3D_alg.FillParams(_params3D_v.at(i_pfpart));
 
 
         collection_hittimes.clear();
@@ -229,11 +229,11 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         //           << std::endl;
 
 
-        TVector3 startDir = _params3D_v.at(i_pfpart).principal_dir;
+        // TVector3 startDir = _params3D_v.at(i_pfpart).principal_dir;
 
         // Get the direction from the shower too:
         auto shower = ev_shower -> at(shower_ass.at(i_pfpart).front());
-        startDir = shower.Direction();
+        TVector3 startDir = shower.Direction();
 
         // Calculate the displacement:
         displacement = pow(xyz[0] - shower.ShowerStart().X(),2);
