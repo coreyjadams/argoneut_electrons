@@ -15,8 +15,12 @@
 #pragma link C++ class argoutils::dEdxSelectStartPoint+;
 #pragma link C++ class argoutils::BGCFileReader+;
 #pragma link C++ class argoutils::BGCGenerator+;
+#pragma link C++ class argoutils::SinglesEndpointCheater+;
+#pragma link C++ class larlite::BaseFilter+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
 
 

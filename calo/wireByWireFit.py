@@ -116,7 +116,7 @@ def fitWireData(caloAlg, plane, wire):
     # plt.show()
 
     file_name = "xing_muons_dedx_fit_plane{}_wire{}.png".format(plane,wire)
-    file_path = "/data_linux/dedx_plots/xing_muon_calibration/wires/"
+    file_path = "/data_linux/argoneut/dedx_plots/xing_muon_calibration_sim/wires/"
     plt.savefig(file_path+file_name)
     plt.close(fig)
     return scale
@@ -153,8 +153,8 @@ if __name__ == '__main__':
     wireCorrections.update({1:dict()})
 
     # Let's look at just one of the wires.
-    plane = 1
-    wire = 101
+    # plane = 1
+    # wire = 101
     for plane in [0,1]:
         for wire in xrange(240):
             print "On plane {}, wire {}".format(plane,wire)
@@ -168,6 +168,6 @@ if __name__ == '__main__':
 
 
     # print wireCorrections
-    output = open("wireByWireCorrections.pkl",'wb')
+    output = open("wireByWireCorrections_sim.pkl",'wb')
     pickle.dump(wireCorrections,output)
 

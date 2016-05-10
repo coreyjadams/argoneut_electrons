@@ -20,12 +20,12 @@
 #include "TH1F.h"
 #include "TVector3.h"
 
-namespace larlite {
+namespace argoana {
   /**
      \class MCShowerAna
      User custom analysis class made by SHELL_USER_NAME
    */
-  class MCShowerAna : public ana_base{
+  class MCShowerAna : public larlite::ana_base{
   
   public:
 
@@ -43,7 +43,7 @@ namespace larlite {
     /** IMPLEMENT in MCShowerAna.cc! 
         Analyze a data event-by-event  
     */
-    virtual bool analyze(storage_manager* storage);
+    virtual bool analyze(larlite::storage_manager* storage);
 
     /** IMPLEMENT in MCShowerAna.cc! 
         Finalize method to be called after all events processed.
@@ -68,6 +68,27 @@ namespace larlite {
 
     TH1F * dEdx;
     TH1F * dEdx_fid;
+
+    TTree * _output_tree;
+
+    // items going into the output tree:
+    double vertex_x_true;
+    double vertex_y_true;
+    double vertex_z_true;
+
+    double vertex_x_reco;
+    double vertex_y_reco;
+    double vertex_z_reco;    
+
+    double direction_x_true;
+    double direction_y_true;
+    double direction_z_true;
+
+    double direction_x_reco;
+    double direction_y_reco;
+    double direction_z_reco;       
+
+    // double mc_dedx_v;
 
     std::vector<int> _good_event_list;
   };

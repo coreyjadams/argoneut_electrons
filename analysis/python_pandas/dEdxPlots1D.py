@@ -27,7 +27,7 @@ def makeDistPlots(mindist, maxdist, step):
         print len(photons_df._df.index)
 
         measure = "charge"
-        recomb = "box"
+        recomb = "const"
 
         # for i in np.arange(0,6,0.25):
         #     accepted,rejected = electron_df.get_cut_amounts("c_charge_dedx_const_median_0",i)
@@ -35,8 +35,8 @@ def makeDistPlots(mindist, maxdist, step):
 
         # plotEff(electron_df,photon_df,"c_charge_dedx_box_LMA")
 
-        # metrics = ["median_0"]
-        metrics = ["median_0","mean_no_outliers_0","LMA","meta_0"]
+        metrics = ["median_0"]
+        # metrics = ["median_0","mean_no_outliers_0","LMA","meta_0"]
 
 
         for _metric in metrics:
@@ -51,7 +51,7 @@ def makeDistPlots(mindist, maxdist, step):
 
 def main():
 
-    # makeDistPlots(1.8,4.0,0.05)
+    # makeDistPlots(1.75,4.0,0.1)
     # return
 
     electrons_df = dataFrameHandle("../anatrees/electrons_anatree_fix.root", "electron")
@@ -71,19 +71,17 @@ def main():
 
     # plotEff(electron_df,photon_df,"c_charge_dedx_box_LMA")
 
-    # metrics = ["median_"]
-    metrics = ["median_","mean_no_outliers_","meta_"]
+    metrics = ["median_"]
+    # metrics = ["meta_"]
 
     dists = electrons_df._dists
 
     for metric in metrics:
         for i in range(len(dists)):
             dist = dists[i]
-            print metric
+            # print metric
             _metric = metric + str(i)
-            print _metric
-                # plotdEdx(electrons_df._df,photons_df._df,"c_charge_dedx_{}_{}".format(recomb,metric),-1)
-                # plotdEdx(electrons_df._df,photons_df._df,"i_charge_dedx_{}_{}".format(recomb,metric),-1)
+            # print _metric
             cut = sigma(electrons_df,photons_df,"c_charge_dedx_{}_{}".format(recomb,_metric))
             plotdEdx(electrons_df._df,photons_df._df,"c_charge_dedx_{}_{}".format(recomb,_metric),cut,dist)
             cut = sigma(electrons_df,photons_df,"i_charge_dedx_{}_{}".format(recomb,_metric))
@@ -105,7 +103,7 @@ def plotEff(electron_df,photon_df,branch_name):
     plt.show()
 
 def sigma(electron_df,photon_df,branch_name):
-    x_points = np.arange(0.05,12,0.05)
+    x_points = np.arange(2.0,12,0.05)
 
     sigma = []
 
@@ -204,6 +202,7 @@ def plotdEdx(electrons_df, photons_df,branch_name,cut=-1.0,dist=-1.0):
     plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
     plt.ylabel("Unit Normalized",fontsize=20)
 
+    plt.ylim([0,0.75])
     
     for tick in ax2.xaxis.get_major_ticks():
         tick.label.set_fontsize(20)
@@ -230,14 +229,14 @@ def plotdEdx(electrons_df, photons_df,branch_name,cut=-1.0,dist=-1.0):
     plt.legend(fontsize=25)
     plt.grid(True)
     # # plt.show()
-    path="/data_linux/dedx_plots/1D/dist/"
+    path="/data_linux/dedx_plots/1D/"
     name="dedx_1D_"
     if dist != -1.0:
         name += "dist_study_{}_".format(dist)
     if cut != -1.0:
         name += "cut_{}_".format(cut)
-    # plt.savefig(path + name + branch_name + ".png")
-    # plt.close(f2)
+    plt.savefig(path + name + branch_name + ".png")
+    plt.close(f2)
     plt.show()
 
 def optimizeCut(electron_df, photon_df, branch_name):

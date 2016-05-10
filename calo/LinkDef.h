@@ -12,6 +12,7 @@
 
 #pragma link C++ class argocalo::ArgoChargeModule+;
 #pragma link C++ class larlite::ArgoCaloXingMuons+;
+#pragma link C++ class larlite::ArgoXingMuons2D+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 

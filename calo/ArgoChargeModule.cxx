@@ -29,7 +29,7 @@ void ArgoChargeModule::initialize()
 }
 
 void ArgoChargeModule::do_reconstruction(
-  const showerreco::ProtoShower & input_shower,
+  const protoshower::ProtoShower & input_shower,
   showerreco::Shower_t & result_shower) {
 
   auto & clusters = input_shower.params();

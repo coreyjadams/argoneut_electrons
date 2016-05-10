@@ -14,8 +14,9 @@ def main():
     electron_df = dataFrameHandle(
         "../anatrees/electrons_anatree_fix.root", "electron")
     photon_df = dataFrameHandle("../anatrees/photons_anatree_fix.root", "photon")
-    electron_df.make_quality_cuts(1.5)
-    photon_df.make_quality_cuts(1.5)
+    cut = 15
+    electron_df.make_quality_cuts(cut)
+    photon_df.make_quality_cuts(cut)
 
     starting_electrons = len(electron_df._df.index)
     starting_photons = len(photon_df._df.index)
@@ -36,7 +37,7 @@ def main():
                     photon_df._df,
                     "c_charge_dedx_const_meta_0",
                     "i_charge_dedx_const_meta_0",
-                    1.5,
+                    cut,
                     starting_electrons,
                     starting_photons)
 

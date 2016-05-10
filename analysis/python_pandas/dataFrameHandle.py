@@ -35,6 +35,7 @@ class dataFrameHandle(object):
         self._measures = ["charge"]
         self._recombs = ["box", "const"]
         self._dists = [3.5]
+        # self._dists = np.arange(2.0,3.5,0.5) #[3.5]
 
         # Now initialize this stuff
         self.init()
@@ -54,14 +55,14 @@ class dataFrameHandle(object):
 
         self._df = pandas.DataFrame(root2array(self._root_file))
 
-        self._df = self._df.query("displacement < 2.0")
+        self._df = self._df.query("displacement < 5.0")
         self._df = self.calcdEdx(self._df)
 
     def make_quality_cuts(self,coll_ind_cut=1.5):
         self._df = self._df.query(
-            "c_charge_dedx_const_meta_0_err/c_charge_dedx_const_meta_0 < 0.25")
+            "c_charge_dedx_const_meta_0_err/c_charge_dedx_const_meta_0 < 0.3")
         self._df = self._df.query(
-            "i_charge_dedx_const_meta_0_err/i_charge_dedx_const_meta_0 < 0.25")
+            "i_charge_dedx_const_meta_0_err/i_charge_dedx_const_meta_0 < 0.3")
         # # self._df = self._df.apply(self.getMetaMin, 1)
         # # self._df = self._df.query(
         #     # "abs(c_charge_dedx_const_meta_0 - i_charge_dedx_const_meta_0)/meta_average < {}".format(coll_ind_cut))

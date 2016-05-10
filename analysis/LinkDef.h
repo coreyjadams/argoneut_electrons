@@ -11,10 +11,14 @@
 
 #pragma link C++ class argoana::dEdxPfPartAna+;
 // #pragma link C++ class larlite::MCElectronEstimate+;
-// #pragma link C++ class larlite::MCShowerAna+;
+#pragma link C++ class argoana::MCShowerAna+;
 // #pragma link C++ class larlite::dEdxShowerAna+;
+#pragma link C++ class ShowerCalo+;
+#pragma link C++ class argoana::dEdxShowerCaloMaker+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
 
 
 

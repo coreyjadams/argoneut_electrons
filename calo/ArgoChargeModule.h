@@ -43,7 +43,7 @@ public:
   /// Default destructor
   ~ArgoChargeModule() {}
 
-  void do_reconstruction(const showerreco::ProtoShower &, showerreco::Shower_t &);
+  void do_reconstruction(const protoshower::ProtoShower &, showerreco::Shower_t &);
 
   void initialize();
 
