@@ -10,10 +10,6 @@
 #include "DataFormat/mcshower.h"
 #include "DataFormat/shower.h"
 #include "LArUtil/Geometry.h"
-//use function NearestWire()
-//takes 3d point and plane as an argument and returns wire nearest to it
-//get time by scaling x
-#include "LArUtil/GeometryUtilities.h"
 
 namespace argoana {
 
@@ -68,7 +64,6 @@ bool MCShowerAna::initialize() {
 
 bool MCShowerAna::analyze(larlite::storage_manager* storage) {
   auto geom = larutil::Geometry::GetME();
-  auto geomUtil = larutil::GeometryUtilities::GetME();
 
   //
   // Do your event-by-event analysis here. This function is called for

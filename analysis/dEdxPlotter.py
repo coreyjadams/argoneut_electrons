@@ -855,7 +855,7 @@ if __name__ == '__main__':
 
     # # This makes quality cuts:
     # electronDataFrame = makeQualityCuts(electronDataFrame)
-    # photonDataFrame = makeQualityCuts(photonDataFrame)
+    photonDataFrame = makeQualityCuts(photonDataFrame)
 
 
     # electronDataFrame = electronDataFrame.query("c_charge_dedx_const_meta_0_err < 0.750")
@@ -872,7 +872,7 @@ if __name__ == '__main__':
     # plotdEdx(electronDataFrame,photonDataFrame,"i_charge_dedx_const_meta_0",info+"\nMeta")
     
     # loopThroughEvents(electronDataFrame,5)
-    # loopThroughEvents(photonDataFrame,5)
+    loopThroughEvents(photonDataFrame,10)
 
 
     # dEdxCorrelation(electronDataFrame,
