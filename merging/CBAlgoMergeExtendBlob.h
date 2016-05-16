@@ -18,8 +18,7 @@
 
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
-// #include "ClusterRecoUtil/Base/ClusterParams.h"
-#include "LArUtil/GeometryUtilities.h"
+#include "TVector2.h"
 
 #include "utils/TrackShower.h"
 

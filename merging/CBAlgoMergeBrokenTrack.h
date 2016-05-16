@@ -16,8 +16,8 @@
 
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
-#include "LArUtil/GeometryUtilities.h"
-
+#include "LArUtil/Geometry.h"
+ 
 /**
    \class CBAlgoMergeBrokenTrack
    User defined class CBAlgoMergeBrokenTrack ... these comments are used to generate

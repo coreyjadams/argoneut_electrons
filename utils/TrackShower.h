@@ -15,7 +15,6 @@
 #define TRACKSHOWER_H
 
 #include <iostream>
-#include "LArUtil/GeometryUtilities.h"
 #include "ClusterRecoUtil/Base/ClusterParams.h"
 #include "FANN/FANNModule.h"
 

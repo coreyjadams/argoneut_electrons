@@ -19,10 +19,6 @@
 
 #include <iostream>
 #include "CMTool/CMToolBase/CBoolAlgoBase.h"
-#include "LArUtil/GeometryUtilities.h"
-// #include "DataFormat/storage_manager.h"
-// #include "DataFormat/cluster.h"
-// #include "DataFormat/hit.h"
 
 
 namespace argomerge {
