@@ -1,6 +1,7 @@
 #ifndef SHOWERCALO_CXX
 #define SHOWERCALO_CXX
 
+#include <math.h>
 #include "ShowerCalo.h"
 
 double ShowerCalo::dEdx_median(int plane) {
@@ -26,6 +27,11 @@ double ShowerCalo::dEdx_median(int plane) {
     return 0;
   }
 
+  if (_drop_first_hit) {
+    cands.erase(cands.begin());
+  }
+
+
 
   std::sort(cands.begin(), cands.end());
   if (cands.size() % 2 == 0) {
@@ -36,35 +42,6 @@ double ShowerCalo::dEdx_median(int plane) {
   }
 
 }
-
-
-/*
-    def dEdx_mean_no_outliers(self, dedx_v, dist_v, dist_cut=2.4, startindex=1):
-
-        # Pick out values with dist >= 0, < dist_cut
-        points_within_dist = []
-        for val, d in zip(dedx_v[startindex:], dist_v[startindex:]):
-            if d > 0 and d < dist_cut:
-                points_within_dist.append(val)
-
-        if len(points_within_dist) == 0:
-            return 0.0
-
-        mean = np.mean(points_within_dist)
-        dev = np.std(points_within_dist)
-        val = 0.0
-        n = 0
-        if dev == 0.0:
-            return mean
-        for dedx in points_within_dist:
-            if abs(mean-dedx) < 2.0*dev and dedx < 10:
-                val += dedx
-                n += 1
-        if n > 0:
-            return val/n
-        else:
-            return 0.0
- */
 
 double ShowerCalo::dEdx_modmean(int plane) {
   // Loop over the dE/dx points in the specified plane and compute the dE/dx using the median method
@@ -91,6 +68,10 @@ double ShowerCalo::dEdx_modmean(int plane) {
     return 0.0;
   }
 
+  if (_drop_first_hit) {
+    points_within_dist.erase(points_within_dist.begin());
+  }
+
   // Get the mean:
   double sum = std::accumulate(points_within_dist.begin(),
                                points_within_dist.end(),
@@ -100,30 +81,30 @@ double ShowerCalo::dEdx_modmean(int plane) {
 
   // Now get the rms:
   double rms = 0.0;
-  for (auto & val : points_within_dist){
-    rms += val*val;
+  for (auto & val : points_within_dist) {
+    rms += val * val;
   }
   rms /= points_within_dist.size();
   rms = sqrt(rms);
 
-  if (rms == 0){
+  if (rms == 0) {
     return mean;
   }
 
   // Now actually get the modified mean:
   double modmean = 0.0;
   int n = 0;
-  for (auto & val: points_within_dist){
-    if ( fabs(val - mean) < 2*rms && val < 10){
+  for (auto & val : points_within_dist) {
+    if ( fabs(val - mean) < 2 * rms && val < 10) {
       modmean += val;
       n++;
     }
   }
 
-  if (n == 0){
+  if (n == 0) {
     return 0.0;
   }
-  else{
+  else {
     return modmean / n;
   }
 
@@ -165,6 +146,82 @@ double ShowerCalo::dEdx_LMA(int plane) {
   return lma;
 
 }
+
+struct sort_first {
+  bool operator()(const std::pair<int, int> &left, const std::pair<int, int> &right) {
+    return left.first < right.first;
+  }
+};
+
+struct sort_second {
+  bool operator()(const std::pair<int, int> &left, const std::pair<int, int> &right) {
+    return left.second < right.second;
+  }
+};
+
+double ShowerCalo::joint_dEdx() {
+
+  // Loop over the dE/dx points in the specified plane and compute the dE/dx using the median method
+
+  std::vector < std::pair<double, double> > cands;
+  for (size_t index = 0; index < _induction_dedx.size(); index ++) {
+    if (_induction_dist_3D.at(index) > 0 && _induction_dist_3D.at(index) < dedx_dist_max) {
+      cands.push_back(
+        std::make_pair(_induction_dedx.at(index),
+                       _induction_dist_3D.at(index)) );
+    }
+  }
+
+  for (size_t index = 0; index < _collection_dedx.size(); index ++) {
+    if (_collection_dist_3D.at(index) > 0 && _collection_dist_3D.at(index) < dedx_dist_max) {
+      cands.push_back(
+        std::make_pair(_collection_dedx.at(index),
+                       _collection_dist_3D.at(index)) );
+    }
+  }
+
+  if (cands.size() < 3) {
+    return 0;
+  }
+
+  // Sort the distances to be in order:
+  if (_drop_first_hit) {
+    cands.erase(cands.begin());
+    std::sort(cands.begin(), cands.end(), sort_second());
+  }
+
+  // for (auto & pair : cands) {
+  //   std::cout << "    Dist : " << pair.second <<
+  // }
+
+
+  // Sort by dE/dx:
+  std::sort(cands.begin(), cands.end(), sort_first());
+
+
+
+
+  if (cands.size() % 2 == 0) {
+    return 0.5 * (cands.at(cands.size() / 2).first + cands.at(cands.size() / 2  - 1).first);
+  }
+  else {
+    return cands.at(cands.size() / 2).first;
+  }
+
+
+}
+
+double ShowerCalo::distance(int plane) {
+
+  if (plane == 1) {
+    return _collection_dist;
+  }
+  else if (plane == 0) {
+    return _collection_dist;
+  }
+  else return 0;
+}
+
 
 double ShowerCalo::dEdx_meta(int plane) {
   // Computes the average of the 3 dEdx metrics
@@ -210,14 +267,19 @@ int ShowerCalo::n_good_hits(int plane) {
   if (plane == 0) {
     for (size_t index = 0; index < _induction_dedx.size(); index ++) {
       if (_induction_dist_3D.at(index) > 0 && _induction_dist_3D.at(index) < dedx_dist_max) {
-        n_good_hits ++;
+        if (!_drop_first_hit || (_drop_first_hit && _induction_dist_3D.at(index) > _induction_pitch) ) {
+          n_good_hits ++;
+        }
       }
     }
   }
   else if (plane == 1) {
     for (size_t index = 0; index < _collection_dedx.size(); index ++) {
       if (_collection_dist_3D.at(index) > 0 && _collection_dist_3D.at(index) < dedx_dist_max) {
-        n_good_hits ++;
+        if (!_drop_first_hit || (_drop_first_hit && _collection_dist_3D.at(index) > _collection_pitch) ) {
+          n_good_hits ++;
+        }
+
       }
     }
   }
@@ -235,6 +297,161 @@ double ShowerCalo::vertex_error() {
 double ShowerCalo::slope_error() {
   return _collection_projection_error + _induction_projection_error;
 }
+
+double ShowerCalo::mc_true_energy() {
+  if (!_is_mc) {
+    return -1;
+  }
+  else {
+    return _true_energy;
+  }
+}
+
+double ShowerCalo::mc_deposited_energy() {
+  if (!_is_mc) {
+    return -1;
+  }
+  else {
+    return _true_deposited_energy;
+  }
+}
+
+double ShowerCalo::mc_x_resolution() {
+  return _true_start_point.X() - _3D_start_point.X();
+}
+double ShowerCalo::mc_y_resolution() {
+  return _true_start_point.Y() - _3D_start_point.Y();
+}
+double ShowerCalo::mc_z_resolution() {
+  return _true_start_point.Z() - _3D_start_point.Z();
+}
+
+double ShowerCalo::mc_3D_vertex_resolution() {
+  if (!_is_mc) {
+    return -1;
+  }
+  else {
+    return (_true_start_point - _3D_start_point).Mag();
+  }
+}
+
+double ShowerCalo::mc_3D_angle_resolution() {
+  const static double rad_to_deg = (180.0 / 3.14159265);
+  if (!_is_mc) {
+    return -1;
+  }
+  else {
+    if (_true_direction.Mag() == 0 ||
+        _3D_direction.Mag() == 0) {
+      return -1;
+    }
+    double angle = _true_direction.Dot(_3D_direction);
+    angle /= (_true_direction.Mag());
+    angle /= (_3D_direction.Mag());
+
+    if (angle != angle) {
+      std::cout << "True Direction: ("
+                << _true_direction.X() << ", "
+                << _true_direction.Y() << ", "
+                << _true_direction.Z() << ")\n ";
+      std::cout << "Reco Direction: ("
+                << _3D_direction.X() << ", "
+                << _3D_direction.Y() << ", "
+                << _3D_direction.Z() << ")\n ";
+
+    }
+
+    return rad_to_deg * acos(angle);
+  }
+}
+
+
+std::vector<double>  ShowerCalo::good_dedx_hits(int plane, bool box) {
+  std::vector<double> _good_dedx_hits;
+  if (plane == 0) {
+    for (size_t index = 0; index < _induction_dedx.size(); index ++) {
+      if (_induction_dist_3D.at(index) > 0 && _induction_dist_3D.at(index) < dedx_dist_max) {
+        if (!_drop_first_hit || (_drop_first_hit && _induction_dist_3D.at(index) > _induction_pitch) ) {
+          if (_induction_dedx[index] < 8.0) {
+            if (box)
+              _good_dedx_hits.push_back(_induction_dedx_box[index]);
+            else
+              _good_dedx_hits.push_back(_induction_dedx[index]);
+          }
+        }
+      }
+    }
+  }
+  else if (plane == 1) {
+    for (size_t index = 0; index < _collection_dedx.size(); index ++) {
+      if (_collection_dist_3D.at(index) > 0 && _collection_dist_3D.at(index) < dedx_dist_max) {
+        if (!_drop_first_hit || (_drop_first_hit && _collection_dist_3D.at(index) > _collection_pitch) ) {
+          if (_collection_dedx[index] < 8.0) {
+            if (box)
+              _good_dedx_hits.push_back(_collection_dedx[index]);
+            else
+              _good_dedx_hits.push_back(_collection_dedx[index]);
+          }
+        }
+
+      }
+    }
+  }
+  return _good_dedx_hits;
+}
+
+
+
+double ShowerCalo::best_dedx() {
+  // Find out the best plane:
+  return dEdx_median(best_plane());
+
+}
+
+int ShowerCalo::best_plane() {
+
+  const int kColl = 1;
+  const int kInd = 0;
+
+  int _min_hits = 5;
+
+  // First, check that neither has a metric of zero:
+  if (dEdx_median(kColl) < 0.1  ||
+      dEdx_modmean(kColl) < 0.1 ||
+      dEdx_LMA(kColl) < 0.1) {
+    return kInd;
+  }
+  if (dEdx_median(kInd) < 0.1  ||
+      dEdx_modmean(kInd) < 0.1 ||
+      dEdx_LMA(kInd) < 0.1) {
+    return kColl;
+  }
+
+  // Unless collection has too few hits, it's the default:
+  if (n_good_hits(kColl) >= _min_hits) {
+    return kColl;
+  }
+
+  else {
+    // If induction has more hits than collection by a good amount (2 or 3 hits more at least)
+    // Or the meta err is significantly less, use it instead.
+    if ( n_good_hits(kInd) >= std::max(n_good_hits(kColl) + 2, _min_hits) ) {
+      return kInd;
+    }
+    else {
+      // return the one with the smaller meta err:
+      if (dEdx_meta_err(kColl) < dEdx_meta_err(kInd)) {
+        return kColl;
+      }
+      else {
+        return kInd;
+      }
+    }
+  }
+
+}
+
+
 
 
 std::vector<double> shower_collection::dEdx_median(int plane) {
@@ -269,6 +486,23 @@ std::vector<double> shower_collection::dEdx_meta(int plane) {
   }
   return _result;
 }
+std::vector<double> shower_collection::best_dedx() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.best_dedx());
+  }
+  return _result;
+}
+std::vector<double> shower_collection::joint_dedx() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.joint_dEdx());
+  }
+  return _result;
+}
+
 std::vector<double> shower_collection::dEdx_meta_err(int plane) {
   std::vector<double> _result;
   _result.reserve(this->size());
@@ -286,6 +520,16 @@ std::vector<double> shower_collection::n_hits(int plane) {
   return _result;
 }
 
+std::vector<double> shower_collection::n_good_hits(int plane) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.n_good_hits(plane));
+  }
+  return _result;
+}
+
+
 std::vector<double> shower_collection::vertex_error() {
   std::vector<double> _result;
   _result.reserve(this->size());
@@ -302,5 +546,111 @@ std::vector<double> shower_collection::slope_error() {
   }
   return _result;
 }
+
+void shower_collection::set_drop_first_hit(bool b) {
+  for (auto & item : *this ) {
+    item.set_drop_first_hit(b);
+  }
+}
+
+std::vector<double> shower_collection::all_dedx_hits(int plane) {
+  std::vector<double> _result;
+  _result.reserve(this->size() * 10);
+  for (auto & item : *this ) {
+    auto hits = item.good_dedx_hits(plane);
+    // std::cout << "Got " << hits.size() << " hits." << std::endl;
+    _result.insert(_result.end(),
+                   hits.begin(),
+                   hits.end());
+  }
+  // std::cout << "Returning " << _result.size() << " hits" << std::endl;
+  return _result;
+}
+
+std::vector<double> shower_collection::all_dedx_hits_box(int plane) {
+  std::vector<double> _result;
+  _result.reserve(this->size() * 10);
+  for (auto & item : *this ) {
+    auto hits = item.good_dedx_hits(plane, true);
+    // std::cout << "Got " << hits.size() << " hits." << std::endl;
+    _result.insert(_result.end(),
+                   hits.begin(),
+                   hits.end());
+  }
+  // std::cout << "Returning " << _result.size() << " hits" << std::endl;
+  return _result;
+}
+
+std::vector<double> shower_collection::distance(int plane) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.distance(plane));
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::mc_3D_vertex_resolution() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.mc_3D_vertex_resolution());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::mc_3D_angle_resolution() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.mc_3D_angle_resolution());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::mc_true_energy() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.mc_true_energy());
+  }
+  return _result;
+}
+std::vector<double> shower_collection::mc_deposited_energy() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.mc_deposited_energy());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::mc_x_resolution() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.mc_x_resolution());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::mc_y_resolution() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.mc_y_resolution());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::mc_z_resolution() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.mc_z_resolution());
+  }
+  return _result;
+}
+
 
 #endif

@@ -2,15 +2,21 @@
 
 # Load libraries
 import sys
-from ROOT import *
+import os
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+
+from ROOT import larlite, larutil
 import argparse
 import time
 
-from argotool import match, shower
+from argotool import merge
 
 def main(**args):
 
   my_proc = larlite.ana_processor()
+
+  my_proc.enable_event_alignment(False)
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -29,13 +35,13 @@ def main(**args):
       quit()
 
   if args['data_output'] == None:
-      args['data_output'] = args['source'][0].replace(".root","") + "_shower.root"
+      args['data_output'] = "default_trackMerge_output.root"
       if args['verbose']:
           print "No event output file selected.  If necessary, output will go to: "
           print "\t"+args['data_output']
 
   if args['ana_output'] == None:
-      args['ana_output'] = "default_shower_ana_output.root"
+      args['ana_output'] = "default_ana_output.root"
       if args['verbose']:
           print "No ana output file selected.  If necessary, output will go to:"
           print "\t"+args['ana_output']
@@ -51,29 +57,15 @@ def main(**args):
   my_proc.set_output_file(args['data_output'])
   larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
-  # 
-  # Get a Shower Reco algorithm
-  # 
-  showerRecoAlg = shower.getShowerRecoAlgModular()
 
-  # 
-  # Get a shower reco framework
-  # 
-  showerRecoUnit = larlite.ShowerReco3D()
-  showerRecoUnit.AddShowerAlgo(showerRecoAlg)
+  # Get the list of processes from argotool
+  procs = merge.argoTrackMergeProcList()
+  # procs = merge.argoJointrackProcList()
 
-  # Get ArgoneutParamsAlg for this:
-  # paramsAlg = argoutils.ArgoneutParamsAlg()
+  for proc in procs:
+    my_proc.add_process(proc)
 
-  showerRecoUnit.GetProtoShowerHelper().setProtoShowerAlg(protoshower.ProtoShowerAlgArgoNeuT())
-
-  # showerRecoUnit.SetInputProducer("mergeallMatched")
-  showerRecoUnit.SetInputProducer("mergeallMatched")
-  showerRecoUnit.SetOutputProducer("showerreco")
-  # showerRecoUnit.SetOutputProducer("mergeallreco")
-
-  my_proc.add_process(showerRecoUnit)
-
+  # my_proc.process_event(0)\
   if args['num_events'] != None:
       start=time.clock()
       my_proc.run(0, nevents)

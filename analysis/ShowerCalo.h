@@ -35,7 +35,7 @@ class ShowerCalo {
 public:
 
   /// Default constructor
-  ShowerCalo() {}
+  ShowerCalo() {_is_mc = false;}
 
   /// Default destructor
   ~ShowerCalo() {}
@@ -46,6 +46,15 @@ public:
   double dEdx_meta(int plane);
   double dEdx_meta_err(int plane);
 
+  double joint_dEdx();
+
+  // Picks the best plane, and reports that dEdx.
+  // Biased to collection
+  double best_dedx();
+
+  // Actually determines which plane to use
+  int best_plane();
+
   int n_hits(int plane);
 
   int n_good_hits(int plane);
@@ -54,21 +63,58 @@ public:
 
   double slope_error();
 
+  void set_drop_first_hit(bool b){_drop_first_hit = b;}
+
+  std::vector<double> good_dedx_hits(int plane, bool box=false);
+
+  int run(){return _run;}
+  int subrun(){return _subrun;}
+  int event(){return _event;}
+
+  double distance(int plane);
+
+  double mc_3D_vertex_resolution(); // returned in cm
+  double mc_3D_angle_resolution();  // return in degrees
+
+  double mc_x_resolution();
+  double mc_y_resolution();
+  double mc_z_resolution();
+
+  double mc_true_energy();
+  double mc_deposited_energy();
+
 public:
 
-  const double dedx_dist_max = 3.5;
+
+  const double dedx_dist_max = 5.0;
+
+  bool _drop_first_hit;
 
   bool _is_mc;
 
-  int run;
-  int subrun;
-  int event;
+  // Some mc variables, only meaningful when _is_mc == true
+  TVector3 _true_start_point;
+  TVector3 _true_direction;
+
+  double _true_energy;
+  double _true_deposited_energy;
+
+  int _run;
+  int _subrun;
+  int _event;
+
+  double _collection_dist;
+  double _induction_dist;
+
 
   std::vector<Hit2D> _collection_hits;
   std::vector<Hit2D> _induction_hits;
 
   std::vector<double> _collection_dedx;
   std::vector<double> _induction_dedx;
+
+  std::vector<double> _collection_dedx_box;
+  std::vector<double> _induction_dedx_box;
 
   std::vector<double> _collection_dqdx;
   std::vector<double> _induction_dqdx;
@@ -107,9 +153,31 @@ public:
   std::vector<double> dEdx_meta(int plane);
   std::vector<double> dEdx_meta_err(int plane);
   std::vector<double> n_hits(int plane);
+  std::vector<double> n_good_hits(int plane);
+
+  std::vector<double> best_dedx();
+  std::vector<double> joint_dedx();
 
   std::vector<double> vertex_error();
   std::vector<double> slope_error();
+
+  std::vector<double> distance(int plane);
+
+  std::vector<double> all_dedx_hits(int plane);
+  std::vector<double> all_dedx_hits_box(int plane);
+
+
+  std::vector<double> mc_x_resolution();
+  std::vector<double> mc_y_resolution();
+  std::vector<double> mc_z_resolution();
+
+  std::vector<double> mc_3D_vertex_resolution(); // returned in cm
+  std::vector<double> mc_3D_angle_resolution();  // return in degrees
+  std::vector<double> mc_true_energy();
+  std::vector<double> mc_deposited_energy();
+
+
+  void set_drop_first_hit(bool b);
 
 };
 

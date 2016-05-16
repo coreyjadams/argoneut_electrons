@@ -5,6 +5,8 @@ import numpy as np
 import scipy.optimize as opt
 import math
 
+import showerCalo
+
 from matplotlib import pyplot as plt
 
 
@@ -28,40 +30,11 @@ def double_gauss_landau(x_points,
     return l1 + l2
 
 
-from dataFrameHandle import dataFrameHandle
+def electronFit(electron_data, binwidth, electron_sim=None):
 
-# df = dataFrameHandle("../anatrees/electrons_anatree_fix.root", "electron")
-df = dataFrameHandle("../anatrees/photons_anatree_fix.root", "photon")
+    bins = np.arange(0, 8.0+binwidth, binwidth)
+    data, bin_edges = np.histogram(electron_data, bins)
 
-df.make_quality_cuts(1.5)
-
-measure = "charge"
-recomb = "box"
-
-# mode = "electrons"
-mode = "photons"
-
-binwidth = 0.25
-
-
-for plane in ["collection", "induction"]:
-
-    title = "{}, All {} Hits".format(mode, plane).title()
-
-    hits = []
-
-    name = plane[0] + "_"+  measure + "_dedx_" + recomb
-
-    # Need to dig out all the hit information from each event:
-    for index, row in df._df.iterrows():
-        cand_hits = row[name]
-        dists = row['{}_dist_from_start'.format(plane[0])]
-        for hit, dist in zip(cand_hits, dists):
-            if dist > 0 and dist < 3.5:
-                hits.append(hit)
-
-    bins = np.arange(0, 12, binwidth)
-    data, bin_edges = np.histogram(hits, bins)
     err = []
     for point in data:
         try:
@@ -69,78 +42,54 @@ for plane in ["collection", "induction"]:
         except:
             err.append(0.0)
 
-    data, bin_edges = np.histogram(hits, bins, density=True)
+    data, bin_edges = np.histogram(electron_data, bins, density=True)
 
     err *= data
 
-    x = bin_edges + 0.25
-    x = x[:-1]
+    bin_centers = bins[:-1] + 0.5*binwidth
+
+    x_fit = np.arange(0, 8, 0.25*binwidth)
+
+
+    popt, pcov = opt.curve_fit(
+        landau.gauss_landau, bin_centers, data, bounds=([0,0,0.1,0], [10, 10, 10, 10]))
+    y_fit = landau.gauss_landau(x_fit, popt[0], popt[1], popt[2], 1)
+    textstring = "Landau MPV: {:.3}\n".format(popt[0])
+    textstring += "Landau $\sigma$: {:.3}\n".format(popt[1])
+    textstring += "Gauss $\sigma$: {:.3}\n".format(popt[2])
+    textstring += "N: {:}\n".format(len(electron_data))
+    textstring += "<dE/dx>: {:.3}".format(np.mean(electron_data))
 
     f, ax = plt.subplots(figsize=(10, 7))
 
 
-    x_fit = np.arange(0, 12, 0.25*binwidth)
-
-    if "electron" in mode:
-        popt, pcov = opt.curve_fit(
-            landau.gauss_landau, x, data, bounds=([0,0,0.1,0], [10, 10, 10, 10]))
-        y_fit = landau.gauss_landau(x_fit, popt[0], popt[1], popt[2], 1)
-        textstring = "Landau MPV: {:.3}\n".format(popt[0])
-        textstring += "Landau $\sigma$: {:.3}\n".format(popt[1])
-        textstring += "Gauss $\sigma$: {:.3}\n".format(popt[2])
-        textstring += "N: {:}\n".format(len(hits))
-        textstring += "<dE/dx>: {:.3}".format(np.mean(hits))
-        c='b'
-
-    else:
-        # Make a fit to the hits for photons
-        c='r'
-        
-        # This path does independant landaus:
-        if False:
-            popt, pcov = opt.curve_fit(
-                double_gauss_landau,
-                x,
-                data,
-                bounds=([0, 0, 0.1, 0, 0, 0, 0.1, 0],
-                        [10, 10, 1, 10, 10, 10, 1, 10]))
-            y_fit = double_gauss_landau(x_fit, popt[0], popt[1], popt[2], popt[3],
-                                        popt[4], popt[5], popt[6], popt[7])
-            textstring = "Landau MPV: {:.3}   {:.3}\n".format(popt[0], popt[4])
-            textstring += "Landau $\sigma$: {:.3}   {:.3}\n".format(popt[1], popt[5])
-            textstring += "Gauss $\sigma$: {:.3}   {:.3}\n".format(popt[2], popt[6])
-            textstring += "N: {:}\n".format(len(hits))
-            textstring += "<dE/dx>: {:.3}".format(np.mean(hits))
-        # This path does landaus that are connected
-        if True:
-            popt, pcov = opt.curve_fit(
-                photon_gauss_landau,
-                x,
-                data,
-                bounds=([1.5, 0.1, 0.05, 0, 0.1, 0],
-                        [2.1, 0.5, 0.3, 20, 0.5, 20]))
-            y_fit = photon_gauss_landau(x_fit, popt[0], popt[1], popt[2], popt[3],
-                                        popt[4], popt[5])
-            textstring = "Landau MPV: {:.3}   {:.3}\n".format(popt[0], 2*popt[0])
-            textstring += "Landau $\sigma$: {:.3}   {:.3}\n".format(popt[1], popt[4])
-            textstring += "Gauss $\sigma$: {:.3}   {:.3}\n".format(popt[2], math.sqrt(2)*popt[2])
-            textstring += "gamma/e:  {:.3}\n".format(popt[5]/popt[3])
-            textstring += "N: {:}\n".format(len(hits))
-            textstring += "<dE/dx>: {:.3}".format(np.mean(hits))
-
-
-
-    ax.errorbar(x, data, yerr=err, xerr=binwidth*0.5,
-                label="{} Hits".format(plane).title(), capsize=0,ls="none",marker="o",color=c)
+    ax.errorbar(bin_centers, data, yerr=err, xerr=binwidth*0.5,
+                label="Collection Hits", capsize=0,ls="none",marker="o",color='b')
     # ax.errorbar(x, i_data, yerr=i_err, xerr=binwidth*0.5, label="Induction Hits",capsize=0)
-    ax.set_title(title)
+    ax.set_title("Electron dE/dx Hits")
 
     plt.plot(x_fit, y_fit, label="Fitted landau",color='g')
     y_lim = ax.get_ylim()
     # plt.ylim([0, 0.6])
 
+
+
     props = dict(boxstyle='round', facecolor='wheat', alpha=1.0)
-    ax.text(6.5, 0.45*y_lim[1], textstring, bbox=props, fontsize=20)
+    ax.text(5, 0.45*y_lim[1], textstring, bbox=props, fontsize=20)
+
+
+
+    # Draw the simulation if it's available:
+    if electron_sim is not None:
+
+        sim, bin_edges = np.histogram(electron_sim, bins,density=True)
+
+        # for i in xrange(len(sim)):
+        #     print "[{:.2} - {:.2}]: {:.3}".format(
+        #         bin_edges[i], bin_edges[i+1], sim[i])
+        ax.plot(bin_edges[1:], sim, color="b",
+             ls="steps", label="Simulated Electrons")
+
 
     plt.xlabel("dE/dx [MeV/cm]")
     plt.ylabel("")
@@ -149,12 +98,125 @@ for plane in ["collection", "induction"]:
 
     plt.show()
 
-    # if "Electron" in title:
-    #     plt.savefig(
-    #         "/data_linux/dedx_plots/Landau/landau_electrons_with_cuts_"+name+".png")
-    # if "Photon" in title:
-    #     plt.savefig(
-    #         "/data_linux/dedx_plots/Landau/landau_photons_with_cuts_"+name+".png")
+
+def photonFit(photon_data, binwidth,photon_sim=None):
+
+    bins = np.arange(0, 8.0, binwidth)
+    data, bin_edges = np.histogram(photon_data, bins)
+
+    err = []
+    for point in data:
+        try:
+            err.append(1.0/math.sqrt(point))
+        except:
+            err.append(0.0)
+
+    data, bin_edges = np.histogram(photon_data, bins, density=True)
+
+    err *= data
+
+    bin_centers = bin_edges[:-1] + 0.5*binwidth
+
+    x_fit = np.arange(0, 8, 0.25*binwidth)
+
+    # Make a fit to the hits for photons
     
-    plt.close(f)
+    # This path does independant landaus:
+    if False:
+        popt, pcov = opt.curve_fit(
+            double_gauss_landau,
+            bin_centers,
+            data,
+            bounds=([0, 0, 0.1, 0, 0, 0, 0.1, 0],
+                    [10, 10, 1, 10, 10, 10, 1, 10]))
+        y_fit = double_gauss_landau(x_fit, popt[0], popt[1], popt[2], popt[3],
+                                    popt[4], popt[5], popt[6], popt[7])
+        textstring = "Landau MPV: {:.3}   {:.3}\n".format(popt[0], popt[4])
+        textstring += "Landau $\sigma$: {:.3}   {:.3}\n".format(popt[1], popt[5])
+        textstring += "Gauss $\sigma$: {:.3}   {:.3}\n".format(popt[2], popt[6])
+        textstring += "N: {:}\n".format(len(photon_data))
+        textstring += "<dE/dx>: {:.3}".format(np.mean(photon_data))
+    # This path does landaus that are connected
+    if True:
+        popt, pcov = opt.curve_fit(
+            photon_gauss_landau,
+            bin_centers,
+            data,
+            bounds=([1.5, 0.1, 0.05, 0, 0.1, 0],
+                    [2.1, 0.5, 0.3, 20, 0.5, 20]))
+        y_fit = photon_gauss_landau(x_fit, popt[0], popt[1], popt[2], popt[3],
+                                    popt[4], popt[5])
+        textstring = "Landau MPV: {:.3}   {:.3}\n".format(popt[0], 2*popt[0])
+        textstring += "Landau $\sigma$: {:.3}   {:.3}\n".format(popt[1], popt[4])
+        textstring += "Gauss $\sigma$: {:.3}   {:.3}\n".format(popt[2], math.sqrt(2)*popt[2])
+        textstring += "gamma/e:  {:.3}\n".format(popt[5]/popt[3])
+        textstring += "N: {:}\n".format(len(hits))
+        textstring += "<dE/dx>: {:.3}".format(np.mean(hits))
+
+    f, ax = plt.subplots(figsize=(10, 7))
+
+
+    ax.errorbar(bin_centers, data, yerr=err, xerr=binwidth*0.5,
+                label="Collection Hits", capsize=0,ls="none",marker="o",color='r')
+    # ax.errorbar(bin_centers, i_data, yerr=i_err, xerr=binwidth*0.5, label="Induction Hits",capsize=0)
+    ax.set_title("Electron dE/dx Hits")
+
+    plt.plot(x_fit, y_fit, label="Fitted landau",color='g')
+    y_lim = ax.get_ylim()
+    # plt.ylim([0, 0.6])
+
+    props = dict(boxstyle='round', facecolor='wheat', alpha=1.0)
+    ax.text(5, 0.45*y_lim[1], textstring, bbox=props, fontsize=20)
+
+    # Draw the simulation if it's available:
+    if photon_sim is not None:
+
+        sim, bin_edges = np.histogram(photon_sim, bins,density=True)
+
+        # for i in xrange(len(sim)):
+        #     print "[{:.2} - {:.2}]: {:.3}".format(
+        #         bin_edges[i], bin_edges[i+1], sim[i])
+        ax.plot(bin_edges[1:], sim, color="r",
+             ls="steps", label="Simulated Photons")
+
+
+
+    plt.xlabel("dE/dx [MeV/cm]")
+    plt.ylabel("")
+    plt.legend()
+    plt.grid(True)
+
+    plt.show()
+
+
+
+(e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+# (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+
+e_data.getShowerCaloVector().set_drop_first_hit(True)
+
+hits = e_data.getShowerCaloVector().all_dedx_hits_box(1)
+sim_hits = e_sim.getShowerCaloVector().all_dedx_hits_box(1)
+binwidth = 0.2
+
+electronFit(hits,binwidth,sim_hits)
+
+
+hits = p_data.getShowerCaloVector().all_dedx_hits_box(1)
+sim_hits = p_sim.getShowerCaloVector().all_dedx_hits_box(1)
+binwidth = 0.2
+photonFit(hits, binwidth, sim_hits)
+
+
+
+
+
+# if "Electron" in title:
+#     plt.savefig(
+#         "/data_linux/dedx_plots/Landau/landau_electrons_with_cuts_"+name+".png")
+# if "Photon" in title:
+#     plt.savefig(
+#         "/data_linux/dedx_plots/Landau/landau_photons_with_cuts_"+name+".png")
+
+# plt.close(f)
 

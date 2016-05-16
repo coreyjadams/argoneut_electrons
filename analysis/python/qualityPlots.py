@@ -12,18 +12,59 @@ from matplotlib import pyplot as plt
 
 def main():
 
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
 
-    print e_data.size()
-    print e_sim.size()
-    print p_data.size()
-    print p_sim.size()
+    # print e_data.size()
+    # print e_sim.size()
+    # print p_data.size()
+    # print p_sim.size()
 
     measure = "charge"
     recomb = "const"
 
-    plane_cut(e_data, 0.3)
-    plane_cut(e_sim, 0.3)
+    dedx_dist(e_data, e_sim)
+    dedx_dist(p_data, p_sim)
+
+
+def dedx_dist(data, sim):
+
+    data_dists = data.getShowerCaloVector().distance(1)
+    sim_dists = sim.getShowerCaloVector().distance(1)
+
+    print data_dists.size()
+    print sim_dists.size()
+
+    binwidth = 0.4
+    bins = numpy.arange(0,12, binwidth)
+
+    data_hist, bin_edges = numpy.histogram(data_dists,
+                                           bins=bins,
+                                           density=True)
+    sim_hist, bin_edges = numpy.histogram(sim_dists,
+                                          bins=bins,
+                                          density=True)
+
+    bin_centers = bin_edges[:-1] + 0.5*binwidth
+
+    fig, axes = plt.subplots()
+    # plt.hist(sim_dists)
+             # marker="o", ls="none",
+    plt.plot(bin_centers, data_hist, ls="",marker="o",
+             label="Data dE/dx Distance", alpha=0.5)
+    # plt.plt(x, i_electron_hist,
+    #          # marker="o", ls="none",
+    plt.plot(bin_edges[:-1], sim_hist, ls="steps",
+             label="Simulation dE/dx Distance")
+
+
+    # plt.text(0.4, 4, "Collection Eff: {:.3}%".format(
+    #     coll_eff*100.), fontsize=20)
+    # plt.text(0.4, 3.5, "Induction Eff: {:.3}%".format(
+    #     ind_eff*100.), fontsize=20)
+    # plt.title("dE/dx Consistency Check, Electrons")
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 
 def plane_cut(dataset, cut=0.25):

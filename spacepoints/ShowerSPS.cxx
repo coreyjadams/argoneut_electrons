@@ -214,85 +214,85 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
   slope matches a target slope in the other plane
   */
 
-  // To match the slope, have to provide the target slope, target plane, and the list of spacepoints
-  for (size_t i_pfpart = 0; i_pfpart < ev_pfpart->size(); i_pfpart ++) {
+  // // To match the slope, have to provide the target slope, target plane, and the list of spacepoints
+  // for (size_t i_pfpart = 0; i_pfpart < ev_pfpart->size(); i_pfpart ++) {
 
-    // The clus_ass provides a pair of clusters that have space points that should match.
-    // Just do this pairwise:
+  //   // The clus_ass provides a pair of clusters that have space points that should match.
+  //   // Just do this pairwise:
 
-    auto cluster_to_adjust = clus_ass.at(i_pfpart).front();
-    auto range_cluster = clus_ass.at(i_pfpart).back();
+  //   auto cluster_to_adjust = clus_ass.at(i_pfpart).front();
+  //   auto range_cluster = clus_ass.at(i_pfpart).back();
 
-    // Get the target plane:
-    auto range_plane = _params_v.at(range_cluster).plane_id.Plane;
-
-
-    // Need the min and max wire from the range cluster:
-    double min = 999 , max = -999;
-    for (auto & _p_sps : _protoSPS.at(range_cluster)) {
-      auto projection = geoHelper->Point_3Dto2D(_p_sps.xyz(), _p_sps._origin_plane);
-      if (projection.w > max) {
-        max = projection.w;
-      }
-      if (projection.w < min) {
-        min = projection.w;
-      }
-    }
-
-    // std::cout << "Plane " << range_plane << ": Min = " << min << ", max = " << max << std::endl;
-
-    // Now go through and restrict the other spacepoints:
-    for (auto & _p_sps : _protoSPS.at(cluster_to_adjust)) {
-      restrictRange(_p_sps, min, max, range_plane);
-    }
-    stretchSpacePoints(_protoSPS.at(cluster_to_adjust), range_plane);
+  //   // Get the target plane:
+  //   auto range_plane = _params_v.at(range_cluster).plane_id.Plane;
 
 
-    // // Use the hits that are selected for space points from the target cluster
-    // // to make the target slope:
-    // double slope = getSlope(_params_v.at(cluster_to_adjust), _protoSPS.at(cluster_to_adjust));
+  //   // Need the min and max wire from the range cluster:
+  //   double min = 999 , max = -999;
+  //   for (auto & _p_sps : _protoSPS.at(range_cluster)) {
+  //     auto projection = geoHelper->Point_3Dto2D(_p_sps.xyz(), _p_sps._origin_plane);
+  //     if (projection.w > max) {
+  //       max = projection.w;
+  //     }
+  //     if (projection.w < min) {
+  //       min = projection.w;
+  //     }
+  //   }
 
-    // fitPointsToSlope(_protoSPS.at(cluster_to_adjust), slope, range_plane);
+  //   // std::cout << "Plane " << range_plane << ": Min = " << min << ", max = " << max << std::endl;
 
-
-
-    cluster_to_adjust = clus_ass.at(i_pfpart).back();
-    range_cluster = clus_ass.at(i_pfpart).front();
-
-    // Get the target plane:
-    range_plane = _params_v.at(range_cluster).plane_id.Plane;
-
-    // Need the min and max wire from the range cluster:
-    min = 999;
-    max = -999;
-    for (auto & _p_sps : _protoSPS.at(range_cluster)) {
-      auto projection = geoHelper->Point_3Dto2D(_p_sps.xyz(), _p_sps._origin_plane);
-      if (projection.w > max) {
-        max = projection.w;
-      }
-      if (projection.w < min) {
-        min = projection.w;
-      }
-    }
-
-    // std::cout << "Plane " << range_plane << ": Min = " << min << ", max = " << max << std::endl;
-
-    // Now go through and restrict the other spacepoints:
-    for (auto & _p_sps : _protoSPS.at(cluster_to_adjust)) {
-      restrictRange(_p_sps, min, max, range_plane);
-    }
-
-    // Stretch the spacepoints out a bit:
-    stretchSpacePoints(_protoSPS.at(cluster_to_adjust), range_plane);
+  //   // Now go through and restrict the other spacepoints:
+  //   for (auto & _p_sps : _protoSPS.at(cluster_to_adjust)) {
+  //     restrictRange(_p_sps, min, max, range_plane);
+  //   }
+  //   stretchSpacePoints(_protoSPS.at(cluster_to_adjust), range_plane);
 
 
-    // // Use the hits that are selected for space points from the target cluster
-    // // to make the target slope:
-    // slope = getSlope(_params_v.at(cluster_to_adjust), _protoSPS.at(cluster_to_adjust));
+  //   // // Use the hits that are selected for space points from the target cluster
+  //   // // to make the target slope:
+  //   // double slope = getSlope(_params_v.at(cluster_to_adjust), _protoSPS.at(cluster_to_adjust));
 
-    // fitPointsToSlope(_protoSPS.at(cluster_to_adjust), slope, range_plane);
+  //   // fitPointsToSlope(_protoSPS.at(cluster_to_adjust), slope, range_plane);
 
-  }
+
+
+  //   cluster_to_adjust = clus_ass.at(i_pfpart).back();
+  //   range_cluster = clus_ass.at(i_pfpart).front();
+
+  //   // Get the target plane:
+  //   range_plane = _params_v.at(range_cluster).plane_id.Plane;
+
+  //   // Need the min and max wire from the range cluster:
+  //   min = 999;
+  //   max = -999;
+  //   for (auto & _p_sps : _protoSPS.at(range_cluster)) {
+  //     auto projection = geoHelper->Point_3Dto2D(_p_sps.xyz(), _p_sps._origin_plane);
+  //     if (projection.w > max) {
+  //       max = projection.w;
+  //     }
+  //     if (projection.w < min) {
+  //       min = projection.w;
+  //     }
+  //   }
+
+  //   // std::cout << "Plane " << range_plane << ": Min = " << min << ", max = " << max << std::endl;
+
+  //   // Now go through and restrict the other spacepoints:
+  //   for (auto & _p_sps : _protoSPS.at(cluster_to_adjust)) {
+  //     restrictRange(_p_sps, min, max, range_plane);
+  //   }
+
+  //   // Stretch the spacepoints out a bit:
+  //   stretchSpacePoints(_protoSPS.at(cluster_to_adjust), range_plane);
+
+
+  //   // // Use the hits that are selected for space points from the target cluster
+  //   // // to make the target slope:
+  //   // slope = getSlope(_params_v.at(cluster_to_adjust), _protoSPS.at(cluster_to_adjust));
+
+  //   // fitPointsToSlope(_protoSPS.at(cluster_to_adjust), slope, range_plane);
+
+  // }
 
   // Then, adjust a global offset of the points from a matched set of proto sps
   // to minimize the 3D volume of the points.
@@ -370,22 +370,22 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
 
         // This is the limiting points:
 
-        // ev_sps->push_back(larlite::spacepoint(id_index,
-        //                                       (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).X(),
-        //                                       (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Y(),
-        //                                       (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Z(),
-        //                                       0, 0, 0, 0));
-        // spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
-        // pfpToSpsAss.at(i_pfpart).push_back(id_index);
-        // id_index ++;
-        // ev_sps->push_back(larlite::spacepoint(id_index,
-        //                                       (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).X(),
-        //                                       (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Y(),
-        //                                       (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Z(),
-        //                                       0, 0, 0, 0));
-        // spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
-        // pfpToSpsAss.at(i_pfpart).push_back(id_index);
-        // id_index ++;
+        ev_sps->push_back(larlite::spacepoint(id_index,
+                                              (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).X(),
+                                              (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Y(),
+                                              (proto_sps.origin + proto_sps._max_alpha * proto_sps.freeDirection).Z(),
+                                              0, 0, 0, 0));
+        spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
+        pfpToSpsAss.at(i_pfpart).push_back(id_index);
+        id_index ++;
+        ev_sps->push_back(larlite::spacepoint(id_index,
+                                              (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).X(),
+                                              (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Y(),
+                                              (proto_sps.origin + proto_sps._min_alpha * proto_sps.freeDirection).Z(),
+                                              0, 0, 0, 0));
+        spsToHitAss.push_back(std::vector<unsigned int>(1, proto_sps._matched_hit_index));
+        pfpToSpsAss.at(i_pfpart).push_back(id_index);
+        id_index ++;
 
         //////
       }

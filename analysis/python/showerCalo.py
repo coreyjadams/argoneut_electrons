@@ -72,6 +72,45 @@ class showerCalo(object):
     def getMedianVector(self, plane):
         return self._process.getShowerCalos().dEdx_median(plane)
 
+    def getLMAVector(self, plane):
+        return self._process.getShowerCalos().dEdx_LMA(plane)
+
+    def getModMeanVector(self, plane):
+        return self._process.getShowerCalos().dEdx_modmean(plane)
+
+    def getMetaVector(self, plane):
+        return self._process.getShowerCalos().dEdx_meta(plane)
+
+    def getMetaErrVector(self, plane):
+        return self._process.getShowerCalos().dEdx_meta_err(plane)
+
+
+    def getAllGoodDedxHits(self,plane):
+        return self._process.getShowerCalos().all_dedx_hits(plane)
+
+    def getNGoodHitsVector(self,plane):
+        return self._process.getShowerCalos().n_good_hits(plane)
+
+    def getPercentGoodHitVector(self,plane):
+        goodHits = self._process.getShowerCalos().n_good_hits(plane)
+        allHits = self._process.getShowerCalos().n_hits(plane)
+        _vector = []
+        for _n1, _n2 in zip(goodHits, allHits):
+            if _n2 != 0:
+                _vector.append(1.0*_n1 / _n2)
+            else:
+                _vector.append(0.0)
+        return _vector
+
+    def getBestdEdxVector(self,plane):
+        return self._process.getShowerCalos().best_dedx()
+
+    def getJointdEdxVector(self,plane):
+        return self._process.getShowerCalos().joint_dedx()
+
+    def getDistVector(self,plane):
+        return self._process.getShowerCalos().distance(plane)
+
     def size(self):
         return self._process.getShowerCalos().size()
 
@@ -90,8 +129,8 @@ def lite_samples():
     photon_data_module.run()
 
     # For MC:
-    electron_sim_file = "/data_linux/argoneut/argoneut_single_electron/single_electrons_sim_larlite_mergeall_endpoint2d_match_shower.root"
-    photon_sim_file = "/data_linux/argoneut/argoneut_single_photon/single_photons_larlite_mergeall_endpoint2d_match_shower.root"
+    electron_sim_file = "/data_linux/argoneut/argoneut_single_electron/electron_sample_larlite_lowerE_mergeall_endpoint2d_match_shower.root"
+    photon_sim_file = "/data_linux/argoneut/argoneut_single_photon/photon_sample_larlite_lowerE_mergeall_endpoint2d_match_shower.root"
 
     sim_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_sim.pkl"
 
@@ -122,8 +161,8 @@ def full_samples():
     photon_data_module.run()
 
     # For MC:
-    electron_sim_file = "/data_linux/argoneut/argoneut_single_electron/single_electrons_sim_larlite_mergeall_endpoint2d_match_shower.root"
-    photon_sim_file = "/data_linux/argoneut/argoneut_single_photon/single_photons_larlite_mergeall_endpoint2d_match_shower.root"
+    electron_sim_file = "/data_linux/argoneut/argoneut_single_electron/electron_sample_larlite_lowerE_mergeall_endpoint2d_match_shower.root"
+    photon_sim_file = "/data_linux/argoneut/argoneut_single_photon/photon_sample_larlite_lowerE_mergeall_endpoint2d_match_shower.root"
 
     sim_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_sim.pkl"
 

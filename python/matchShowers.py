@@ -11,6 +11,7 @@ from argotool import match, shower
 def main(**args):
 
   my_proc = larlite.ana_processor()
+  my_proc.enable_event_alignment(False)
 
   if args['verbose']:
       print "Verbose mode turned on."
@@ -29,7 +30,7 @@ def main(**args):
       quit()
 
   if args['data_output'] == None:
-      args['data_output'] = "default_match_output.root"
+      args['data_output'] = args['source'][0].replace(".root","") + "_match.root"
       if args['verbose']:
           print "No event output file selected.  If necessary, output will go to: "
           print "\t"+args['data_output']
@@ -62,9 +63,10 @@ def main(**args):
 
   match_maker.GetManager().AddPriorityAlgo(matchalg)
   match_maker.GetManager().AddMatchAlgo(priority)
+  match_maker.GetManager().SetMinNHits(35)
 
-  match_maker.SetClusterProducer("bootleg")
-  match_maker.SetOutputProducer("bootlegMatched")
+  match_maker.SetClusterProducer("mergeall")
+  match_maker.SetOutputProducer("mergeallMatched")
   match_maker.SaveOutputCluster(True)
 
 
