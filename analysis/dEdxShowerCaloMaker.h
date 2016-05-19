@@ -40,7 +40,7 @@ class dEdxShowerCaloMaker : public larlite::ana_base {
 public:
 
   /// Default constructor
-  dEdxShowerCaloMaker() { _name = "dEdxShowerCaloMaker"; _fout = 0;}
+  dEdxShowerCaloMaker() { _name = "dEdxShowerCaloMaker"; _fout = 0;_select_events=false;}
 
   /// Default destructor
   virtual ~dEdxShowerCaloMaker() {}
@@ -75,7 +75,17 @@ public:
                          std::vector<unsigned int> hit_indexes,
                          Point2D start_point);
 
+  bool keepEvent(int run, int event_no, int & best_plane);
+
+  std::vector<unsigned int> hand_select_hits(int run, int event, int plane);
+
+
+  void set_select_events(bool b){_select_events = b;}
+
+
 protected:
+
+  bool _select_events;
 
   bool _is_mc;
 

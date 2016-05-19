@@ -75,9 +75,9 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     TVector3 startDir = shower.Direction();
     TVector3 startpoint = shower.ShowerStart();
 
-    if (isnan(startDir.X()) ||
-        isnan(startDir.Y()) ||
-        isnan(startDir.Z())) {
+    if (std::isnan(startDir.X()) ||
+        std::isnan(startDir.Y()) ||
+        std::isnan(startDir.Z())) {
       return false;
     }
 
@@ -107,6 +107,26 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     // Get the run and event number:
     this_calo._run = ev_pfpart->run();
     this_calo._event = ev_pfpart->event_id();
+
+    int best_plane = 1;
+    this_calo._best_plane = best_plane;
+
+    // See if this event passes the cut:
+    if (! _is_mc && _select_events) {
+
+      bool pass =  keepEvent(this_calo.run(), this_calo.event(), best_plane);
+
+
+      if (! pass) {
+        return false;
+      }
+
+      if (best_plane != 1) {
+        this_calo._best_plane = best_plane;
+      }
+
+
+    }
 
 
     for (auto & _params : proto_shower.params()) {
@@ -141,14 +161,28 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
       Hit2D startingHit;
       startingHit.w = startingPoint.w;
       startingHit.t = startingPoint.t;
-      _close_hit_indexes =
-        geomHelper -> SelectLocalPointList( _params.hit_vector,
-                                            startingHit,
-                                            dist,
-                                            0.5,
-                                            slope,
-                                            averagePoint);
 
+      if (! _is_mc && _select_events) {
+        _close_hit_indexes = hand_select_hits(this_calo.run(), this_calo.event(), plane);
+        if (_close_hit_indexes.size() == 0) {
+          _close_hit_indexes =
+            geomHelper -> SelectLocalPointList( _params.hit_vector,
+                                                startingHit,
+                                                dist,
+                                                0.5,
+                                                slope,
+                                                averagePoint);
+        }
+      }
+      else {
+        _close_hit_indexes =
+          geomHelper -> SelectLocalPointList( _params.hit_vector,
+                                              startingHit,
+                                              dist,
+                                              0.5,
+                                              slope,
+                                              averagePoint);
+      }
 
       // This block of code is the "old way" to get the hits for computing dE/dx
       /*
@@ -259,22 +293,22 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
 
     }
 
-    if (this_calo._collection_dist < 0.5) {
-      return false;
-    }
-    if (this_calo._induction_dist < 0.5) {
-      return false;
-    }
-    if (this_calo.dEdx_meta_err(0) / this_calo.dEdx_meta(0) > 0.3) {
-      return false;
-    }
-    if (this_calo.dEdx_meta_err(1) / this_calo.dEdx_meta(1) > 0.3) {
-      return false;
-    }
+    // if (this_calo._collection_dist < 0.5) {
+    //   return false;
+    // }
+    // if (this_calo._induction_dist < 0.5) {
+    //   return false;
+    // }
+    // if (this_calo.dEdx_meta_err(0) / this_calo.dEdx_meta(0) > 0.3) {
+    //   return false;
+    // }
+    // if (this_calo.dEdx_meta_err(1) / this_calo.dEdx_meta(1) > 0.3) {
+    //   return false;
+    // }
 
-    if ( fabs(this_calo.dEdx_meta(0) - this_calo.dEdx_meta(1)) > 1.5 ) {
-      return false;
-    }
+    // if ( fabs(this_calo.dEdx_meta(0) - this_calo.dEdx_meta(1)) > 1.5 ) {
+    //   return false;
+    // }
 
     // Make the ShowerCalo object for this shower
     _shower_calo_vector.push_back(this_calo);
@@ -328,6 +362,295 @@ bool dEdxShowerCaloMaker::finalize() {
 
 
   return true;
+}
+
+// This is god-mode:
+// bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
+
+//   if (run == 775 && event == 8598) {
+//     return true;
+//   }
+//   if (run == 650 && event == 11366) {
+//     return true;
+//   }
+//   if (run == 787 && event == 35240) {
+//     return true;
+//   }
+//   if (run == 661 && event == 30777) {
+//     return true;
+//   }
+//   if (run == 799 && event == 22141) {
+//     return true;
+//   }
+//   if (run == 827 && event == 29437) {
+//     return true;
+//   }
+//   if (run == 738 && event == 3028) {
+//     return true;
+//   }
+//   if (run == 738 && event == 31324) {
+//     return true;
+//   }
+//   if (run == 622 && event == 2738) {
+//     return true;
+//   }
+//   if (run == 761 && event == 24948) {
+//     return true;
+//   }
+//   if (run == 765 && event == 19905) {
+//     return true;
+//   }
+
+//   return false;
+// }
+
+bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
+
+
+  if (run == 770 && event == 15857) {
+    return true;
+  }
+  if (run == 772 && event == 26010) {
+    return true;
+  }
+  if (run == 775 && event == 25633) {
+    return true;
+  }
+  if (run == 775 && event == 8598) {
+    return true;
+  }
+  if (run == 650 && event == 11366) {
+    return true;
+  }
+  if (run == 653 && event == 7810) {
+    return true;
+  }
+  if (run == 783 && event == 33971) {
+    best_plane = 0;
+    return true;
+  }
+  if (run == 787 && event == 19854) {
+    return true;
+  }
+  if (run == 787 && event == 35240) {
+    return true;
+  }
+  if (run == 661 && event == 30777) {
+    return true;
+  }
+  if (run == 668 && event == 12290) {
+    return true;
+  }
+  if (run == 799 && event == 22141) {
+    return true;
+  }
+  if (run == 673 && event == 26021) {
+    return true;
+  }
+  if (run == 674 && event == 15897) {
+    best_plane = 0;
+    return true;
+  }
+  // if (run == 677 && event == 20169) {
+  //   return true;
+  // }
+  if (run == 839 && event == 19489) {
+    return true;
+  }
+  if (run == 815 && event == 8471) {
+    return true;
+  }
+  if (run == 755 && event == 27529) {
+    return true;
+  }
+  if (run == 823 && event == 17611) {
+    return true;
+  }
+  if (run == 697 && event == 9815) {
+    return true;
+  }
+  if (run == 827 && event == 29437) {
+    return true;
+  }
+  if (run == 832 && event == 26531) {
+    return true;
+  }
+  if (run == 711 && event == 2465) {
+    return true;
+  }
+  if (run == 847 && event == 11704) {
+    return true;
+  }
+  if (run == 720 && event == 34843) {
+    return true;
+  }
+  if (run == 720 && event == 4063) {
+    best_plane = 0;
+    return true;
+  }
+  if (run == 721 && event == 39873) {
+    best_plane = 0;
+    return true;
+  }
+  if (run ==   724 && event == 13980) {
+    best_plane = 0;
+    return true;
+  }
+  if (run ==   724 && event == 21713) {
+    best_plane = 0;
+    return true;
+  }
+  if (run == 724 && event == 22877) {
+    best_plane = 0;
+    return true;
+  }
+  if (run == 738 && event == 3028) {
+    return true;
+  }
+  if (run == 738 && event == 31324) {
+    return true;
+  }
+  if (run == 828 && event == 3901) {
+    return true;
+  }
+  if (run == 620 && event == 3756) {
+    return true;
+  }
+  if (run == 622 && event == 2738) {
+    return true;
+  }
+  if (run ==   627 && event == 895) {
+    best_plane = 0;
+    return true;
+  }
+  if (run == 629 && event == 32812) {
+    return true;
+  }
+  if (run == 629 && event == 25898) {
+    return true;
+  }
+  if (run == 761 && event == 24948) {
+    return true;
+  }
+  if (run == 634 && event == 25212) {
+    return true;
+  }
+  if (run ==   635 && event == 25757) {
+    best_plane = 0;
+    return true;
+  }
+  if (run == 765 && event == 19905) {
+    return true;
+  }
+
+  return false;
+
+}
+
+std::vector<unsigned int> dEdxShowerCaloMaker::hand_select_hits(int run, int event, int plane) {
+  std::vector<unsigned int> _hit_indexes;
+  
+
+  if (run == 770 && event == 15857 && plane == 1) {
+    _hit_indexes = {1,2,3,4,5};
+  }
+  if (run == 772 && event == 26010 && plane == 1) {
+    _hit_indexes = {1,2,3};
+  }
+  if (run == 775 && event == 25633 && plane == 1) {
+  }
+  if (run == 775 && event == 8598 && plane == 1) {
+  }
+  if (run == 650 && event == 11366 && plane == 1) {
+    _hit_indexes = {1,2,3,4,5};
+  }
+  if (run == 653 && event == 7810 && plane == 1) {
+    _hit_indexes = {1,2,3,4,5,6,7};
+  }
+  if (run == 783 && event == 33971 && plane == 0) {
+    _hit_indexes = {0,1,2,3};
+  }
+  if (run == 787 && event == 19854) {
+  }
+  if (run == 787 && event == 35240) {
+  }
+  if (run == 661 && event == 30777) {
+  }
+  if (run == 668 && event == 12290) {
+  }
+  if (run == 799 && event == 22141) {
+  }
+  if (run == 673 && event == 26021) {
+  }
+  if (run == 674 && event == 15897 && plane == 0) {
+    _hit_indexes = {0,1,2}
+  }
+  // if (run == 677 && event == 20169) {
+  // }
+  if (run == 839 && event == 19489) {
+  }
+  if (run == 815 && event == 8471) {
+  }
+  if (run == 755 && event == 27529) {
+  }
+  if (run == 823 && event == 17611) {
+  }
+  if (run == 697 && event == 9815) {
+  }
+  // Left off right here
+  if (run == 827 && event == 29437) {
+  }
+  if (run == 832 && event == 26531) {
+  }
+  if (run == 711 && event == 2465) {
+  }
+  if (run == 847 && event == 11704) {
+  }
+  if (run == 720 && event == 34843) {
+  }
+  if (run == 720 && event == 4063) {
+    // best_plane = 0;
+  }
+  if (run == 721 && event == 39873) {
+    // best_plane = 0;
+  }
+  if (run ==   724 && event == 13980) {
+    // best_plane = 0;
+  }
+  if (run ==   724 && event == 21713) {
+    // best_plane = 0;
+  }
+  if (run == 724 && event == 22877) {
+    // best_plane = 0;
+  }
+  if (run == 738 && event == 3028) {
+  }
+  if (run == 738 && event == 31324) {
+  }
+  if (run == 828 && event == 3901) {
+  }
+  if (run == 620 && event == 3756) {
+  }
+  if (run == 622 && event == 2738) {
+  }
+  if (run ==   627 && event == 895) {
+    // best_plane = 0;
+  }
+  if (run == 629 && event == 32812) {
+  }
+  if (run == 629 && event == 25898) {
+  }
+  if (run == 761 && event == 24948) {
+  }
+  if (run == 634 && event == 25212) {
+  }
+  if (run ==   635 && event == 25757) {
+    // best_plane = 0;
+  }
+  if (run == 765 && event == 19905) {
+  }  
+
+  return _hit_indexes;
 }
 
 }
