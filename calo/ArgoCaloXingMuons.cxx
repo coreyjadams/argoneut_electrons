@@ -168,6 +168,11 @@ bool ArgoCaloXingMuons::analyze(storage_manager* storage) {
   // std::cout << "ev_calo.size() " << ev_calo -> size() << std::endl;
 
 
+  int run = ev_track->run();
+
+  double timetick = larutil::DetectorProperties::GetME()->SamplingRate() * 1.e-3;
+
+
   // Get the calorimetry objects associated with the tracks:
   larlite::event_spacepoint * ev_sps = nullptr;
   auto const& sps_ass_info
@@ -299,9 +304,22 @@ bool ArgoCaloXingMuons::analyze(storage_manager* storage) {
     // double dEdx_area = _calo_alg.dEdx_AREA(Q_area, hit.PeakTime(), pitch, hit.WireID().Plane);
     // double dEdx_amp = _calo_alg.dEdx_AMP(Q_amp, hit.PeakTime(), pitch, hit.WireID().Plane);
 
+    // Get the lifetime correction here:
+
+    // Look up the lifetime:
+    int lifetime = 0;
+    if ( _lifetimes.find(run) != _lifetimes.end() ) {
+      lifetime = _lifetimes[run];
+    } else {
+      // std::cout << "Skipping run " << run << ", couldn't find the lifetime" << std::endl;
+      return false;
+    }
+
+    double lifetime_corr = exp(hit.PeakTime() * timetick / lifetime);
+
     // Do the lifetime correction for each charge:
-    Q_area *= _calo_alg.LifetimeCorrection(hit.PeakTime());
-    Q_amp *= _calo_alg.LifetimeCorrection(hit.PeakTime());
+    Q_area *= lifetime_corr;
+    Q_amp *= lifetime_corr;
 
 
     double Q_area_e = Q_area * area_e_corrections[hit.WireID().Plane];

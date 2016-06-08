@@ -1,3 +1,4 @@
+import operator
 
 import ROOT
 import numpy
@@ -11,36 +12,51 @@ from matplotlib import pyplot as plt
 def main():
 
     plane = 1
-    cut = 2.8
+    cut = 0
 
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
-    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+    (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
 
-    e_data.getShowerCaloVector().set_drop_first_hit(True)
+    e_data_median = e_data.getBestMedianVector()
+    e_data_modmean = e_data.getBestModmeanVector()
+    e_data_lma = e_data.getBestLMAVector()
 
-    print e_data.size()
-    print e_sim.size()
-    print p_data.size()
-    print p_sim.size()
+    e_sim_median = e_sim.getBestMedianVector()
+    e_sim_modmean = e_sim.getBestModmeanVector()
+    e_sim_lma = e_sim.getBestLMAVector()
 
-    # for shower in e_data.getShowerCaloVector():
-    # print "{}, {:.3}".format(shower.n_good_hits(1), shower.dEdx_median(1))
+    p_sim_median = p_sim.getBestMedianVector()
+    p_sim_modmean = p_sim.getBestModmeanVector()
+    p_sim_lma = p_sim.getBestLMAVector()
 
-    data_bin_width = 0.3
-    sim_bin_width = 0.1
+    p_data_median = p_data.getBestMedianVector()
+    p_data_modmean = p_data.getBestModmeanVector()
+    p_data_lma = p_data.getBestLMAVector()
+
+    plotdEdx(e_data_median, e_sim_median, p_data_median, p_sim_median, "")
+    # plotdEdx(e_data_modmean, e_sim_modmean, p_data_modmean, p_sim_modmean, "Outlier Removed Mean")
+    # plotdEdx(e_data_lma, e_sim_lma, p_data_lma, p_sim_lma, "LMA")
+
+    # plotSigma(e_data_median,p_data_median)
+    # plotSigma(e_data_modmean,p_data_modmean)
+    # plotSigma(e_data_lma,p_data_lma)
+
+
+def plotdEdx(e_data, e_sim, p_data, p_sim, name):
+
+    # cut = 0
+    cut = 2.9
+
+    data_bin_width = 0.4
+    sim_bin_width = 0.2
 
     data_bins = numpy.arange(0.1, 8.0, data_bin_width)
     sim_bins = numpy.arange(0.1, 8.0, sim_bin_width)
 
     electron_data_hist, bin_edges_data = numpy.histogram(
-        e_data.getModMeanVector(plane), data_bins)
+        e_data, data_bins)
     photon_data_hist, bin_edges_data = numpy.histogram(
-        p_sim.getModMeanVector(plane), data_bins)
-
-    print electron_data_hist
-    print bin_edges_data
-
-    print numpy.sum(electron_data_hist)
+        p_data, data_bins)
 
     electron_err = []
     electron_frac_err = []
@@ -59,15 +75,16 @@ def main():
         else:
             photon_frac_err.append(0.0)
 
+
     electron_data_hist, bin_edges_data = numpy.histogram(
-        e_data.getModMeanVector(plane), data_bins, density=True)
+        e_data, data_bins, density=True)
     photon_data_hist, bin_edges_data = numpy.histogram(
-        p_data.getModMeanVector(plane), data_bins, density=True)
+        p_data, data_bins, density=True)
 
     electron_sim_hist, bin_edges_sim = numpy.histogram(
-        e_sim.getModMeanVector(plane), sim_bins, density=True)
+        e_sim, sim_bins, density=True)
     photon_sim_hist, bin_edges_sim = numpy.histogram(
-        p_sim.getModMeanVector(plane), sim_bins, density=True)
+        p_sim, sim_bins, density=True)
 
     bin_centers_data = bin_edges_data[:-1] + 0.5*data_bin_width
     bin_centers_sim = bin_edges_sim[:-1] + 0.5*sim_bin_width
@@ -81,23 +98,32 @@ def main():
         photon_err_norm.append(p_val*frac_err)
 
     f2, ax2 = plt.subplots(figsize=(15, 8))
-    ax2.set_title("Electron Photon Separation", fontsize=30)
+    ax2.set_title("Calorimetric Electron Photon Separation", fontsize=30)
     ax2.errorbar(bin_centers_data, electron_data_hist, xerr=data_bin_width*0.5,
-                 yerr=electron_err_norm, marker="o", label="Electrons, Data", capsize=0, ls="none")
+                 yerr=electron_err_norm,
+                 marker="o",
+                 label="Electrons, Data",
+                 capsize=2,
+                 ls="none")
     ax2.errorbar(bin_centers_data, photon_data_hist, xerr=data_bin_width*0.5,
-                 yerr=photon_err_norm, marker="o", label="Photons, Data", capsize=0, color='r', ls="none")
+                 yerr=photon_err_norm,
+                 marker="o",
+                 # fillstyle="none",
+                 label="Photons, Data",
+                 capsize=2,
+                 color='r',
+                 ls="none")
     plt.xlabel("dE/dx [MeV/cm]", fontsize=20)
     plt.ylabel("Unit Normalized", fontsize=20)
 
-    ax2.plot(bin_centers_sim, electron_sim_hist, color="b",
+    ax2.plot(bin_centers_sim+0.5*sim_bin_width, electron_sim_hist, color="b",
              ls="steps", label="Simulated Electrons")
-    ax2.plot(bin_centers_sim, photon_sim_hist, color="r",
+    ax2.plot(bin_centers_sim+0.5*sim_bin_width, photon_sim_hist, color="r",
              ls="steps", label="Simulated Electrons")
 
     if cut > 0:
-        data_purity, data_eff_tuple = makeCut(
-            e_data.getModMeanVector(plane), p_data.getModMeanVector(plane), cut)
-        # data_purity, data_eff_tuple = makeCut(e_sim.getModMeanVector(plane), p_sim.getModMeanVector(plane),cut)
+        data_eff_tuple = makeCut(e_data, p_data, cut)
+        # data_purity, data_eff_tuple = makeCut(e_sim.getBestdEdxVector(plane), p_sim.getBestdEdxVector(plane),cut)
 
         # Now draw a line at the place that gives the best dEdx cut:
 
@@ -105,18 +131,19 @@ def main():
                     label="Cut at {} MeV/cm".format(cut))
         y_lims = ax2.get_ylim()
         plt.text(4.05, y_lims[1]*0.65, "Electron Efficiency:", size=25,)
-        plt.text(7.95, y_lims[1]*0.65, "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[0][
-                 0], 1.0*data_eff_tuple[0][1]), size=25, horizontalalignment='right')
+        plt.text(7.95, y_lims[1]*0.65,
+                 "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[0][0],
+                                          1.0*data_eff_tuple[0][1]),
+                 size=25, horizontalalignment='right')
         plt.text(4.05, y_lims[1]*0.55, "Photon Mis. ID:", size=25,)
-        plt.text(7.95, y_lims[1]*0.55, "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[1][
-                 0], 1.0*data_eff_tuple[1][1]), size=25, horizontalalignment='right')
-        # if dist != -1.0:
-        #     plt.text(6.05,y_lims[1]*0.4,"Distance:",size=25)
-        #     plt.text(11.95,y_lims[1]*0.4,"{:.3}".format(dist),size=25,horizontalalignment='right')
+        plt.text(7.95, y_lims[1]*0.55,
+                 "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[1][0],
+                                          1.0*data_eff_tuple[1][1]),
+                 size=25, horizontalalignment='right')
 
     # Draw a histogram with all of these:
     plt.grid(True)
-    plt.legend()
+    # plt.legend(fontsize=20)
     plt.show()
 
 
@@ -127,37 +154,6 @@ def makeCut(electron_dedx_v, photon_dedx_v, cut_value):
     """
 
     bins = [0.1, cut_value, 10]
-
-    # Do this manually?
-    n_pass = 0
-    n_fail = 0
-    for val in electron_dedx_v:
-        if val < 0.1:
-            continue
-        if val > cut_value:
-            n_fail += 1
-            # print val, " fails"
-        else:
-            n_pass += 1
-            # print val, " passes"
-
-    print "Electrons: {}/{} = {:.3} pass".format(
-        n_pass, n_pass + n_fail, 1.0*n_pass/(n_pass+n_fail))
-
-    # Do this manually?
-    n_pass = 0
-    n_fail = 0
-    for val in photon_dedx_v:
-        if val < 0.1:
-            continue
-        if val > cut_value:
-            n_fail += 1
-        else:
-            n_pass += 1
-
-    print "Photons: {}/{} = {:.3} pass".format(
-        n_pass, n_pass + n_fail, 1.0*n_pass/(n_pass+n_fail))
-
     # Use a histogram to slice this into two sections, one above the cut value
     # and one below
     electrons, junk = numpy.histogram(electron_dedx_v, bins)
@@ -166,10 +162,10 @@ def makeCut(electron_dedx_v, photon_dedx_v, cut_value):
     electron_eff = (1.0*electrons[0])/(electrons[0] + electrons[1])
     photon_eff = (1.0*photons[0])/(photons[0] + photons[1])
 
-    try:
-        purity = 1.0*electrons[0] / (electrons[0] + photons[0])
-    except:
-        purity = 0.0
+    print "Kept {} of {} electrons.".format(electrons[0],
+                                            electrons[0] + electrons[1])
+    print "Kept {} of {} photons.".format(photons[0],
+                                          photons[0] + photons[1])
 
     try:
         electron_eff_stat_err = electron_eff * \
@@ -183,128 +179,80 @@ def makeCut(electron_dedx_v, photon_dedx_v, cut_value):
     except:
         photon_eff_stat_err = 999
 
-    try:
-        opt = electron_eff / photon_eff
-    except:
-        opt = 0.0
+    e_eff_mean, [e_eff_lower, e_eff_upper] = FeldmanCousins(
+        electrons[0], electrons[0]+electrons[1], 0.6827)
 
-    try:
-        opt_err = opt * \
-            math.sqrt(
-                electron_eff_stat_err/electron_eff + photon_eff_stat_err / photon_eff)
-    except:
-        opt_err = 999
+    p_eff_mean, [p_eff_lower, p_eff_upper] = FeldmanCousins(
+        photons[0], photons[0]+photons[1], 0.6827)
 
-    return purity, [[electron_eff, electron_eff_stat_err], [photon_eff, photon_eff_stat_err]]
+    print "Electron efficiency: {}".format(electron_eff)
+    print "Electron efficiency uncertainty:"
+    print "  Statistical ------ {:.3}".format(electron_eff_stat_err)
+    print "  FeldmanCousins --- +{:.3} - {:.3}".format(e_eff_upper - e_eff_mean,
+                                                       e_eff_mean - e_eff_lower)
+
+    print "Photon efficiency: {}".format(photon_eff)
+    print "Photon efficiency uncertainty:"
+    print "  Statistical ------ {:.3}".format(photon_eff_stat_err)
+    print "  FeldmanCousins --- +{:.3} - {:.3}".format(p_eff_upper - p_eff_mean,
+                                                       p_eff_mean - p_eff_lower)
+
+    return [[electron_eff, electron_eff_stat_err],
+            [photon_eff, photon_eff_stat_err]]
 
 
-def plotdEdx(electrons_df, photons_df, branch_name, cut=-1.0, dist=-1.0):
+def FeldmanCousins(this_ctr, total_ctr, confidence_interval):
 
-    plane = ""
-    if branch_name[0] == 'c':
-        plane = "Collection"
-    elif branch_name[0] == 'i':
-        plane = "Induction"
-    else:
-        plane = "Combined"
+    from ROOT import TEfficiency
+    k = TEfficiency()
+    eff_mean = float(this_ctr) / float(total_ctr)
+    eff_upper = k.FeldmanCousins(
+        total_ctr, this_ctr, confidence_interval, True)
+    eff_lower = k.FeldmanCousins(
+        total_ctr, this_ctr, confidence_interval, False)
 
-    binwidth = 0.4
-    bins = numpy.arange(0, 12, binwidth)
-    electron_data, bin_edges = numpy.histogram(electrons_df[branch_name], bins)
-    photon_data, bin_edges = numpy.histogram(photons_df[branch_name], bins)
+    return eff_mean, [eff_lower, eff_upper]
 
-    # print bin_edges
 
-    electron_err = []
-    electron_frac_err = []
-    photon_err = []
-    photon_frac_err = []
-    for e_val, p_val in zip(electron_data, photon_data):
-        electron_err.append(math.sqrt(e_val))
-        if e_val != 0:
-            electron_frac_err.append(math.sqrt(e_val) / e_val)
-        else:
-            electron_frac_err.append(0.0)
+def plotSigma(e_data, p_data):
+    x_points = numpy.arange(1.0, 5.0, 0.05)
 
-        photon_err.append(math.sqrt(p_val))
-        if p_val != 0:
-            photon_frac_err.append(math.sqrt(p_val) / p_val)
-        else:
-            photon_frac_err.append(0.0)
+    min_dedx = 0.1
+    max_dedx = 8.0
 
-    x = bin_edges + 0.5*binwidth
+    sigma = []
+    bins = [min_dedx, 2.0, max_dedx]
+    e_hist, junk = numpy.histogram(e_data, bins)
+    print e_hist[0]
+    print e_hist[1]
 
-    electron_data_norm, bin_edges = numpy.histogram(
-        electrons_df[branch_name], bins, density=True)
-    photon_data_norm, bin_edges = numpy.histogram(
-        photons_df[branch_name], bins, density=True)
+    for point in x_points:
+        bins = [min_dedx, point, max_dedx]
+        e_hist, junk = numpy.histogram(e_data, bins)
+        e_acc, e_rej = e_hist[0], e_hist[1]
+        e_acc /= float(e_acc + e_rej)
+        p_hist, junk = numpy.histogram(p_data, bins)
+        p_acc, p_rej = p_hist[0], p_hist[1]
+        p_acc /= float(p_acc + p_rej)
+        print "Cut at {}: {} eff., {} mis. ID".format(
+            point,
+            e_acc,
+            p_acc)
+        sigma.append(e_acc / math.sqrt(e_acc**2 + p_acc**2 + 0.001))
 
-    photon_data_norm *= binwidth
-    electron_data_norm *= binwidth
+    index, value = max(enumerate(sigma), key=operator.itemgetter(1))
 
-    # print electron_data
-    # # print photon_data
-    # print "N electrons: ", numpy.sum(electron_data)
-    # print "N photons: ", numpy.sum(photon_data)
-    # print electron_data_norm
+    fig, ax = plt.subplots()
+    plt.plot(x_points, sigma, label=r"$\frac{Sig.}{\sqrt{Bkg.^2 + Sig^2}}$")
+    ax.axvline(x_points[index], color='g', ls="--")
 
-    electron_err_norm = []
-    for e_val, frac_err in zip(electron_data_norm, electron_frac_err):
-        electron_err_norm.append(e_val*frac_err)
-
-    photon_err_norm = []
-    for p_val, frac_err in zip(photon_data_norm, photon_frac_err):
-        photon_err_norm.append(p_val*frac_err)
-
-    f2, ax2 = plt.subplots(figsize=(15, 8))
-    ax2.set_title("Electron Photon Separation, {}".format(plane), fontsize=30)
-    ax2.errorbar(x[:-1], electron_data_norm, xerr=binwidth*0.5,
-                 yerr=electron_err_norm, marker="o", label="Electrons", capsize=0, ls="none")
-    ax2.errorbar(x[:-1], photon_data_norm, xerr=binwidth*0.5,
-                 yerr=photon_err_norm, marker="o", label="Photons", capsize=0, color='r', ls="none")
-    plt.xlabel("dE/dx [MeV/cm]", fontsize=20)
-    plt.ylabel("Unit Normalized", fontsize=20)
-
-    plt.ylim([0, 0.75])
-
-    for tick in ax2.xaxis.get_major_ticks():
-        tick.label.set_fontsize(20)
-    for tick in ax2.yaxis.get_major_ticks():
-        tick.label.set_fontsize(0)
-
-    if cut > 0:
-        purity, eff_tuple = makeCut(electrons_df, photons_df, branch_name, cut)
-
-        # Now draw a line at the place that gives the best dEdx cut:
-
-        ax2.axvline(cut, linewidth=2, color='g', linestyle="--",
-                    label="Cut at {} MeV/cm".format(cut))
-        y_lims = ax2.get_ylim()
-        plt.text(6.05, y_lims[1]*0.6, "Electron Efficiency:", size=25,)
-        plt.text(11.95, y_lims[1]*0.6, "{:.2} +/- {:.2}".format(
-            1.0*eff_tuple[0][0], 1.0*eff_tuple[0][1]), size=25, horizontalalignment='right')
-        plt.text(6.05, y_lims[1]*0.5, "Photon Mis. ID:", size=25,)
-        plt.text(11.95, y_lims[1]*0.5, "{:.2} +/- {:.2}".format(
-            1.0*eff_tuple[1][0], 1.0*eff_tuple[1][1]), size=25, horizontalalignment='right')
-        if dist != -1.0:
-            plt.text(6.05, y_lims[1]*0.4, "Distance:", size=25)
-            plt.text(
-                11.95, y_lims[1]*0.4, "{:.3}".format(dist), size=25, horizontalalignment='right')
-    # if info is not None:
-    #     plt.text(6.05,0.405,info,size=18)
-
+    plt.xlabel("dE/dx [MeV/cm]")
     plt.legend(fontsize=25)
     plt.grid(True)
-    # # plt.show()
-    path = "/data_linux/dedx_plots/1D/"
-    name = "dedx_1D_"
-    if dist != -1.0:
-        name += "dist_study_{}_".format(dist)
-    if cut != -1.0:
-        name += "cut_{}_".format(cut)
-    plt.savefig(path + name + branch_name + ".png")
-    plt.close(f2)
+    # plt.savefig("/data_linux/dedx_plots/1D/sigma_dedx_1D_"+branch_name + ".png")
     plt.show()
+    # return sigma
+
 
 if __name__ == '__main__':
     main()

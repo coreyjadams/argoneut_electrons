@@ -9,7 +9,7 @@ class showerCalo(object):
 
     """interface to run a c++ script to analyse showers"""
 
-    def __init__(self, _file, calibrations, mc, producer="showerreco"):
+    def __init__(self, _file, calibrations,lifetimes, mc, producer="showerreco",select=False):
         super(showerCalo, self).__init__()
         self._file = _file
         self._calibrations_file = calibrations
@@ -21,6 +21,9 @@ class showerCalo(object):
         self._process.setProducer(producer)
 
         self._process.isMC(mc)
+
+        if select:
+            self._process.set_select_events(True)
 
         # read the calibrations file from pickle
         pf = open(self._calibrations_file, 'rb')
@@ -42,7 +45,24 @@ class showerCalo(object):
 
         self._process.setWireCorrections(_vector_corrections)
 
-    def run(self, n_events=-1):
+
+        # Need to set the lifetime corrections here
+        if lifetimes is not None:
+            pf = open(lifetimes, 'rb')
+            lifetimes_map = self._process.getLifetimes();
+
+            lifetime_calibrations = pickle.load(pf)
+
+            for run in lifetime_calibrations:
+                lifetimes_map[run] = lifetime_calibrations[run]
+
+            self._process.setLifetimes(lifetimes_map)
+        else:
+            lifetimes_map = self._process.getLifetimes();
+            lifetimes_map[1] = 750
+            self._process.setLifetimes(lifetimes_map)
+
+    def run(self, n_events=-1, n_skip=-1):
         larutil.LArUtilManager.Reconfigure(larlite.geo.kArgoNeuT)
 
         # Create ana_processor instance
@@ -64,7 +84,19 @@ class showerCalo(object):
         if n_events == -1:
             my_proc.run(0)
         else:
-            my_proc.run(0, n_events)
+            if n_skip == -1:
+                my_proc.run(0, n_events)
+            else:
+                my_proc.run(n_skip, n_events)
+
+    def getBestMedianVector(self):
+        return self._process.getShowerCalos().dEdx_best_median()
+
+    def getBestModmeanVector(self):
+        return self._process.getShowerCalos().dEdx_best_modmean()
+
+    def getBestLMAVector(self):
+        return self._process.getShowerCalos().dEdx_best_LMA()
 
     def getShowerCaloVector(self):
         return self._process.getShowerCalos()
@@ -119,11 +151,15 @@ def lite_samples():
     photon_data_file = "/data_linux/argoneut/dedx_files/photon_shower_reco.root"
 
     data_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_data_gapsFilled.pkl"
+    lifetime_file = '/data_linux/argoneut/calibration_files/lifetimes_data.pkl'
 
     electron_data_module = showerCalo(
-        electron_data_file, data_calibration_file, mc=False, producer="bootlegMatched")
+        electron_data_file, data_calibration_file, lifetime_file, mc=False, producer="bootlegMatched",select=True)
     photon_data_module = showerCalo(
-        photon_data_file, data_calibration_file, mc=False, producer="bootlegMatched")
+        photon_data_file, data_calibration_file, lifetime_file, mc=False, producer="bootlegMatched")
+
+
+
 
     electron_data_module.run()
     photon_data_module.run()
@@ -135,9 +171,9 @@ def lite_samples():
     sim_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_sim.pkl"
 
     electron_sim_module = showerCalo(
-        electron_sim_file, sim_calibration_file, mc=True, producer="showerreco")
+        electron_sim_file, sim_calibration_file,None, mc=True, producer="showerreco")
     photon_sim_module = showerCalo(
-        photon_sim_file, sim_calibration_file, mc=True, producer="showerreco")
+        photon_sim_file, sim_calibration_file,None, mc=True, producer="showerreco")
 
     electron_sim_module.run(1000)
     photon_sim_module.run(1000)
@@ -151,11 +187,12 @@ def full_samples():
     photon_data_file = "/data_linux/argoneut/dedx_files/photon_shower_reco.root"
 
     data_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_data_gapsFilled.pkl"
+    lifetime_file = '/data_linux/argoneut/calibration_files/lifetimes_data.pkl'
 
     electron_data_module = showerCalo(
-        electron_data_file, data_calibration_file, mc=False, producer="bootlegMatched")
+        electron_data_file, data_calibration_file,lifetime_file, mc=False, producer="bootlegMatched",select=True)
     photon_data_module = showerCalo(
-        photon_data_file, data_calibration_file, mc=False, producer="bootlegMatched")
+        photon_data_file, data_calibration_file,lifetime_file, mc=False, producer="bootlegMatched")
 
     electron_data_module.run()
     photon_data_module.run()
@@ -167,9 +204,9 @@ def full_samples():
     sim_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_sim.pkl"
 
     electron_sim_module = showerCalo(
-        electron_sim_file, sim_calibration_file, mc=True, producer="showerreco")
+        electron_sim_file, sim_calibration_file,None, mc=True, producer="showerreco")
     photon_sim_module = showerCalo(
-        photon_sim_file, sim_calibration_file, mc=True, producer="showerreco")
+        photon_sim_file, sim_calibration_file,None, mc=True, producer="showerreco")
 
     electron_sim_module.run()
     photon_sim_module.run()

@@ -132,7 +132,12 @@ public:
 
   wireCaloInfo getWireCaloInfo(int plane, int wire){return _wire_calo_info[plane][wire];}
 
+  void setLifetimes(std::map<int,int> _lts){_lifetimes = _lts;}
+  std::map<int,int> getLifetimes(){return _lifetimes;}
+
 protected:
+
+  std::map<int,int> _lifetimes;
 
   std::vector<double> _collection_dqdx_by_wire;
   std::vector<double> _collection_dedx_by_wire;

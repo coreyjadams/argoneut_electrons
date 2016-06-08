@@ -73,10 +73,10 @@ protected:
 
   void unwindVectors(larlite::event_hit * ev_hit, std::vector<size_t> & close_hit_indexes);
 
-  Point2D findClosestHit(std::vector<Hit2D> hit_vector,
-                         std::vector<unsigned int> hit_indexes,
-                         Point2D start_point);
-  
+  larutil::Point2D findClosestHit(std::vector<larutil::Hit2D> hit_vector,
+                                  std::vector<unsigned int> hit_indexes,
+                                  larutil::Point2D start_point);
+
   const larutil::Geometry * geom;
 
   ::cluster::CRUHelper _cru_helper;

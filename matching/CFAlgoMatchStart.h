@@ -54,7 +54,7 @@ public:
 
   void RequireThreePlanes(bool doit) { _require_3planes = doit; }
 
-  std::vector<Hit2D> GetClosestHits(const cluster::cluster_params & params,
+  std::vector<larutil::Hit2D> GetClosestHits(const cluster::cluster_params & params,
                                     larutil::PxPoint start,
                                     int n_hits, bool forward_only);
 

@@ -40,7 +40,7 @@ class dEdxShowerCaloMaker : public larlite::ana_base {
 public:
 
   /// Default constructor
-  dEdxShowerCaloMaker() { _name = "dEdxShowerCaloMaker"; _fout = 0;_select_events=false;}
+  dEdxShowerCaloMaker() { _name = "dEdxShowerCaloMaker"; _fout = 0; _select_events = false;}
 
   /// Default destructor
   virtual ~dEdxShowerCaloMaker() {}
@@ -71,19 +71,29 @@ public:
 
   const shower_collection & getShowerCalos() {return _shower_calo_vector;}
 
-  Point2D findClosestHit(std::vector<Hit2D> hit_vector,
-                         std::vector<unsigned int> hit_indexes,
-                         Point2D start_point);
+  larutil::Point2D findClosestHit(std::vector<larutil::Hit2D> hit_vector,
+                                  std::vector<unsigned int> hit_indexes,
+                                  larutil::Point2D start_point);
 
   bool keepEvent(int run, int event_no, int & best_plane);
 
   std::vector<unsigned int> hand_select_hits(int run, int event, int plane);
 
 
-  void set_select_events(bool b){_select_events = b;}
+  void set_select_events(bool b) {_select_events = b;}
+
+  void setLifetimes(std::map<int, int> _lts) {_lifetimes = _lts;}
+  std::map<int, int> getLifetimes() {return _lifetimes;}
+
+  bool isFiducial(const TVector3 & _point);
+  float BDTW(const TVector3 & start_point, const TVector3 & start_dir);
+
+  bool getTruedEdxVector(larlite::storage_manager * storage, std::vector<std::pair<double,double> > &);
 
 
 protected:
+
+  std::map<int, int> _lifetimes;
 
   bool _select_events;
 

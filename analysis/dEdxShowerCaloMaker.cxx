@@ -3,6 +3,9 @@
 
 #include "dEdxShowerCaloMaker.h"
 
+#include "DataFormat/mcshower.h"
+#include "DataFormat/simch.h"
+
 namespace argoana {
 
 bool dEdxShowerCaloMaker::initialize() {
@@ -13,6 +16,106 @@ bool dEdxShowerCaloMaker::initialize() {
 
   return true;
 }
+
+
+
+bool getTruedEdxVector(larlite::storage_manager * storage, std::vector<std::pair<double,double> > & _distance_and_E) {
+
+
+    // Get the simch data product:
+
+    auto ev_simch = storage->get_data<larlite::event_simch>("largeant");
+    auto ev_mcshower = storage->get_data<larlite::event_mcshower>("mcinfo");
+
+    if (! ev_simch || ev_simch->size() == 0) {
+        return false;
+    }
+
+
+    if (! ev_mcshower || ev_mcshower->size() == 0) {
+        return false;
+    }
+
+    // There should be only one mcshower:
+    if (ev_mcshower -> size() > 1) {
+        std::cerr << "Found too many mcshowers!" << std::endl;
+        exit(-1);
+    }
+
+    auto geomHelper = larutil::GeometryHelper::GetME();
+
+    auto mcshower = ev_mcshower->front();
+
+    // First step: determine the total deposited energy in this event
+
+    double depE = mcshower.DetProfile().E();
+
+    // get the start point and start direction, because we'll be using those
+    // to construct the "true" dE/dx.
+
+    TVector3 startPoint = mcshower.DetProfile().Position().Vect();
+    TVector3 startDir   = mcshower.DetProfile().Momentum().Vect();
+    startDir *= 1.0 / startDir.Mag();
+
+
+    // We'll go for up to 20cm in dE/dx calculations.
+    // Update the cumulative dE/dx
+
+    _distance_and_E.clear();
+
+
+    // Compare to the total energy deposited in the simch info:
+    double simch_depE = 0.0;
+    for (auto & simid : * ev_simch) {
+        if (simid.Channel() < 240)
+            continue;
+        auto const& all_ide = simid.TrackIDsAndEnergies(0, 2040);
+
+        for (auto const& ide : all_ide) {
+
+            // We need to check if this deposition is within the cylinder defined.
+
+            // Really, that can be most easily translated into the required metrics
+            // by knowing how far along the direction it is from the start point, as well
+            // as the perpendicular distance.
+
+            TVector3 thisPoint(ide.x, ide.y, ide.z);
+
+            double forward_distance
+                = geomHelper -> DistanceAlongLine3D(startPoint, startDir, thisPoint);
+            double perpendicular_distance
+                = geomHelper -> DistanceToLine3D(startPoint, startDir, thisPoint);
+
+            if (perpendicular_distance > 1 ) {
+                continue;
+            }
+
+            if (forward_distance < 20 && forward_distance > 0) {
+                _distance_and_E.push_back(std::make_pair(forward_distance, ide.energy));
+            }
+
+            // std::cout << "3dpoint : [" << ide.x << ", " << ide.y << ", " << ide.z << "]" << std::endl;
+            // _data.push_back( SimChannel3D(ide.x, ide.y, ide.z) );
+            simch_depE += ide.energy;
+        }
+    }
+
+    std::sort(_distance_and_E.begin(), _distance_and_E.end(), ::sort_first());
+
+
+
+    // std::cout << "Event " << ev_simch -> event_id() << std::endl;
+    // std::cout << "  Mcshower reports " << depE << std::endl;
+    // std::cout << "  simch reports " << simch_depE << std::endl;
+
+    // for (auto & pair : _distance_and_E) {
+    //     std::cout << "    Distance " << pair.first << ", E " << pair.second << std::endl;
+    // }
+
+
+    return true;
+}
+
 
 bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
 
@@ -59,7 +162,20 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
   const double recombFactor = LArProp->ModBoxCorrection(_mip_q) / _mip_q;
   // std::cout << "Recomb factor: " << recombFactor << std::endl;
 
-  double _tau = LArProp->ElectronLifetime();
+  int lifetime = 0;
+  if (!_is_mc) {
+    if ( _lifetimes.find(ev_pfpart->run()) != _lifetimes.end() ) {
+      lifetime = _lifetimes[ev_pfpart->run()];
+    } else {
+      std::cout << "Skipping run " << ev_pfpart->run() << ", couldn't find the lifetime" << std::endl;
+      return false;
+    }
+  }
+  else {
+    lifetime = 750;
+  }
+
+
   double timetick = detprop->SamplingRate() * 1.e-3;
 
   // std::cout << "Run " << run << " event " << event << "." << std::endl;
@@ -81,7 +197,15 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
       return false;
     }
 
+    // if (!_is_mc) {
+    //   if (! isFiducial(startpoint)) {
+    //     return false;
+    //   }
 
+    //   if (BDTW(startpoint, startDir) < 15.0) {
+    //     return false;
+    //   }
+    // }
     std::vector<protoshower::ProtoShower> ps_vec;
     ps_helper.GenerateProtoShowers(storage, ev_pfpart->name(), ps_vec);
 
@@ -107,6 +231,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     // Get the run and event number:
     this_calo._run = ev_pfpart->run();
     this_calo._event = ev_pfpart->event_id();
+    this_calo._file_index = storage->get_index();
 
     int best_plane = 1;
     this_calo._best_plane = best_plane;
@@ -157,8 +282,8 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
       dist = sqrt(dist);
 
 
-      Hit2D averagePoint;
-      Hit2D startingHit;
+      larutil::Hit2D averagePoint;
+      larutil::Hit2D startingHit;
       startingHit.w = startingPoint.w;
       startingHit.t = startingPoint.t;
 
@@ -188,7 +313,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
       /*
 
       // auto startingPoint = geomHelper->Point_3Dto2D(_other_vertex, _params.plane_id.Plane);
-      // Hit2D startingHit;
+      // larutil::Hit2D startingHit;
       // startingHit.w = startingPoint.w;
       // startingHit.t = startingPoint.t;
 
@@ -196,7 +321,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
       // slope /= startingHit.w - _params.mean_x;
 
 
-      // Hit2D averagePoint;
+      // larutil::Hit2D averagePoint;
 
       // std::vector<unsigned int> _close_hit_indexes =
       //   geomHelper -> SelectLocalPointList( _params.hit_vector,
@@ -232,10 +357,15 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
           // Lifetime correction needs to use the time tick:
           double tick = (hit.t + 0.6) / (geomHelper->TimeToCm())
                         + detprop -> TriggerOffset();
-          double lifetime_corr = exp(tick * timetick / _tau);
+          double lifetime_corr = exp(tick * timetick / lifetime);
           double _wire_temp = (hit.w) / geomHelper->WireToCm();
           int wire = _wire_temp + 0.1;
-          double dqdx = (dq * lifetime_corr * _calorimetry_corrections[0][wire]) / pitch;
+          double dqdx = 0;
+          if (!_is_mc)
+            dqdx = (dq * lifetime_corr  * _calorimetry_corrections[0][wire]) / pitch;
+          else
+            dqdx = (dq * lifetime_corr * _calorimetry_corrections[0][wire]) / pitch;
+
           double dedx = recombFactor * dqdx;
           if (dedx > 8.0) {
             continue;
@@ -267,10 +397,15 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
           // Lifetime correction needs to use the time tick:
           double tick = (hit.t + 0.2) / (geomHelper->TimeToCm())
                         + detprop -> TriggerOffset();
-          double lifetime_corr = exp(tick * timetick / _tau);
+          double lifetime_corr = exp(tick * timetick / lifetime);
           double _wire_temp = (hit.w) / geomHelper->WireToCm();
           int wire = _wire_temp + 0.1;
-          double dqdx = (dq * lifetime_corr * _calorimetry_corrections[1][wire]) / pitch;
+          double dqdx = 0;
+          if (!_is_mc)
+            dqdx = (dq * lifetime_corr  * _calorimetry_corrections[1][wire]) / pitch;
+          else
+            dqdx = (dq * lifetime_corr * _calorimetry_corrections[1][wire]) / pitch;
+
           double dedx = recombFactor * dqdx;
           if (dedx > 8.0) {
             continue;
@@ -299,11 +434,13 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     // if (this_calo._induction_dist < 0.5) {
     //   return false;
     // }
-    // if (this_calo.dEdx_meta_err(0) / this_calo.dEdx_meta(0) > 0.3) {
-    //   return false;
-    // }
-    // if (this_calo.dEdx_meta_err(1) / this_calo.dEdx_meta(1) > 0.3) {
-    //   return false;
+    // if (_is_mc || !_select_events) {
+    //   if (this_calo.dEdx_meta_err(0) / this_calo.dEdx_meta(0) > 0.3) {
+    //     return false;
+    //   }
+    //   if (this_calo.dEdx_meta_err(1) / this_calo.dEdx_meta(1) > 0.3) {
+    //     return false;
+    //   }
     // }
 
     // if ( fabs(this_calo.dEdx_meta(0) - this_calo.dEdx_meta(1)) > 1.5 ) {
@@ -335,9 +472,9 @@ double dEdxShowerCaloMaker::getPitch(const TVector3 & dir3D, int pl ) {
 
 
 
-Point2D dEdxShowerCaloMaker::findClosestHit(std::vector<Hit2D> hit_vector,
+larutil::Point2D dEdxShowerCaloMaker::findClosestHit(std::vector<larutil::Hit2D> hit_vector,
     std::vector<unsigned int> hit_indexes,
-    Point2D start_point) {
+    larutil::Point2D start_point) {
 
   float shortest_dist = 999;
   size_t shortest_index = 0;
@@ -351,7 +488,7 @@ Point2D dEdxShowerCaloMaker::findClosestHit(std::vector<Hit2D> hit_vector,
     }
   }
 
-  Point2D returnP;
+  larutil::Point2D returnP;
   returnP.w = hit_vector.at(shortest_index).w;
   returnP.t = hit_vector.at(shortest_index).t;
   return returnP;
@@ -362,47 +499,142 @@ bool dEdxShowerCaloMaker::finalize() {
 
 
   return true;
+
 }
 
+float dEdxShowerCaloMaker::BDTW(const TVector3 & start_point, const TVector3 & start_dir) {
+
+  if (!isFiducial(start_point)) {
+    std::cout << "Failed the isFiducial cut!\n";
+    return 0;
+  }
+  TVector3 unitDir = -start_dir.Unit();
+
+  double alpha = 10;
+  double alpha_prev = 0;
+  bool finished = false;
+  double precision = 0.01;
+
+  while (!finished) {
+
+    // std::cout << "Current pos is ("
+    //           << (start_point + unitDir*alpha).X() << ", "
+    //           << (start_point + unitDir*alpha).Y() << ", "
+    //           << (start_point + unitDir*alpha).Z() << ")\n";
+
+    // done when the steps are less than precision:
+    if (fabs(alpha - alpha_prev) < precision) {
+      finished = true;
+      break;
+    }
+
+    if (alpha > alpha_prev) {
+      // if the point at alpha is active, take another step of the same length
+      if (isFiducial(start_point + unitDir * alpha)) {
+        double step = alpha - alpha_prev;
+        alpha_prev = alpha;
+        alpha += step;
+        continue;
+      }
+      // if it's not active, step backwards half a step
+      else {
+        double step = 0.5 * (alpha - alpha_prev);
+        alpha_prev = alpha;
+        alpha -= step;
+        continue;
+      }
+    }
+    else {
+      // this means that we've gone too far and are stepping backwards.
+      // if the point at alpha is not active, take another step of the same length
+      if (!isFiducial(start_point + unitDir * alpha)) {
+        double step = alpha_prev - alpha;
+        alpha_prev = alpha;
+        alpha -= step;
+        continue;
+      }
+      else {
+        // else we're moving backwards but have crossed the boundary again.
+        double step = 0.5 * (alpha_prev - alpha);
+        alpha_prev = alpha;
+        alpha += step;
+        continue;
+      }
+    }
+
+  }
+
+  return alpha;
+
+}
+
+
+bool dEdxShowerCaloMaker::isFiducial(const TVector3 & _point) {
+  auto geom = larutil::Geometry::GetME();
+  auto detp = larutil::DetectorProperties::GetME();
+  // Check against the 3 coordinates:
+  float _x_cut = 0.0;
+  float _y_cut = 0.0;
+  float _z_cut = 0.0;
+  if (_point.X() > 2 * geom -> DetHalfWidth() - _x_cut ||
+      _point.X() < 0 + _x_cut)
+  {
+    return false;
+  }
+  if (_point.Y() > geom -> DetHalfHeight() - _y_cut ||
+      _point.Y() < - geom -> DetHalfHeight() + _y_cut )
+  {
+    return false;
+  }
+  if (_point.Z() > geom -> DetLength() - _z_cut ||
+      _point.Z() < 0.0 + _z_cut)
+  {
+    return false;
+  }
+  return true;
+}
+
+/*
 // This is god-mode:
-// bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
+bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
 
-//   if (run == 775 && event == 8598) {
-//     return true;
-//   }
-//   if (run == 650 && event == 11366) {
-//     return true;
-//   }
-//   if (run == 787 && event == 35240) {
-//     return true;
-//   }
-//   if (run == 661 && event == 30777) {
-//     return true;
-//   }
-//   if (run == 799 && event == 22141) {
-//     return true;
-//   }
-//   if (run == 827 && event == 29437) {
-//     return true;
-//   }
-//   if (run == 738 && event == 3028) {
-//     return true;
-//   }
-//   if (run == 738 && event == 31324) {
-//     return true;
-//   }
-//   if (run == 622 && event == 2738) {
-//     return true;
-//   }
-//   if (run == 761 && event == 24948) {
-//     return true;
-//   }
-//   if (run == 765 && event == 19905) {
-//     return true;
-//   }
+  if (run == 775 && event == 8598) {
+    return true;
+  }
+  if (run == 650 && event == 11366) {
+    return true;
+  }
+  if (run == 787 && event == 35240) {
+    return true;
+  }
+  if (run == 661 && event == 30777) {
+    return true;
+  }
+  if (run == 799 && event == 22141) {
+    return true;
+  }
+  if (run == 827 && event == 29437) {
+    return true;
+  }
+  if (run == 738 && event == 3028) {
+    return true;
+  }
+  if (run == 738 && event == 31324) {
+    return true;
+  }
+  if (run == 622 && event == 2738) {
+    return true;
+  }
+  if (run == 761 && event == 24948) {
+    return true;
+  }
+  if (run == 765 && event == 19905) {
+    return true;
+  }
 
-//   return false;
-// }
+  return false;
+}
+*/
 
 bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
 
@@ -482,6 +714,7 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
     return true;
   }
   if (run == 720 && event == 34843) {
+    best_plane = 0;
     return true;
   }
   if (run == 720 && event == 4063) {
@@ -496,10 +729,10 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
     best_plane = 0;
     return true;
   }
-  if (run ==   724 && event == 21713) {
-    best_plane = 0;
-    return true;
-  }
+  // if (run ==   724 && event == 21713) {
+  //   best_plane = 0;
+  //   return true;
+  // }
   if (run == 724 && event == 22877) {
     best_plane = 0;
     return true;
@@ -527,6 +760,7 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
     return true;
   }
   if (run == 629 && event == 25898) {
+    best_plane = 0;
     return true;
   }
   if (run == 761 && event == 24948) {
@@ -547,28 +781,29 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
 
 }
 
+
 std::vector<unsigned int> dEdxShowerCaloMaker::hand_select_hits(int run, int event, int plane) {
   std::vector<unsigned int> _hit_indexes;
-  
+
 
   if (run == 770 && event == 15857 && plane == 1) {
-    _hit_indexes = {1,2,3,4,5};
+    _hit_indexes = {1, 2, 3, 4, 5};
   }
   if (run == 772 && event == 26010 && plane == 1) {
-    _hit_indexes = {1,2,3};
+    _hit_indexes = {1, 2, 3};
   }
   if (run == 775 && event == 25633 && plane == 1) {
   }
   if (run == 775 && event == 8598 && plane == 1) {
   }
   if (run == 650 && event == 11366 && plane == 1) {
-    _hit_indexes = {1,2,3,4,5};
+    _hit_indexes = {1, 2, 3, 4, 5};
   }
   if (run == 653 && event == 7810 && plane == 1) {
-    _hit_indexes = {1,2,3,4,5,6,7};
+    _hit_indexes = {1, 2, 3, 4, 5, 6, 7};
   }
   if (run == 783 && event == 33971 && plane == 0) {
-    _hit_indexes = {0,1,2,3};
+    _hit_indexes = {0, 1, 2, 3};
   }
   if (run == 787 && event == 19854) {
   }
@@ -583,7 +818,7 @@ std::vector<unsigned int> dEdxShowerCaloMaker::hand_select_hits(int run, int eve
   if (run == 673 && event == 26021) {
   }
   if (run == 674 && event == 15897 && plane == 0) {
-    _hit_indexes = {0,1,2}
+    _hit_indexes = {0, 1, 2};
   }
   // if (run == 677 && event == 20169) {
   // }
@@ -606,7 +841,8 @@ std::vector<unsigned int> dEdxShowerCaloMaker::hand_select_hits(int run, int eve
   }
   if (run == 847 && event == 11704) {
   }
-  if (run == 720 && event == 34843) {
+  if (run == 720 && event == 34843 && plane == 0) {
+    _hit_indexes = {1, 2, 3, 4, 5, 6};
   }
   if (run == 720 && event == 4063) {
     // best_plane = 0;
@@ -614,12 +850,13 @@ std::vector<unsigned int> dEdxShowerCaloMaker::hand_select_hits(int run, int eve
   if (run == 721 && event == 39873) {
     // best_plane = 0;
   }
-  if (run ==   724 && event == 13980) {
+  if (run ==   724 && event == 13980 && plane == 0) {
+    _hit_indexes = {0, 1, 2};
     // best_plane = 0;
   }
-  if (run ==   724 && event == 21713) {
-    // best_plane = 0;
-  }
+  // if (run ==   724 && event == 21713) {
+  //   // best_plane = 0;
+  // }
   if (run == 724 && event == 22877) {
     // best_plane = 0;
   }
@@ -633,7 +870,8 @@ std::vector<unsigned int> dEdxShowerCaloMaker::hand_select_hits(int run, int eve
   }
   if (run == 622 && event == 2738) {
   }
-  if (run ==   627 && event == 895) {
+  if (run ==   627 && event == 895 && plane == 0) {
+    _hit_indexes = {0, 4, 5, 6, 7};
     // best_plane = 0;
   }
   if (run == 629 && event == 32812) {
@@ -648,7 +886,7 @@ std::vector<unsigned int> dEdxShowerCaloMaker::hand_select_hits(int run, int eve
     // best_plane = 0;
   }
   if (run == 765 && event == 19905) {
-  }  
+  }
 
   return _hit_indexes;
 }

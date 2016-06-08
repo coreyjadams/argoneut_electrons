@@ -235,7 +235,7 @@ bool LineIntersectionVertexer::finalize() {
 }
 
 
-Point2D LineIntersectionVertexer::IntersectionPoint(
+larutil::Point2D LineIntersectionVertexer::IntersectionPoint(
   cluster::cluster_params & clust1,
   cluster::cluster_params & clust2) {
 
@@ -245,7 +245,7 @@ Point2D LineIntersectionVertexer::IntersectionPoint(
   // -tutorials/geometry-concepts-line-intersection-and-its-applications/
   //
 
-  Point2D returnPoint(clust1.plane_id.Plane,
+  larutil::Point2D returnPoint(clust1.plane_id.Plane,
                       std::numeric_limits<double>::max(),
                       std::numeric_limits<double>::max());
 
@@ -292,7 +292,7 @@ Point2D LineIntersectionVertexer::IntersectionPoint(
 
 }
 
-bool LineIntersectionVertexer::isInPlane(Point2D & point, unsigned int plane) {
+bool LineIntersectionVertexer::isInPlane(larutil::Point2D & point, unsigned int plane) {
 
   // Check the wire coordinate:
   if (point.w < boundaries.at(plane).x_min ||

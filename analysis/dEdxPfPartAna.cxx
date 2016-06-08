@@ -33,7 +33,7 @@ bool dEdxPfPartAna::initialize() {
         tree->Branch("run", &run);
         tree->Branch("event", &event);
         tree->Branch("axis3D", &fDCosStart);
-        tree->Branch("displacement",&displacement);
+        tree->Branch("displacement", &displacement);
 
         tree->Branch("c_hittimes", &collection_hittimes);
         tree->Branch("c_hitwires", &collection_hitwires);
@@ -63,8 +63,8 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
     // Clear out all the data:
 
 
-    // Get the endpoint2ds:
-    // auto ev_endpoint = storage -> get_data<larlite::event_endpoint2d>("bootleg");
+    // Get the endlarutil::point2ds:
+    // auto ev_endpoint = storage -> get_data<larlite::event_endlarutil::point2d>("bootleg");
 
 
     // Get the pfparticles
@@ -76,7 +76,7 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
 
     // Get the showers associated with the clusters
     larlite::event_shower * ev_shower = nullptr;
-    auto shower_ass = storage -> find_one_ass(ev_pfpart->id(),ev_shower,ev_pfpart->name());
+    auto shower_ass = storage -> find_one_ass(ev_pfpart->id(), ev_shower, ev_pfpart->name());
 
     // larlite::event_vertex * ev_vertex = nullptr;
     // auto vertex_ass = storage -> find_one_ass(ev_pfpart->id(), ev_vertex, ev_pfpart->name());
@@ -171,14 +171,14 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         double xyz[3];
         vertex.XYZ(xyz);
         auto coll_start_point = geoHelper->Point_3Dto2D(xyz, _params_v.at(coll_clust_index).plane_id.Plane);
-        Hit2D startingHit;
+        larutil::Hit2D startingHit;
         startingHit.w = coll_start_point.w;
         startingHit.t = coll_start_point.t;
 
         float slope = coll_start_point.t - _params_v.at(coll_clust_index).mean_y;
         slope /= coll_start_point.w - _params_v.at(coll_clust_index).mean_x;
 
-        Hit2D averagePoint;
+        larutil::Hit2D averagePoint;
 
 
         std::vector<unsigned int> coll_close_hit_indexes =
@@ -236,9 +236,9 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
         TVector3 startDir = shower.Direction();
 
         // Calculate the displacement:
-        displacement = pow(xyz[0] - shower.ShowerStart().X(),2);
-        displacement += pow(xyz[1] - shower.ShowerStart().Y(),2);
-        displacement += pow(xyz[2] - shower.ShowerStart().Z(),2);
+        displacement = pow(xyz[0] - shower.ShowerStart().X(), 2);
+        displacement += pow(xyz[1] - shower.ShowerStart().Y(), 2);
+        displacement += pow(xyz[2] - shower.ShowerStart().Z(), 2);
         displacement = sqrt(displacement);
 
         // std::cout << "Slope is " << slope << std::endl;
@@ -305,9 +305,9 @@ bool dEdxPfPartAna::analyze(larlite::storage_manager* storage) {
     return true;
 }
 
-Point2D dEdxPfPartAna::findClosestHit(std::vector<Hit2D> hit_vector,
-                                      std::vector<unsigned int> hit_indexes,
-                                      Point2D start_point) {
+larutil::Point2D dEdxPfPartAna::findClosestHit(std::vector<larutil::Hit2D> hit_vector,
+        std::vector<unsigned int> hit_indexes,
+        larutil::Point2D start_point) {
 
     float shortest_dist = 999;
     size_t shortest_index = 0;
@@ -321,7 +321,7 @@ Point2D dEdxPfPartAna::findClosestHit(std::vector<Hit2D> hit_vector,
         }
     }
 
-    Point2D returnP;
+    larutil::Point2D returnP;
     returnP.w = hit_vector.at(shortest_index).w;
     returnP.t = hit_vector.at(shortest_index).t;
     return returnP;

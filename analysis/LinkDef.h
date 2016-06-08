@@ -15,8 +15,10 @@
 // #pragma link C++ class larlite::dEdxShowerAna+;
 #pragma link C++ class ShowerCalo+;
 #pragma link C++ class argoana::dEdxShowerCaloMaker+;
+#pragma link C++ class larlite::truedEdxAna+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 

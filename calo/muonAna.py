@@ -50,7 +50,7 @@ def runCaloMuons(wire_calibrations, f):
         for wire in wire_calibrations[plane]:
             # print "({},{}): {:.2f}".format(plane,wire,
             # wire_calibrations[plane][wire])
-            _vector_corrections[plane][wire] = wire_calibrations[plane][wire]
+            _vector_corrections[plane][wire] = 1.025*wire_calibrations[plane][wire]
 
     caloAlg.setWireCorrections(_vector_corrections)
 

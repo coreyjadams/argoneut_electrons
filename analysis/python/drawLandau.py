@@ -32,8 +32,9 @@ def double_gauss_landau(x_points,
 
 def electronFit(electron_data, binwidth, electron_sim=None):
 
-    bins = np.arange(0, 8.0+binwidth, binwidth)
+    bins = np.arange(binwidth, 8+binwidth, binwidth)
     data, bin_edges = np.histogram(electron_data, bins)
+
 
     err = []
     for point in data:
@@ -46,14 +47,16 @@ def electronFit(electron_data, binwidth, electron_sim=None):
 
     err *= data
 
-    bin_centers = bins[:-1] + 0.5*binwidth
+    bin_centers = 0.5*(bin_edges[1:] + bin_edges[:-1])
+
+
 
     x_fit = np.arange(0, 8, 0.25*binwidth)
-
+    x_fit += 0.5*0.25*binwidth
 
     popt, pcov = opt.curve_fit(
-        landau.gauss_landau, bin_centers, data, bounds=([0,0,0.1,0], [10, 10, 10, 10]))
-    y_fit = landau.gauss_landau(x_fit, popt[0], popt[1], popt[2], 1)
+        landau.gauss_landau, bin_centers, data, bounds=([0,0,0,0], [10, 10, 10, 10]))
+    y_fit = landau.gauss_landau(x_fit, popt[0], popt[1], popt[2],popt[3])
     textstring = "Landau MPV: {:.3}\n".format(popt[0])
     textstring += "Landau $\sigma$: {:.3}\n".format(popt[1])
     textstring += "Gauss $\sigma$: {:.3}\n".format(popt[2])
@@ -82,13 +85,20 @@ def electronFit(electron_data, binwidth, electron_sim=None):
     # Draw the simulation if it's available:
     if electron_sim is not None:
 
+        bins = np.arange(binwidth, 8.0+binwidth, binwidth)
+
         sim, bin_edges = np.histogram(electron_sim, bins,density=True)
+        bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
 
         # for i in xrange(len(sim)):
         #     print "[{:.2} - {:.2}]: {:.3}".format(
         #         bin_edges[i], bin_edges[i+1], sim[i])
-        ax.plot(bin_edges[1:], sim, color="b",
+        ax.plot(bin_centers+0.5*binwidth, sim, color="b",
              ls="steps", label="Simulated Electrons")
+        # ax.bar(bin_centers, sim,align="center",width=binwidth,color=(1.0,1.0,1.0))
+        
+        # ax.plot(bin_centers, sim, color="b",
+             # marker="x",ls="")
 
 
     plt.xlabel("dE/dx [MeV/cm]")
@@ -159,24 +169,23 @@ def photonFit(photon_data, binwidth,photon_sim=None):
     ax.errorbar(bin_centers, data, yerr=err, xerr=binwidth*0.5,
                 label="Collection Hits", capsize=0,ls="none",marker="o",color='r')
     # ax.errorbar(bin_centers, i_data, yerr=i_err, xerr=binwidth*0.5, label="Induction Hits",capsize=0)
-    ax.set_title("Electron dE/dx Hits")
+    ax.set_title("Photon dE/dx Hits")
 
     plt.plot(x_fit, y_fit, label="Fitted landau",color='g')
     y_lim = ax.get_ylim()
     # plt.ylim([0, 0.6])
 
-    props = dict(boxstyle='round', facecolor='wheat', alpha=1.0)
-    ax.text(5, 0.45*y_lim[1], textstring, bbox=props, fontsize=20)
+    # props = dict(boxstyle='round', facecolor='wheat', alpha=1.0)
+    # ax.text(5, 0.45*y_lim[1], textstring, bbox=props, fontsize=20)
 
     # Draw the simulation if it's available:
     if photon_sim is not None:
 
         sim, bin_edges = np.histogram(photon_sim, bins,density=True)
 
-        # for i in xrange(len(sim)):
-        #     print "[{:.2} - {:.2}]: {:.3}".format(
-        #         bin_edges[i], bin_edges[i+1], sim[i])
-        ax.plot(bin_edges[1:], sim, color="r",
+        bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
+
+        ax.plot(bin_centers+0.5*binwidth, sim, color="r",
              ls="steps", label="Simulated Photons")
 
 
@@ -190,16 +199,16 @@ def photonFit(photon_data, binwidth,photon_sim=None):
 
 
 
-(e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
-# (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+# (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+(e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
 
 e_data.getShowerCaloVector().set_drop_first_hit(True)
 
-hits = e_data.getShowerCaloVector().all_dedx_hits_box(1)
+hits = e_data.getShowerCaloVector().best_dedx_hits_box()
 sim_hits = e_sim.getShowerCaloVector().all_dedx_hits_box(1)
-binwidth = 0.2
+binwidth = 0.3
 
-electronFit(hits,binwidth,sim_hits)
+# electronFit(hits,binwidth,sim_hits)
 
 
 hits = p_data.getShowerCaloVector().all_dedx_hits_box(1)

@@ -46,6 +46,21 @@ def runCaloMuons(amp_q_constants, area_q_constants, amp_e_constants, area_e_cons
     caloAlg.setAmpEConstant(amp_e_constants[0], 0)
     caloAlg.setAmpEConstant(amp_e_constants[1], 1)
 
+    # Need to set the lifetime corrections here
+    lifetimes = caloAlg.getLifetimes();
+    # This is for data:
+    # pf = open('/data_linux/argoneut/calibration_files/lifetimes_data.pkl', 'rb')
+
+    # lifetime_calibrations = pickle.load(pf)
+
+    # for run in lifetime_calibrations:
+    #     lifetimes[run] = lifetime_calibrations[run]
+
+    # This is for mc:
+    lifetimes[1] = 750
+
+    caloAlg.setLifetimes(lifetimes)
+
     my_proc.add_process(caloAlg)
 
     # Let's run it.
@@ -116,7 +131,7 @@ def fitWireData(caloAlg, plane, wire):
     # plt.show()
 
     file_name = "xing_muons_dedx_fit_plane{}_wire{}.png".format(plane,wire)
-    file_path = "/data_linux/argoneut/dedx_plots/xing_muon_calibration_sim/wires/"
+    file_path = "/data_linux/argoneut/dedx_plots/xing_muon_calibration_data/wires/"
     plt.savefig(file_path+file_name)
     plt.close(fig)
     return scale
@@ -156,6 +171,7 @@ if __name__ == '__main__':
     # plane = 1
     # wire = 101
     for plane in [0,1]:
+        # for wire in [30,65]:
         for wire in xrange(240):
             print "On plane {}, wire {}".format(plane,wire)
             scale = fitWireData(caloAlg,plane,wire)
@@ -167,7 +183,8 @@ if __name__ == '__main__':
             wireCorrections[plane].update({wire:total_correction})
 
 
-    # print wireCorrections
+
+    print wireCorrections
     output = open("wireByWireCorrections_sim.pkl",'wb')
     pickle.dump(wireCorrections,output)
 

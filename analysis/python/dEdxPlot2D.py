@@ -28,25 +28,86 @@ def main():
     # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
     (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
 
-    e_data.getShowerCaloVector().set_drop_first_hit(True)
+    # e_data.getShowerCaloVector().set_drop_first_hit(True)
 
     # e_sim_energy_vs_dedx(e_sim)
     # p_sim_energy_vs_dedx(p_sim)
 
     data_collection_vs_induction(e_data,p_data)
-    sim_collection_vs_induction(e_sim,p_sim)
+    # sim_collection_vs_induction(e_sim,p_sim)
+
+    # pitch_vs_angular_resolution(e_sim)
+    # pitch_vs_angular_resolution(p_sim)
+
+
+def pitch_vs_angular_resolution(e_sim):
+
+    # Build the electron data set:
+    electronDataSet = \
+      dataSet(e_sim.getShowerCaloVector().pitch(1),
+              e_sim.getShowerCaloVector().mc_3D_angle_resolution(),
+              None,
+              None,
+              "Electron Simulation",
+              marker="o",
+              color="b")
+
+    pitch_bins = numpy.arange(0.1, 2.0, 0.025)
+    angle_bins = numpy.arange(0.0, 20.0, 0.25)
+
+    x_label = "Collection pitch [cm]"
+    y_label = "Angular Resolution [deg.]"
+
+    dEdxCorrelationHist(electronDataSet,
+                        pitch_bins,
+                        angle_bins,
+                        x_label,
+                        y_label)
+
+
+
+def dist_vs_dedx(e_data, p_data):
+
+    # Build the electron data set:
+    electronDataSet = dataSet(e_data.getShowerCaloVector().distance(0),
+                              e_data.getMetaVector(0),
+                              None,
+                              None,
+                              "Electron Data",
+                              marker="o",
+                              color="b")
+
+    photonDataSet = dataSet(p_data.getShowerCaloVector().distance(0),
+                            p_data.getMetaVector(0),
+                            None,
+                            None,
+                            "Photon Data",
+                            marker="x",
+                            color="r")
+
+    dedx_bins = numpy.arange(0.1, 8.0, 0.2)
+    distance_bins = numpy.arange(0.0, 6.0, 0.25)
+    x_label = "Induction Distance [cm]"
+    y_label = "Induction dE/dx [MeV/cm]"
+
+    dEdxCorrelation([photonDataSet, electronDataSet],
+                    distance_bins,
+                    dedx_bins,
+                    x_label,
+                    y_label)
 
 
 def dedx_vs_angular_resolution(e_sim):
 
     # Build the electron data set:
     electronDataSet = dataSet(e_sim.getMetaVector(1),
-                              e_sim.getShowerCaloVector().mc_3D_angle_resolution(),
-                              None,
-                              None,
-                              "Electron Simulation",
-                              marker="o",
-                              color="b")
+                              e_sim.getShowerCaloVector(
+    ).mc_3D_angle_resolution(),
+        None,
+        None,
+        "Electron Simulation",
+        marker="o",
+        color="b")
 
     dedx_bins = numpy.arange(0.1, 8.0, 0.2)
     angle_bins = numpy.arange(0.0, 20.0, 0.25)
@@ -59,6 +120,7 @@ def dedx_vs_angular_resolution(e_sim):
                         angle_bins,
                         x_label,
                         y_label)
+
 
 def e_sim_energy_vs_dedx(e_sim):
 

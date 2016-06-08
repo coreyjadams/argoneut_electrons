@@ -125,14 +125,14 @@ bool ShowerSPS::analyze(larlite::storage_manager* storage) {
       double xyz[3];
       vertex.XYZ(xyz);
       auto target_point = geoHelper->Point_3Dto2D(xyz, _params_v.at(i_clust).plane_id.Plane);
-      Hit2D startingHit;
+      larutil::Hit2D startingHit;
       startingHit.w = target_point.w;
       startingHit.t = target_point.t;
 
       float slope = target_point.t - _params_v.at(i_clust).mean_y;
       slope /= target_point.w - _params_v.at(i_clust).mean_x;
 
-      Hit2D averagePoint;
+      larutil::Hit2D averagePoint;
 
 
       std::vector<unsigned int> close_hit_indexes =

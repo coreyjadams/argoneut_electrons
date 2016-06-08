@@ -110,6 +110,49 @@ double ShowerCalo::dEdx_modmean(int plane) {
 
 }
 
+
+double ShowerCalo::dEdx_mean(int plane) {
+  // Loop over the dE/dx points in the specified plane and compute the dE/dx using the median method
+
+  std::vector<double> * cands = 0;
+  std::vector<double> * dists = 0;
+  if (plane == 0) {
+    cands = & _induction_dedx;
+    dists = & _induction_dist_3D;
+  }
+  else if (plane == 1) {
+    cands = & _collection_dedx;
+    dists = & _collection_dist_3D;
+  }
+
+  std::vector<double> points_within_dist;
+  for (size_t i = 0; i < cands->size(); i++) {
+    if (dists->at(i) > 0 && dists->at(i) < dedx_dist_max) {
+      points_within_dist.push_back(cands->at(i));
+    }
+  }
+
+  if (points_within_dist.size() == 0) {
+    return 0.0;
+  }
+
+  if (_drop_first_hit) {
+    points_within_dist.erase(points_within_dist.begin());
+  }
+
+  // Get the mean:
+  double sum = std::accumulate(points_within_dist.begin(),
+                               points_within_dist.end(),
+                               0.0);
+
+  if (points_within_dist.size() != 0) {
+    return sum / points_within_dist.size();
+  }
+
+  return 0;
+
+}
+
 double ShowerCalo::dEdx_LMA(int plane) {
   std::vector<double> * cands;
   if (plane == 0) {
@@ -147,17 +190,7 @@ double ShowerCalo::dEdx_LMA(int plane) {
 
 }
 
-struct sort_first {
-  bool operator()(const std::pair<int, int> &left, const std::pair<int, int> &right) {
-    return left.first < right.first;
-  }
-};
 
-struct sort_second {
-  bool operator()(const std::pair<int, int> &left, const std::pair<int, int> &right) {
-    return left.second < right.second;
-  }
-};
 
 double ShowerCalo::joint_dEdx() {
 
@@ -211,17 +244,45 @@ double ShowerCalo::joint_dEdx() {
 
 }
 
+double ShowerCalo::dEdx_best_median() {
+  return dEdx_median(best_plane());
+}
+
+double ShowerCalo::dEdx_best_LMA() {
+  return dEdx_LMA(best_plane());
+}
+
+double ShowerCalo::dEdx_best_modmean() {
+  return dEdx_modmean(best_plane());
+}
+
+double ShowerCalo::dEdx_best_meta() {
+  return dEdx_meta(best_plane());
+}
+
+
 double ShowerCalo::distance(int plane) {
 
   if (plane == 1) {
     return _collection_dist;
   }
   else if (plane == 0) {
-    return _collection_dist;
+    return _induction_dist;
   }
   else return 0;
 }
 
+
+double ShowerCalo::pitch(int plane) {
+
+  if (plane == 1) {
+    return _collection_pitch;
+  }
+  else if (plane == 0) {
+    return _induction_pitch;
+  }
+  else return 0;
+}
 
 double ShowerCalo::dEdx_meta(int plane) {
   // Computes the average of the 3 dEdx metrics
@@ -400,6 +461,11 @@ std::vector<double>  ShowerCalo::good_dedx_hits(int plane, bool box) {
   return _good_dedx_hits;
 }
 
+std::vector<double> ShowerCalo::best_dedx_hits(bool box) {
+
+  return good_dedx_hits(best_plane(), box);
+
+}
 
 
 double ShowerCalo::best_dedx() {
@@ -410,45 +476,7 @@ double ShowerCalo::best_dedx() {
 
 int ShowerCalo::best_plane() {
 
-  const int kColl = 1;
-  const int kInd = 0;
-
-  int _min_hits = 5;
-
-  // First, check that neither has a metric of zero:
-  if (dEdx_median(kColl) < 0.1  ||
-      dEdx_modmean(kColl) < 0.1 ||
-      dEdx_LMA(kColl) < 0.1) {
-    return kInd;
-  }
-  if (dEdx_median(kInd) < 0.1  ||
-      dEdx_modmean(kInd) < 0.1 ||
-      dEdx_LMA(kInd) < 0.1) {
-    return kColl;
-  }
-
-  // Unless collection has too few hits, it's the default:
-  if (n_good_hits(kColl) >= _min_hits) {
-    return kColl;
-  }
-
-  else {
-    // If induction has more hits than collection by a good amount (2 or 3 hits more at least)
-    // Or the meta err is significantly less, use it instead.
-    if ( n_good_hits(kInd) >= std::max(n_good_hits(kColl) + 2, _min_hits) ) {
-      return kInd;
-    }
-    else {
-      // return the one with the smaller meta err:
-      if (dEdx_meta_err(kColl) < dEdx_meta_err(kInd)) {
-        return kColl;
-      }
-      else {
-        return kInd;
-      }
-    }
-  }
-
+  return _best_plane;
 }
 
 
@@ -581,11 +609,35 @@ std::vector<double> shower_collection::all_dedx_hits_box(int plane) {
   return _result;
 }
 
+std::vector<double> shower_collection::best_dedx_hits_box() {
+  std::vector<double> _result;
+  _result.reserve(this->size() * 10);
+  for (auto & item : *this ) {
+    auto hits = item.best_dedx_hits(true);
+    // std::cout << "Got " << hits.size() << " hits." << std::endl;
+    _result.insert(_result.end(),
+                   hits.begin(),
+                   hits.end());
+  }
+  // std::cout << "Returning " << _result.size() << " hits" << std::endl;
+  return _result;
+}
+
+
 std::vector<double> shower_collection::distance(int plane) {
   std::vector<double> _result;
   _result.reserve(this->size());
   for (auto & item : *this ) {
     _result.push_back(item.distance(plane));
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::pitch(int plane) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.pitch(plane));
   }
   return _result;
 }
@@ -648,6 +700,33 @@ std::vector<double> shower_collection::mc_z_resolution() {
   _result.reserve(this->size());
   for (auto & item : *this ) {
     _result.push_back(item.mc_z_resolution());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::dEdx_best_median() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.dEdx_best_median());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::dEdx_best_modmean() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.dEdx_best_modmean());
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::dEdx_best_LMA() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.dEdx_best_LMA());
   }
   return _result;
 }

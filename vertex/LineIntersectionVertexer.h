@@ -30,14 +30,14 @@ namespace argovertex {
 class interceptCand {
 public:
   interceptCand();
-  interceptCand(Point2D p, float s, size_t c1, size_t c2) :
+  interceptCand(larutil::Point2D p, float s, size_t c1, size_t c2) :
     intercept(p),
     strenght(s),
     cluster_index_1(c1),
     cluster_index_2(c2)
   {}
 
-  Point2D intercept;
+  larutil::Point2D intercept;
   float strenght;
   size_t cluster_index_1;
   size_t cluster_index_2;
@@ -79,13 +79,13 @@ public:
   virtual bool finalize();
 
 
-  Point2D IntersectionPoint(cluster::cluster_params & clust1,
+  larutil::Point2D IntersectionPoint(cluster::cluster_params & clust1,
                             cluster::cluster_params & clust2);
 
 
 protected:
 
-  bool isInPlane(Point2D &, unsigned int);
+  bool isInPlane(larutil::Point2D &, unsigned int);
 
   cluster::DefaultParamsAlg _params_alg ;
   cluster::CRUHelper _cru_helper;
