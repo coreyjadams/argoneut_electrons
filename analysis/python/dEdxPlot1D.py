@@ -8,14 +8,120 @@ import math
 
 from matplotlib import pyplot as plt
 
+import numpy as np
+
+ncpi0_x = [26.31579, 75.18797, 131.57895, 184.21053, 229.3233,
+           278.1955, 334.58646, 383.45865, 424.81204, 484.9624,
+           526.3158, 582.7068, 635.3383, 684.2105, 729.3233,
+           785.7143, 834.5865, 883.4586, 921.0526, 977.4436,
+           1033.8346, 1086.4662, 1142.8572, 1187.97, 1236.8422,
+           1270.6766, 1330.827, 1379.6992, 1428.5714, 1473.6842,
+           1533.8346, 1571.4286, 1624.0602, 1676.6918, 1733.0828,
+           1774.436, 1830.827, 1875.9398, 1932.3308, 1973.6842,
+           2030.0752, 2075.188, 2127.8196, 2180.4512, 2225.564,
+           2281.9548, 2334.5864, 2368.4211, 2421.0527, 2473.6843,
+           2530.0752, 2571.4285, 2631.5789, 2676.6917, 2721.8044,
+           2778.1956, 2823.3083, 2875.94, 2924.812, 2973.6843]
+
+ncpi0_y = [0.08068256, 0.1536175, 0.13664484, 0.10197051, 0.074624486,
+           0.05568814, 0.046718784, 0.044930615, 0.03486365, 0.02705225,
+           0.022256538, 0.016608829, 0.015973123, 0.015973123, 0.012887524,
+           0.011689519, 0.010397985, 0.009806757, 0.008389359, 0.007759442,
+           0.007759442, 0.0060208943, 0.005678548, 0.005790444,
+           0.0048578116, 0.004763938, 0.0044062366, 0.0041556987,
+           0.003996639, 0.004075393, 0.0032245906, 0.0033529243,
+           0.0023598336, 0.0015664453, 0.0033529243, 0.0023598336,
+           0.002225654, 0.001941492, 0.0023598336, 0.0022695106,
+           0.0015064895, 0.0016608827, 0.0015361749, 0.0013933743,
+           0.0010811808, 0.0011689519, 6.902129E-4, 0.0010197051,
+           9.806757E-4, 0.0014488284, 7.759442E-4, 0.0012887524,
+           0.0012394253, 5.904545E-4, 0.0012154742, 3.843667E-4,
+           0.0011463626, 6.902129E-4, 4.9535354E-4, 0.028683169]
+# Normalize the y range to 1:
+nc_max = np.max(ncpi0_y)
+
+ncpi0_y /= nc_max
+
+
+
+def adjustWeightsToNCPi0_Gauss(sigma, mu, scale, p_sim):
+
+    # Define the bins as the ncpi0 bins, though those
+    # are the bin centers.  So get the bin edges:
+    bin_edges = ROOT.vector('double')()
+    bin_edges.push_back(0)
+
+    # Define the edge to be halfway between the current point and the next
+    # point
+    for i in xrange(len(ncpi0_x) - 1):
+        center = ncpi0_x[i]
+        next_center = ncpi0_x[i+1]
+        bin_edges.push_back(0.5*(center + next_center))
+
+    bin_edges.push_back(3000)
+
+    # Now get the spectrum of the sim binned into this set of energies
+    energy_spectrum, bins = np.histogram(
+        p_sim.getShowerCaloVector().mc_true_energy(),
+        bins=bin_edges,
+        density=True)
+
+    # print 0.5*(bins[0] + bins[1])
+    # print 0.5*(bins[1] + bins[2])
+    # print 0.5*(bins[2] + bins[3])
+
+    # print "------------"
+
+    # exit(0)
+
+    # scale this spectrum to peak at 1:
+    sim_max = np.max(energy_spectrum)
+    energy_spectrum /= sim_max
+
+    # Now we can make a 1-1 ratio of the sim to nc spectrum:
+
+    # for i in xrange(len(energy_spectrum)):
+    #     print "{:.2} vs {:.2}".format(ncpi0_y[i], energy_spectrum[i])
+
+    # Set the weights as the ratio of ncpi0_y[i] to energy_spectrum[i]
+
+    weights = ROOT.vector('double')()
+
+    for i in xrange(len(energy_spectrum)):
+        weights.push_back(1.0)
+        extra = math.exp(-(ncpi0_x[i]-mu)**2 / (2*sigma**2))
+        if energy_spectrum[i] != 0:
+            weights[i] = (ncpi0_y[i] + scale*extra  ) / energy_spectrum[i]
+
+    # # Corrected:
+
+    # print "\n\nCorrected:"
+
+    # for i in xrange(len(energy_spectrum)):
+    #     print "{:.2} vs {:.2}".format(ncpi0_y[i], weights[i]*energy_spectrum[i])
+
+    # # Adjust the weights above 500 MeV:
+    # for i in xrange(len(ncpi0_y)):
+    #   if ncpi0_x[i] > 200:
+    #     weights[i] *= 2.5
+    #   if ncpi0_x[i] > 500:
+    #     weights[i] *= 1.5
+
+    p_sim.getShowerCaloVector().set_weights(weights, bin_edges)
+
+
 
 def main():
 
     plane = 1
     cut = 0
 
-    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    adjustWeightsToNCPi0_Gauss(482.6,635,5793.0,p_sim)
+
+
+    p_sim_weights = p_sim.getShowerCaloVector().weights()
 
     e_data_median = e_data.getBestMedianVector()
     e_data_modmean = e_data.getBestModmeanVector()
@@ -33,7 +139,7 @@ def main():
     p_data_modmean = p_data.getBestModmeanVector()
     p_data_lma = p_data.getBestLMAVector()
 
-    plotdEdx(e_data_median, e_sim_median, p_data_median, p_sim_median, "")
+    plotdEdx(e_data_median, e_sim_median, p_data_median, p_sim_median, p_sim_weights, "")
     # plotdEdx(e_data_modmean, e_sim_modmean, p_data_modmean, p_sim_modmean, "Outlier Removed Mean")
     # plotdEdx(e_data_lma, e_sim_lma, p_data_lma, p_sim_lma, "LMA")
 
@@ -42,13 +148,13 @@ def main():
     # plotSigma(e_data_lma,p_data_lma)
 
 
-def plotdEdx(e_data, e_sim, p_data, p_sim, name):
+def plotdEdx(e_data, e_sim, p_data, p_sim, p_sim_weights, name):
 
-    # cut = 0
-    cut = 2.9
+    cut = 0
+    # cut = 2.9
 
     data_bin_width = 0.4
-    sim_bin_width = 0.2
+    sim_bin_width = 0.4
 
     data_bins = numpy.arange(0.1, 8.0, data_bin_width)
     sim_bins = numpy.arange(0.1, 8.0, sim_bin_width)
@@ -84,7 +190,9 @@ def plotdEdx(e_data, e_sim, p_data, p_sim, name):
     electron_sim_hist, bin_edges_sim = numpy.histogram(
         e_sim, sim_bins, density=True)
     photon_sim_hist, bin_edges_sim = numpy.histogram(
-        p_sim, sim_bins, density=True)
+        p_sim, sim_bins, density=True,weights=p_sim_weights)
+
+    electron_sim_hist = (1-0.17011)*electron_sim_hist + 0.17011*photon_sim_hist
 
     bin_centers_data = bin_edges_data[:-1] + 0.5*data_bin_width
     bin_centers_sim = bin_edges_sim[:-1] + 0.5*sim_bin_width
@@ -99,27 +207,34 @@ def plotdEdx(e_data, e_sim, p_data, p_sim, name):
 
     f2, ax2 = plt.subplots(figsize=(15, 8))
     ax2.set_title("Calorimetric Electron Photon Separation", fontsize=30)
+
+
+    ax2.plot(bin_centers_sim, electron_sim_hist, color="b",
+             ls="steps-mid", linewidth=3,
+             label="Simulated Electrons",alpha=0.7)
+    ax2.plot(bin_centers_sim, photon_sim_hist, color="r",
+             ls="steps-mid", linewidth=3,
+             label="Simulated Electrons",alpha=0.7)
+
+
     ax2.errorbar(bin_centers_data, electron_data_hist, xerr=data_bin_width*0.5,
                  yerr=electron_err_norm,
                  marker="o",
+                 markersize=8,
                  label="Electrons, Data",
                  capsize=2,
                  ls="none")
     ax2.errorbar(bin_centers_data, photon_data_hist, xerr=data_bin_width*0.5,
                  yerr=photon_err_norm,
-                 marker="o",
+                 marker="^",
                  # fillstyle="none",
+                 markersize=8,
                  label="Photons, Data",
                  capsize=2,
                  color='r',
                  ls="none")
     plt.xlabel("dE/dx [MeV/cm]", fontsize=20)
     plt.ylabel("Unit Normalized", fontsize=20)
-
-    ax2.plot(bin_centers_sim+0.5*sim_bin_width, electron_sim_hist, color="b",
-             ls="steps", label="Simulated Electrons")
-    ax2.plot(bin_centers_sim+0.5*sim_bin_width, photon_sim_hist, color="r",
-             ls="steps", label="Simulated Electrons")
 
     if cut > 0:
         data_eff_tuple = makeCut(e_data, p_data, cut)
@@ -141,9 +256,14 @@ def plotdEdx(e_data, e_sim, p_data, p_sim, name):
                                           1.0*data_eff_tuple[1][1]),
                  size=25, horizontalalignment='right')
 
+    for tick in ax2.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax2.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
+
     # Draw a histogram with all of these:
     plt.grid(True)
-    # plt.legend(fontsize=20)
+    plt.legend(fontsize=20)
     plt.show()
 
 

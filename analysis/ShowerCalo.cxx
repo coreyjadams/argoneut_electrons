@@ -190,6 +190,223 @@ double ShowerCalo::dEdx_LMA(int plane) {
 
 }
 
+double ShowerCalo::getPitch(const TVector3 & dir3D, int pl ) {
+
+
+  double pitch = 0.4;
+
+  auto geom = larutil::Geometry::GetME();
+
+  double angleToVert = geom -> WireAngleToVertical((::larlite::geo::View_t) pl) - 0.5 * TMath::Pi();
+  double cosgamma = TMath::Abs(TMath::Sin(angleToVert) * dir3D.Y() +
+                               TMath::Cos(angleToVert) * dir3D.Z());
+
+  if (cosgamma > 0) pitch = pitch / cosgamma;
+
+  return pitch;
+}
+
+
+
+double ShowerCalo::true_dEdx_3D_median(double distance) {
+
+  // Get the hits:
+  auto hits = true_dedx_hits(distance);
+
+  if (hits.size() < 3)
+    return 0;
+
+  // Now get the median of the hits:
+  std::sort(hits.begin(), hits.end());
+
+  if (hits.size() % 2 == 0) {
+    return 0.5 * (hits.at(hits.size() / 2) + hits.at(hits.size() / 2  - 1));
+  }
+  else {
+    return hits.at(hits.size() / 2);
+  }
+}
+double ShowerCalo::true_dEdx_3D_mean(double distance) {
+
+  // Get the hits:
+  auto hits = true_dedx_hits(distance);
+
+  double mean = 0.0;
+  for (auto & hit : hits) {
+    mean += hit;
+  }
+  if (hits.size() == 0)
+    return 0.0;
+
+
+  mean /= hits.size();
+
+  // Now get the rms:
+  double rms = 0.0;
+  for (auto & val : hits) {
+    rms += val * val;
+  }
+  rms /= hits.size();
+  rms = sqrt(rms);
+
+  if (rms == 0) {
+    return mean;
+  }
+
+  // Now actually get the modified mean:
+  double modmean = 0.0;
+  int n = 0;
+  for (auto & val : hits) {
+    if ( fabs(val - mean) < 2 * rms && val < 10) {
+      modmean += val;
+      n++;
+    }
+  }
+
+  if (n == 0) {
+    return 0.0;
+  }
+  else {
+    return modmean / n;
+  }
+
+
+}
+double ShowerCalo::true_dEdx_3D_LMA(double distance) {
+
+  // Get the hits:
+  auto hits = true_dedx_hits(distance);
+
+  const int n = 3;
+
+  if (hits.size() <= n) {
+    return 0.0;
+  }
+
+
+  double lma = 9999.0;
+
+  for (size_t i = 0; i < hits.size() - n; i ++) {
+    double _this_lma = 0.0;
+    for (size_t _n = 0; _n < n; _n ++) {
+      _this_lma += hits.at(i + _n);
+    }
+    _this_lma *= 1.0 / n;
+    if (_this_lma < lma) {
+      lma = _this_lma;
+    }
+  }
+
+  return lma;
+
+}
+
+std::vector<double> ShowerCalo::true_dedx_hits(double distance) {
+  // Loop over the dE/dx points in the specified plane and compute the dE/dx using the median method
+
+
+  // Because the simch and ide and such aren't binned explicitly to a wire,
+  // I have to bin them into the same bins that the reconstructed quantities look at.
+  //
+  // First, need the pitch from the true direction:
+
+  double pitch = 0.4;
+
+  int n_bins = distance / (pitch);
+
+
+  std::vector<double> cands;
+  cands.resize(n_bins + 1);
+
+
+  for (size_t index = 0; index < _distance_and_E.size(); index ++) {
+    if (_distance_and_E.at(index).first > 0 && _distance_and_E.at(index).first < distance) {
+      // Figure out which bin to use:
+
+      double frac = _distance_and_E.at(index).first / distance;
+      int bin = frac * n_bins;
+
+      cands[bin] += _distance_and_E.at(index).second;
+    }
+  }
+
+  for (auto & val : cands)
+    val /= pitch;
+
+  std::vector<double> hits;
+  for (auto &val : cands){
+    if (val > 0.01){
+      hits.push_back(val);
+    }
+  }
+
+
+  return hits;
+
+}
+
+double ShowerCalo::true_dEdx_median(int plane) {
+  // Loop over the dE/dx points in the specified plane and compute the dE/dx using the median method
+
+
+  // Because the simch and ide and such aren't binned explicitly to a wire,
+  // I have to bin them into the same bins that the reconstructed quantities look at.
+  //
+  // First, need the pitch from the true direction:
+
+  double pitch = getPitch(_true_direction, plane);
+
+  int n_bins = dedx_dist_max / (pitch);
+
+
+  std::vector<double> cands;
+  cands.resize(n_bins + 1);
+
+
+  for (size_t index = 0; index < _distance_and_E.size(); index ++) {
+    if (_distance_and_E.at(index).first > 0 && _distance_and_E.at(index).first < dedx_dist_max) {
+      // Figure out which bin to use:
+
+      double frac = _distance_and_E.at(index).first / dedx_dist_max;
+      int bin = frac * n_bins;
+
+      cands[bin] += _distance_and_E.at(index).second;
+    }
+  }
+
+  for (auto & val : cands)
+    val /= pitch;
+
+  std::vector<double> hits;
+  for (auto &val : cands){
+    if (val > 0.01){
+      hits.push_back(val);
+    }
+  }
+
+
+  if (hits.size() < 3) {
+    return 0;
+  }
+
+  // if (_drop_first_hit) {
+  //   hits.erase(hits.begin());
+  // }
+
+
+
+
+
+  std::sort(hits.begin(), hits.end());
+  if (hits.size() % 2 == 0) {
+    return 0.5 * (hits.at(hits.size() / 2) + hits.at(hits.size() / 2  - 1));
+  }
+  else {
+    return hits.at(hits.size() / 2);
+  }
+
+}
+
 
 
 double ShowerCalo::joint_dEdx() {
@@ -730,6 +947,82 @@ std::vector<double> shower_collection::dEdx_best_LMA() {
   }
   return _result;
 }
+
+std::vector<double> shower_collection::weights() {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item._weight);
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::true_dedx_median(int plane) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.true_dEdx_median(plane));
+  }
+  return _result;
+}
+
+
+void shower_collection::set_weights(std::vector<double> _weights, std::vector<double> _bins) {
+
+  if (_weights.size() + 1 != _bins.size() ) {
+    std::cerr << "Error, weights length must be bins length - 1." << std::endl;
+    exit(-1);
+  }
+
+  for (auto & item : * this) {
+    for (int i = 0; i < _bins.size() - 1; i ++) {
+      if (item._true_energy >= _bins.at(i) && item._true_energy < _bins.at(i + 1)) {
+        item._weight = _weights.at(i);
+        break;
+      }
+    }
+  }
+
+  return;
+
+}
+std::vector<double> shower_collection::true_dEdx_3D_median(double distance) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.true_dEdx_3D_median(distance));
+  }
+  return _result;
+}
+std::vector<double> shower_collection::true_dEdx_3D_mean(double distance) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.true_dEdx_3D_mean(distance));
+  }
+  return _result;
+}
+std::vector<double> shower_collection::true_dEdx_3D_LMA(double distance) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.true_dEdx_3D_LMA(distance));
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::true_dedx_hits(double distance) {
+  std::vector<double> _result;
+  _result.reserve(this->size() * 20);
+  for (auto & item : *this ) {
+    for (auto & hit : item.true_dedx_hits(distance)) {
+      _result.push_back(hit);
+    }
+  }
+  return _result;
+}
+
+
 
 
 #endif

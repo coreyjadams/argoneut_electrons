@@ -31,13 +31,13 @@ typedef larutil::PxPoint Point2D;
  */
 
 struct sort_first {
-  bool operator()(const std::pair<int, int> &left, const std::pair<int, int> &right) {
+  bool operator()(const std::pair<double, double> &left, const std::pair<double, double> &right) {
     return left.first < right.first;
   }
 };
 
 struct sort_second {
-  bool operator()(const std::pair<int, int> &left, const std::pair<int, int> &right) {
+  bool operator()(const std::pair<double, double> &left, const std::pair<double, double> &right) {
     return left.second < right.second;
   }
 };
@@ -49,7 +49,7 @@ class ShowerCalo {
 public:
 
   /// Default constructor
-  ShowerCalo() {_is_mc = false;}
+  ShowerCalo() {_is_mc = false; _weight = 1.0;}
 
   /// Default destructor
   ~ShowerCalo() {}
@@ -63,6 +63,14 @@ public:
   double dEdx_meta(int plane);
   double dEdx_best_meta();
   double dEdx_meta_err(int plane);
+
+  double true_dEdx_median(int plane);
+
+  double true_dEdx_3D_median(double distance);
+  double true_dEdx_3D_mean(double distance);
+  double true_dEdx_3D_LMA(double distance);
+
+  std::vector<double> true_dedx_hits(double distance);
 
   double joint_dEdx();
 
@@ -81,16 +89,16 @@ public:
 
   double slope_error();
 
-  void set_drop_first_hit(bool b){_drop_first_hit = b;}
+  void set_drop_first_hit(bool b) {_drop_first_hit = b;}
 
-  std::vector<double> good_dedx_hits(int plane, bool box=false);
+  std::vector<double> good_dedx_hits(int plane, bool box = false);
 
-  std::vector<double> best_dedx_hits(bool box=false);
+  std::vector<double> best_dedx_hits(bool box = false);
 
-  int run(){return _run;}
-  int subrun(){return _subrun;}
-  int event(){return _event;}
-  int fileIndex(){return _file_index;}
+  int run() {return _run;}
+  int subrun() {return _subrun;}
+  int event() {return _event;}
+  int fileIndex() {return _file_index;}
 
   double distance(int plane);
   double pitch(int plane);
@@ -105,6 +113,9 @@ public:
   double mc_true_energy();
   double mc_deposited_energy();
 
+  double getPitch(const TVector3 & dir3D, int pl );
+
+
 public:
 
 
@@ -118,8 +129,14 @@ public:
   TVector3 _true_start_point;
   TVector3 _true_direction;
 
+  TVector3 _true_interaction_point;
+
   double _true_energy;
   double _true_deposited_energy;
+
+  double _weight;
+
+  std::vector<std::pair<double, double> > _distance_and_E;
 
   int _run;
   int _subrun;
@@ -174,6 +191,8 @@ public:
   std::vector<double> dEdx_modmean(int plane);
   std::vector<double> dEdx_LMA(int plane);
 
+
+
   std::vector<double> dEdx_best_median();
   std::vector<double> dEdx_best_modmean();
   std::vector<double> dEdx_best_LMA();
@@ -205,7 +224,18 @@ public:
   std::vector<double> mc_3D_angle_resolution();  // return in degrees
   std::vector<double> mc_true_energy();
   std::vector<double> mc_deposited_energy();
+  std::vector<double> weights();
 
+  std::vector<double> true_dedx_median(int plane);
+
+  std::vector<double> true_dedx_hits(double distance);
+
+  std::vector<double> true_dEdx_3D_median(double distance);
+  std::vector<double> true_dEdx_3D_mean(double distance);
+  std::vector<double> true_dEdx_3D_LMA(double distance);
+
+
+  void set_weights(std::vector<double> _weights, std::vector<double> _bins);
 
   void set_drop_first_hit(bool b);
 

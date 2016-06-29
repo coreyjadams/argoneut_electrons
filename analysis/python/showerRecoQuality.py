@@ -15,12 +15,7 @@ def main():
     # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
     (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
 
-    print e_data.size()
-    print e_sim.size()
-    print p_data.size()
-    print p_sim.size()
-
-    # VertexQuality(e_sim, p_sim)
+    VertexQuality(e_sim, p_sim)
     AngleQuality(e_sim, p_sim)
 
 
@@ -67,50 +62,70 @@ def VertexQuality(electrons_mc, photons_mc):
 
     _1d_bin_centers = _1d_bin_edges[:-1] + 0.5*binwidth
 
-
-    plt.plot(_1d_bin_centers,electron_hist_x,ls="steps",label="MC Single Electrons X")
-    plt.plot(_1d_bin_centers,photon_hist_x,ls="steps",label="MC Single Photons X")
+    fig, ax = plt.subplots(figsize=(10,6))
+    plt.plot(_1d_bin_centers,electron_hist_x,ls="steps-mid",label="MC Single Electrons X",linewidth=3,c='b')
+    plt.plot(_1d_bin_centers,photon_hist_x,ls="steps-mid",label="MC Single Photons X",linewidth=3,c='r')
     
-    plt.legend()
-    plt.title("X Resolution of Single Showers")
-    plt.xlabel("True - Reco Vertex [cm]")
-    plt.ylabel("Area Normalized")
-    plt.grid(True)
+    
 
+    plt.legend(fontsize=20)
+    plt.title("X Resolution of Single Showers",fontsize=25)
+    plt.xlabel("|True - Reco Vertex [cm]|",fontsize=20)
+    plt.ylabel("Area Normalized",fontsize=20)
+    plt.grid(True)
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
     plt.show()
 
-    plt.plot(_1d_bin_centers,electron_hist_y,ls="steps",label="MC Single Electrons Y")
-    plt.plot(_1d_bin_centers,photon_hist_y,ls="steps",label="MC Single Photons Y")
+    fig, ax = plt.subplots(figsize=(10,6))
+    plt.plot(_1d_bin_centers,electron_hist_y,ls="steps-mid",label="MC Single Electrons Y",linewidth=3,c='b')
+    plt.plot(_1d_bin_centers,photon_hist_y,ls="steps-mid",label="MC Single Photons Y",linewidth=3,c='r')
     
-    plt.legend()
-    plt.title("Y Resolution of Single Showers")
-    plt.xlabel("True - Reco Vertex [cm]")
-    plt.ylabel("Area Normalized")
+    
+    plt.legend(fontsize=20)
+    plt.title("Y Resolution of Single Showers",fontsize=25)
+    plt.xlabel("|True - Reco Vertex [cm]|",fontsize=20)
+    plt.ylabel("Area Normalized",fontsize=20)
     plt.grid(True)
-
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
     plt.show()
 
-    plt.plot(_1d_bin_centers,electron_hist_z,ls="steps",label="MC Single Electrons Z")
-    plt.plot(_1d_bin_centers,photon_hist_z,ls="steps",label="MC Single Photons Z")
+    fig, ax = plt.subplots(figsize=(10,6))
+    plt.plot(_1d_bin_centers,electron_hist_z,ls="steps-mid",label="MC Single Electrons Z",linewidth=3,c='b')
+    plt.plot(_1d_bin_centers,photon_hist_z,ls="steps-mid",label="MC Single Photons Z",linewidth=3,c='r')
     
-    plt.legend()
-    plt.title("Z Resolution of Single Showers")
-    plt.xlabel("True - Reco Vertex [cm]")
-    plt.ylabel("Area Normalized")
+    
+    plt.legend(fontsize=20)
+    plt.title("Z Resolution of Single Showers",fontsize=25)
+    plt.xlabel("|True - Reco Vertex [cm]|",fontsize=20)
+    plt.ylabel("Area Normalized",fontsize=20)
     plt.grid(True)
-
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
     plt.show()
 
 
-    plt.plot(_3d_bin_centers,electron_hist,ls="steps",label="MC Single Electrons")
-    plt.plot(_3d_bin_centers,photon_hist,ls="steps",label="MC Single Photons")
+    fig, ax = plt.subplots(figsize=(10,6))
+    plt.plot(_3d_bin_centers,electron_hist,ls="steps-mid",label="MC Single Electrons",linewidth=3,c='b')
+    plt.plot(_3d_bin_centers,photon_hist,ls="steps-mid",label="MC Single Photons",linewidth=3,c='r')
     
-    plt.legend()
-    plt.title("3D Vertex Resolution of Single Showers")
-    plt.xlabel("True - Reco Vertex [cm]")
-    plt.ylabel("Area Normalized")
+    
+    plt.legend(fontsize=20)
+    plt.title("3D Vertex Resolution of Single Showers",fontsize=25)
+    plt.xlabel("|True - Reco Vertex [cm]|",fontsize=20)
+    plt.ylabel("Area Normalized",fontsize=20)
     plt.grid(True)
-
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
     plt.show()
 
 
@@ -129,7 +144,7 @@ def AngleQuality(electrons_mc, photons_mc):
         if math.isnan(p_angle):
             print "e ", p_angle
 
-    binwidth = 0.25
+    binwidth = 0.4
     bins = numpy.arange(0.0, 20.0, binwidth)
 
     electron_hist, bin_edges = numpy.histogram(electron_reco_angles, bins=bins,density=True)
@@ -138,15 +153,20 @@ def AngleQuality(electrons_mc, photons_mc):
     bin_centers = bin_edges[:-1] + 0.5*binwidth
     print bin_centers
 
-    plt.plot(bin_centers,electron_hist,ls="steps",label="MC Single Electrons")
-    plt.plot(bin_centers,photon_hist,ls="steps",label="MC Single Photons")
+    fig, ax = plt.subplots(figsize=(10,6))
+    plt.plot(bin_centers,electron_hist,ls="steps-mid",label="MC Single Electrons",linewidth=3,c='b')
+    plt.plot(bin_centers,photon_hist,ls="steps-mid",label="MC Single Photons",linewidth=3,c='r')
     
-    plt.legend()
-    plt.title("3D Angular Resolution of Single Showers")
-    plt.xlabel("True - Reco Direction [degree]")
-    plt.ylabel("Area Normalized")
+    
+    plt.legend(fontsize=20)
+    plt.title("3D Angular Resolution of Single Showers",fontsize=25)
+    plt.xlabel("|True - Reco Direction [degree]|",fontsize=20)
+    plt.ylabel("Area Normalized",fontsize=20)
     plt.grid(True)
-
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
     plt.show()
 
 if __name__ == '__main__':

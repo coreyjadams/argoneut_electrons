@@ -19,101 +19,101 @@ bool dEdxShowerCaloMaker::initialize() {
 
 
 
-bool getTruedEdxVector(larlite::storage_manager * storage, std::vector<std::pair<double,double> > & _distance_and_E) {
+bool dEdxShowerCaloMaker::getTruedEdxVector(larlite::storage_manager * storage, std::vector<std::pair<double, double> > & _distance_and_E) {
 
 
-    // Get the simch data product:
+  // Get the simch data product:
 
-    auto ev_simch = storage->get_data<larlite::event_simch>("largeant");
-    auto ev_mcshower = storage->get_data<larlite::event_mcshower>("mcinfo");
+  auto ev_simch = storage->get_data<larlite::event_simch>("largeant");
+  auto ev_mcshower = storage->get_data<larlite::event_mcshower>("mcinfo");
 
-    if (! ev_simch || ev_simch->size() == 0) {
-        return false;
+  if (! ev_simch || ev_simch->size() == 0) {
+    return false;
+  }
+
+
+  if (! ev_mcshower || ev_mcshower->size() == 0) {
+    return false;
+  }
+
+  // There should be only one mcshower:
+  if (ev_mcshower -> size() > 1) {
+    std::cerr << "Found too many mcshowers!" << std::endl;
+    exit(-1);
+  }
+
+  auto geomHelper = larutil::GeometryHelper::GetME();
+
+  auto mcshower = ev_mcshower->front();
+
+  // First step: determine the total deposited energy in this event
+
+  // double depE = mcshower.DetProfile().E();
+
+  // get the start point and start direction, because we'll be using those
+  // to construct the "true" dE/dx.
+
+  TVector3 startPoint = mcshower.DetProfile().Position().Vect();
+  TVector3 startDir   = mcshower.DetProfile().Momentum().Vect();
+  startDir *= 1.0 / startDir.Mag();
+
+
+  // We'll go for up to 20cm in dE/dx calculations.
+  // Update the cumulative dE/dx
+
+  _distance_and_E.clear();
+
+
+  // Compare to the total energy deposited in the simch info:
+  double simch_depE = 0.0;
+  for (auto & simid : * ev_simch) {
+    if (simid.Channel() < 240)
+      continue;
+    auto const& all_ide = simid.TrackIDsAndEnergies(0, 2040);
+
+    for (auto const& ide : all_ide) {
+
+      // We need to check if this deposition is within the cylinder defined.
+
+      // Really, that can be most easily translated into the required metrics
+      // by knowing how far along the direction it is from the start point, as well
+      // as the perpendicular distance.
+
+      TVector3 thisPoint(ide.x, ide.y, ide.z);
+
+      double forward_distance
+        = geomHelper -> DistanceAlongLine3D(startPoint, startDir, thisPoint);
+      double perpendicular_distance
+        = geomHelper -> DistanceToLine3D(startPoint, startDir, thisPoint);
+
+      if (perpendicular_distance > 5 ) {
+        continue;
+      }
+
+      if (forward_distance < 50 && forward_distance > 0) {
+        _distance_and_E.push_back(std::make_pair(forward_distance, ide.energy));
+      }
+
+      // std::cout << "3dpoint : [" << ide.x << ", " << ide.y << ", " << ide.z << "]" << std::endl;
+      // _data.push_back( SimChannel3D(ide.x, ide.y, ide.z) );
+      simch_depE += ide.energy;
     }
+  }
 
-
-    if (! ev_mcshower || ev_mcshower->size() == 0) {
-        return false;
-    }
-
-    // There should be only one mcshower:
-    if (ev_mcshower -> size() > 1) {
-        std::cerr << "Found too many mcshowers!" << std::endl;
-        exit(-1);
-    }
-
-    auto geomHelper = larutil::GeometryHelper::GetME();
-
-    auto mcshower = ev_mcshower->front();
-
-    // First step: determine the total deposited energy in this event
-
-    double depE = mcshower.DetProfile().E();
-
-    // get the start point and start direction, because we'll be using those
-    // to construct the "true" dE/dx.
-
-    TVector3 startPoint = mcshower.DetProfile().Position().Vect();
-    TVector3 startDir   = mcshower.DetProfile().Momentum().Vect();
-    startDir *= 1.0 / startDir.Mag();
-
-
-    // We'll go for up to 20cm in dE/dx calculations.
-    // Update the cumulative dE/dx
-
-    _distance_and_E.clear();
-
-
-    // Compare to the total energy deposited in the simch info:
-    double simch_depE = 0.0;
-    for (auto & simid : * ev_simch) {
-        if (simid.Channel() < 240)
-            continue;
-        auto const& all_ide = simid.TrackIDsAndEnergies(0, 2040);
-
-        for (auto const& ide : all_ide) {
-
-            // We need to check if this deposition is within the cylinder defined.
-
-            // Really, that can be most easily translated into the required metrics
-            // by knowing how far along the direction it is from the start point, as well
-            // as the perpendicular distance.
-
-            TVector3 thisPoint(ide.x, ide.y, ide.z);
-
-            double forward_distance
-                = geomHelper -> DistanceAlongLine3D(startPoint, startDir, thisPoint);
-            double perpendicular_distance
-                = geomHelper -> DistanceToLine3D(startPoint, startDir, thisPoint);
-
-            if (perpendicular_distance > 1 ) {
-                continue;
-            }
-
-            if (forward_distance < 20 && forward_distance > 0) {
-                _distance_and_E.push_back(std::make_pair(forward_distance, ide.energy));
-            }
-
-            // std::cout << "3dpoint : [" << ide.x << ", " << ide.y << ", " << ide.z << "]" << std::endl;
-            // _data.push_back( SimChannel3D(ide.x, ide.y, ide.z) );
-            simch_depE += ide.energy;
-        }
-    }
-
-    std::sort(_distance_and_E.begin(), _distance_and_E.end(), ::sort_first());
+  std::sort(_distance_and_E.begin(), _distance_and_E.end(), ::sort_first());
 
 
 
-    // std::cout << "Event " << ev_simch -> event_id() << std::endl;
-    // std::cout << "  Mcshower reports " << depE << std::endl;
-    // std::cout << "  simch reports " << simch_depE << std::endl;
+  // std::cout << "Event " << ev_simch -> event_id() << std::endl;
+  // std::cout << "  Mcshower reports " << depE << std::endl;
+  // std::cout << "  simch reports " << simch_depE << std::endl;
 
-    // for (auto & pair : _distance_and_E) {
-    //     std::cout << "    Distance " << pair.first << ", E " << pair.second << std::endl;
-    // }
+  // for (auto & pair : _distance_and_E) {
+  //     std::cout << "    Distance " << pair.first << ", E " << pair.second << std::endl;
+  // }
 
 
-    return true;
+  return true;
 }
 
 
@@ -130,17 +130,26 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
 
   TVector3 _other_vertex;
   TVector3 _truth_start_dir;
+  TVector3 _true_interaction_point;
 
   double _true_energy = 0.0;
   double _true_deposited_energy = 0.0;
+  std::vector<std::pair<double, double> >  _distance_and_E;
 
   if (_is_mc) {
     // Get the mcshower start point:
     larlite::event_mcshower * ev_mcshower = storage->get_data<larlite::event_mcshower>("mcinfo");
     _other_vertex = ev_mcshower -> front().DetProfile().Position().Vect();
     _truth_start_dir = ev_mcshower -> front().DetProfile().Momentum().Vect();
+    _true_interaction_point = ev_mcshower -> front().Start().Position().Vect();
+    _truth_start_dir *= 1.0/ _truth_start_dir.Mag();
     _true_energy = ev_mcshower -> front().Start().E();
     _true_deposited_energy = ev_mcshower -> front().DetProfile().E();
+
+    if (_true_deposited_energy < 50){
+      return false;
+    }
+    getTruedEdxVector(storage, _distance_and_E);
   }
   else {
     // Get the vertex from the "bootlegVertex producer used in data"
@@ -217,8 +226,10 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
       this_calo._is_mc = true;
       this_calo._true_start_point = _other_vertex;
       this_calo._true_direction = _truth_start_dir;
+      this_calo._true_interaction_point = _true_interaction_point;
       this_calo._true_energy = _true_energy;
       this_calo._true_deposited_energy = _true_deposited_energy;
+      this_calo._distance_and_E = _distance_and_E;
     }
 
     this_calo._other_start_point = _other_vertex;
@@ -638,7 +649,7 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
 
 bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
 
-
+  bool single_shower = false;
   if (run == 770 && event == 15857) {
     return true;
   }
@@ -646,7 +657,10 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
     return true;
   }
   if (run == 775 && event == 25633) {
-    return true;
+    if (!single_shower)
+      return true;
+    else
+      return false;
   }
   if (run == 775 && event == 8598) {
     return true;
@@ -655,7 +669,10 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
     return true;
   }
   if (run == 653 && event == 7810) {
-    return true;
+    if (!single_shower)
+      return true;
+    else
+      return false;
   }
   if (run == 783 && event == 33971) {
     best_plane = 0;
@@ -681,7 +698,10 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
   }
   if (run == 674 && event == 15897) {
     best_plane = 0;
-    return true;
+    if (!single_shower)
+      return true;
+    else
+      return false;
   }
   // if (run == 677 && event == 20169) {
   //   return true;
@@ -690,13 +710,19 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
     return true;
   }
   if (run == 815 && event == 8471) {
-    return true;
+    if (!single_shower)
+      return true;
+    else
+      return false;
   }
   if (run == 755 && event == 27529) {
     return true;
   }
   if (run == 823 && event == 17611) {
-    return true;
+    if (!single_shower)
+      return true;
+    else
+      return false;
   }
   if (run == 697 && event == 9815) {
     return true;
@@ -761,7 +787,10 @@ bool dEdxShowerCaloMaker::keepEvent(int run, int event, int & best_plane) {
   }
   if (run == 629 && event == 25898) {
     best_plane = 0;
-    return true;
+    if (!single_shower)
+      return true;
+    else
+      return false;
   }
   if (run == 761 && event == 24948) {
     return true;

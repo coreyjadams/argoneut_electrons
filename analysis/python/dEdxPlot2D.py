@@ -1,6 +1,7 @@
 import landau
 import numpy
 import math
+import ROOT
 
 from matplotlib.ticker import NullFormatter
 from matplotlib import pyplot as plt
@@ -25,32 +26,100 @@ dataSet = namedtuple("dataSet",
 
 def main():
 
-    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_simch_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_simch_samples()
+    adjustWeightsToNCPi0_Gauss(482.6,635,5793.0,p_sim)
 
     # e_data.getShowerCaloVector().set_drop_first_hit(True)
 
-    # e_sim_energy_vs_dedx(e_sim)
-    # p_sim_energy_vs_dedx(p_sim)
+    e_sim_energy_vs_dedx(e_sim)
+    p_sim_energy_vs_dedx(p_sim)
 
-    data_collection_vs_induction(e_data,p_data)
+    # Check the dE/dx
+
+    # showers = e_sim.getShowerCaloVector()
+
+    # i = 0
+    # for shower in showers:
+
+    #     # for pair in shower._distance_and_E:
+    #     #   print "  {:.3}: {:.2}".format(pair.first, pair.second)
+    #     print "{} {:.2} {:.2}".format(i,shower.dEdx_best_median(),
+    #                                 shower.true_dEdx_median(0))
+    #     print "  dedx vec:"
+
+    #     i += 1
+    #     if i > 10:
+    #       break
+
+    # e_true_vs_reco_dedx(e_sim)
+    # p_true_vs_reco_dedx(p_sim)
+
+    # data_collection_vs_induction(e_data,p_data)
     # sim_collection_vs_induction(e_sim,p_sim)
 
     # pitch_vs_angular_resolution(e_sim)
     # pitch_vs_angular_resolution(p_sim)
 
 
+def e_true_vs_reco_dedx(e_sim):
+
+    # Build the electron data set:
+    electronDataSet = dataSet(e_sim.getBestMedianVector(),
+                              e_sim.getShowerCaloVector().true_dedx_median(1),
+                              None,
+                              None,
+                              "Electron Simulation",
+                              marker="o",
+                              color="b")
+
+    dedx_bins = numpy.arange(0.1, 4.0, 0.05)
+
+    x_label = "Reco. dE/dx [MeV/cm]"
+    y_label = "True dE/dx [MeV/cm]"
+
+    dEdxCorrelationHist(electronDataSet,
+                        dedx_bins,
+                        dedx_bins,
+                        x_label,
+                        y_label)
+
+def p_true_vs_reco_dedx(p_sim):
+
+    # Build the electron data set:
+    electronDataSet = dataSet(p_sim.getBestMedianVector(),
+                              p_sim.getShowerCaloVector().true_dedx_median(1),
+                              None,
+                              None,
+                              "Electron Simulation",
+                              marker="o",
+                              color="b")
+
+    dedx_bins = numpy.arange(1.0, 7.0, 0.1)
+
+    x_label = "Reco. dE/dx [MeV/cm]"
+    y_label = "True dE/dx [MeV/cm]"
+
+    dEdxCorrelationHist(electronDataSet,
+                        dedx_bins,
+                        dedx_bins,
+                        x_label,
+                        y_label)
+
+
 def pitch_vs_angular_resolution(e_sim):
 
     # Build the electron data set:
-    electronDataSet = \
-      dataSet(e_sim.getShowerCaloVector().pitch(1),
-              e_sim.getShowerCaloVector().mc_3D_angle_resolution(),
-              None,
-              None,
-              "Electron Simulation",
-              marker="o",
-              color="b")
+    electronDataSet = dataSet(e_sim.getShowerCaloVector().pitch(1),
+                              e_sim.getShowerCaloVector(
+    ).mc_3D_angle_resolution(),
+        None,
+        None,
+        "Electron Simulation",
+        marker="o",
+        color="b")
 
     pitch_bins = numpy.arange(0.1, 2.0, 0.025)
     angle_bins = numpy.arange(0.0, 20.0, 0.25)
@@ -63,7 +132,6 @@ def pitch_vs_angular_resolution(e_sim):
                         angle_bins,
                         x_label,
                         y_label)
-
 
 
 def dist_vs_dedx(e_data, p_data):
@@ -125,7 +193,7 @@ def dedx_vs_angular_resolution(e_sim):
 def e_sim_energy_vs_dedx(e_sim):
 
     # Build the electron data set:
-    electronDataSet = dataSet(e_sim.getMetaVector(1),
+    electronDataSet = dataSet(e_sim.getMedianVector(1),
                               e_sim.getShowerCaloVector().mc_true_energy(),
                               None,
                               None,
@@ -134,7 +202,7 @@ def e_sim_energy_vs_dedx(e_sim):
                               color="b")
 
     dedx_bins = numpy.arange(0.1, 8.0, 0.2)
-    energy_bins = numpy.arange(0, 5000, 50)
+    energy_bins = numpy.arange(0, 5000, 250)
 
     x_label = "Collection dE/dx [MeV/cm]"
     y_label = "Simulated Energy [MeV]"
@@ -149,7 +217,7 @@ def e_sim_energy_vs_dedx(e_sim):
 def p_sim_energy_vs_dedx(p_sim):
 
     # Build the electron data set:
-    photonDataSet = dataSet(p_sim.getMetaVector(1),
+    photonDataSet = dataSet(p_sim.getMedianVector(1),
                             p_sim.getShowerCaloVector().mc_true_energy(),
                             None,
                             None,
@@ -158,7 +226,7 @@ def p_sim_energy_vs_dedx(p_sim):
                             color="b")
 
     dedx_bins = numpy.arange(0.1, 8.0, 0.2)
-    energy_bins = numpy.arange(0, 2000, 50)
+    energy_bins = numpy.arange(0, 2000, 100)
 
     x_label = "Collection dE/dx [MeV/cm]"
     y_label = "Simulated Energy [MeV]"
@@ -386,8 +454,8 @@ def dEdxCorrelationHist(data_set, x_bins, y_bins, x_label, y_label):
                      data_set.values_y,
                      bins=[x_bin_edges, y_bin_edges],
                      label=data_set.label,
-                     norm=LogNorm(),
-                     cmap="rainbow")
+                     # norm=LogNorm(),
+                     cmap="ocean_r")
 
     axHistx.errorbar(x_centers, hist_data_x,
                      # xerr=binwidth*0.5,
@@ -421,6 +489,108 @@ def dEdxCorrelationHist(data_set, x_bins, y_bins, x_label, y_label):
     # plt.legend()
 
     plt.show()
+
+
+
+
+ncpi0_x = [26.31579, 75.18797, 131.57895, 184.21053, 229.3233,
+           278.1955, 334.58646, 383.45865, 424.81204, 484.9624,
+           526.3158, 582.7068, 635.3383, 684.2105, 729.3233,
+           785.7143, 834.5865, 883.4586, 921.0526, 977.4436,
+           1033.8346, 1086.4662, 1142.8572, 1187.97, 1236.8422,
+           1270.6766, 1330.827, 1379.6992, 1428.5714, 1473.6842,
+           1533.8346, 1571.4286, 1624.0602, 1676.6918, 1733.0828,
+           1774.436, 1830.827, 1875.9398, 1932.3308, 1973.6842,
+           2030.0752, 2075.188, 2127.8196, 2180.4512, 2225.564,
+           2281.9548, 2334.5864, 2368.4211, 2421.0527, 2473.6843,
+           2530.0752, 2571.4285, 2631.5789, 2676.6917, 2721.8044,
+           2778.1956, 2823.3083, 2875.94, 2924.812, 2973.6843]
+
+ncpi0_y = [0.08068256, 0.1536175, 0.13664484, 0.10197051, 0.074624486,
+           0.05568814, 0.046718784, 0.044930615, 0.03486365, 0.02705225,
+           0.022256538, 0.016608829, 0.015973123, 0.015973123, 0.012887524,
+           0.011689519, 0.010397985, 0.009806757, 0.008389359, 0.007759442,
+           0.007759442, 0.0060208943, 0.005678548, 0.005790444,
+           0.0048578116, 0.004763938, 0.0044062366, 0.0041556987,
+           0.003996639, 0.004075393, 0.0032245906, 0.0033529243,
+           0.0023598336, 0.0015664453, 0.0033529243, 0.0023598336,
+           0.002225654, 0.001941492, 0.0023598336, 0.0022695106,
+           0.0015064895, 0.0016608827, 0.0015361749, 0.0013933743,
+           0.0010811808, 0.0011689519, 6.902129E-4, 0.0010197051,
+           9.806757E-4, 0.0014488284, 7.759442E-4, 0.0012887524,
+           0.0012394253, 5.904545E-4, 0.0012154742, 3.843667E-4,
+           0.0011463626, 6.902129E-4, 4.9535354E-4, 0.028683169]
+# Normalize the y range to 1:
+nc_max = numpy.max(ncpi0_y)
+
+ncpi0_y /= nc_max
+
+
+
+def adjustWeightsToNCPi0_Gauss(sigma, mu, scale, p_sim):
+
+    # Define the bins as the ncpi0 bins, though those
+    # are the bin centers.  So get the bin edges:
+    bin_edges = ROOT.vector('double')()
+    bin_edges.push_back(0)
+
+    # Define the edge to be halfway between the current point and the next
+    # point
+    for i in xrange(len(ncpi0_x) - 1):
+        center = ncpi0_x[i]
+        next_center = ncpi0_x[i+1]
+        bin_edges.push_back(0.5*(center + next_center))
+
+    bin_edges.push_back(3000)
+
+    # Now get the spectrum of the sim binned into this set of energies
+    energy_spectrum, bins = numpy.histogram(
+        p_sim.getShowerCaloVector().mc_true_energy(),
+        bins=bin_edges,
+        density=True)
+
+    # print 0.5*(bins[0] + bins[1])
+    # print 0.5*(bins[1] + bins[2])
+    # print 0.5*(bins[2] + bins[3])
+
+    # print "------------"
+
+    # exit(0)
+
+    # scale this spectrum to peak at 1:
+    sim_max = numpy.max(energy_spectrum)
+    energy_spectrum /= sim_max
+
+    # Now we can make a 1-1 ratio of the sim to nc spectrum:
+
+    # for i in xrange(len(energy_spectrum)):
+    #     print "{:.2} vs {:.2}".format(ncpi0_y[i], energy_spectrum[i])
+
+    # Set the weights as the ratio of ncpi0_y[i] to energy_spectrum[i]
+
+    weights = ROOT.vector('double')()
+
+    for i in xrange(len(energy_spectrum)):
+        weights.push_back(1.0)
+        extra = math.exp(-(ncpi0_x[i]-mu)**2 / (2*sigma**2))
+        if energy_spectrum[i] != 0:
+            weights[i] = (ncpi0_y[i] + scale*extra  ) / energy_spectrum[i]
+
+    # # Corrected:
+
+    # print "\n\nCorrected:"
+
+    # for i in xrange(len(energy_spectrum)):
+    #     print "{:.2} vs {:.2}".format(ncpi0_y[i], weights[i]*energy_spectrum[i])
+
+    # # Adjust the weights above 500 MeV:
+    # for i in xrange(len(ncpi0_y)):
+    #   if ncpi0_x[i] > 200:
+    #     weights[i] *= 2.5
+    #   if ncpi0_x[i] > 500:
+    #     weights[i] *= 1.5
+
+    p_sim.getShowerCaloVector().set_weights(weights, bin_edges)
 
 
 if __name__ == '__main__':
