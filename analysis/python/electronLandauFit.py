@@ -1,14 +1,14 @@
 import ROOT
-# import larlite
+import larlite
 
 import showerCalo
+from matplotlib import pyplot as plt
 
-import math
 import numpy as np
+import math
 from scipy import optimize
 import landau
 
-from matplotlib import pyplot as plt
 
 
 ncpi0_x = [26.31579, 75.18797, 131.57895, 184.21053, 229.3233,
@@ -161,59 +161,59 @@ def drawLandaus(e_data, e_sim, p_sim, binwidth):
 
     print "Photon contamination is {:.3}%".format(alpha[1]*100/(integral*binwidth))
 
-    # f, ax = plt.subplots(figsize=(10, 7))
+    f, ax = plt.subplots(figsize=(10, 7))
 
-    # ax.bar(bin_centers-0.5*binwidth, alpha[0]*e_mc_dist,
-    #        width=binwidth, color="b",
-    #        label="Simulated Electron Hits",
-    #        alpha=0.7)
-    # ax.bar(bin_centers-0.5*binwidth, alpha[1]*p_mc_dist,
-    #        width=binwidth, color="red",
-    #        bottom=alpha[0]*e_mc_dist,
-    #        label="Simulated Electron Hits",
-    #        alpha=0.7)
-    # # ax.plot(bin_centers, alpha[1]*p_mc_dist, color="r",
-    # # ls="steps-mid", label="Simulated Photon Hits")
-    # # ax.plot(bin_centers, combo_dist, color="g",
-    # # ls="steps-mid", label="Simulated Electrons + Photons",linewidth = 2)
-    # ax.errorbar(bin_centers, e_data_dist, yerr=err, xerr=binwidth*0.5,
-    #             label="Data Hits", capsize=0,
-    #             ls="none", marker="o", color='black')
+    ax.bar(bin_centers-0.5*binwidth, alpha[0]*e_mc_dist,
+           width=binwidth, color="b",
+           label="Simulated Electron Hits",
+           alpha=0.7)
+    ax.bar(bin_centers-0.5*binwidth, alpha[1]*p_mc_dist,
+           width=binwidth, color="red",
+           bottom=alpha[0]*e_mc_dist,
+           label="Simulated Photon Hits",
+           alpha=0.7)
+    # ax.plot(bin_centers, alpha[1]*p_mc_dist, color="r",
+    # ls="steps-mid", label="Simulated Photon Hits")
+    # ax.plot(bin_centers, combo_dist, color="g",
+    # ls="steps-mid", label="Simulated Electrons + Photons",linewidth = 2)
+    ax.errorbar(bin_centers, e_data_dist, yerr=err, xerr=binwidth*0.5,
+                label="Data Hits", capsize=0,
+                ls="none", marker="o", color='black')
 
-    # # plt.text(6.0, 0.65, "$\chi^2$: {:.2}".format(
-    # #     chisq_e_only), fontsize=20, color='b')
-    # # plt.text(6.0, 0.55, "$\chi^2$: {:.2}".format(
-    # #     chisq_joint), fontsize=20, color='g')
+    # plt.text(6.0, 0.65, "$\chi^2$: {:.2}".format(
+    #     chisq_e_only), fontsize=20, color='b')
+    # plt.text(6.0, 0.55, "$\chi^2$: {:.2}".format(
+    #     chisq_joint), fontsize=20, color='g')
 
-    # ax.set_title("True dE/dx Hits",fontsize=25)
-    # for tick in ax.xaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # for tick in ax.yaxis.get_major_ticks():
-    #     tick.label.set_fontsize(0)
+    ax.set_title("True dE/dx Hits",fontsize=25)
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(16)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
     
-    # # y_lim = ax.get_ylim()
-    # # plt.ylim([0, 1.3])
+    # y_lim = ax.get_ylim()
+    # plt.ylim([0, 1.3])
 
-    # # plt.text(7.0, 0.75,"Distance = {} cm".format(distance),fontsize=20)
+    # plt.text(7.0, 0.75,"Distance = {} cm".format(distance),fontsize=20)
 
-    # # for i in xrange(len(sim)):
-    # #     print "[{:.2} - {:.2}]: {:.3}".format(
-    # #         bin_edges[i], bin_edges[i+1], sim[i])
+    # for i in xrange(len(sim)):
+    #     print "[{:.2} - {:.2}]: {:.3}".format(
+    #         bin_edges[i], bin_edges[i+1], sim[i])
 
-    # # ax.bar(bin_centers, sim,align="center",width=binwidth,color=(1.0,1.0,1.0))
+    # ax.bar(bin_centers, sim,align="center",width=binwidth,color=(1.0,1.0,1.0))
 
-    # # ax.plot(bin_centers, sim, color="b",
-    # # marker="x",ls="")
+    # ax.plot(bin_centers, sim, color="b",
+    # marker="x",ls="")
 
-    # plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
-    # plt.ylabel("Normalized",fontsize=20)
-    # plt.legend()
-    # plt.grid(True)
+    plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
+    plt.ylabel("Normalized",fontsize=20)
+    plt.legend()
+    plt.grid(True)
 
-    # # Save the plot:
-    # # plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_6_plots/landau/true_landau_{}cm.png".format(distance))
-    # # plt.close()
-    # plt.show()
+    # Save the plot:
+    # plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_6_plots/landau/true_landau_{}cm.png".format(distance))
+    # plt.close()
+    plt.show()
 
     # Now, subtract the photon contamination from the electron data sample and fit a landau to it.
     e_data_corrected = e_data_dist - p_mc_dist*alpha[1]/(integral*binwidth)
@@ -343,7 +343,7 @@ def main():
 
     binwidth = 0.25
 
-    # drawMCLandaus(e_sim, p_sim, binwidth)
+    drawMCLandaus(e_sim, p_sim, binwidth)
     drawLandaus(e_data, e_sim, p_sim, binwidth)
 
 

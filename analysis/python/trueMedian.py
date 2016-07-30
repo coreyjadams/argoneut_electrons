@@ -12,6 +12,7 @@ def drawdEdx(e_sim, p_sim, binwidth):
 
     # This will loop over a distance soon:
     distances = np.arange(0.5,20,0.5)
+    
     bins = np.arange(binwidth, 12+binwidth, binwidth)
 
 

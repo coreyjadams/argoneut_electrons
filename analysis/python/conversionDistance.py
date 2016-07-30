@@ -59,6 +59,7 @@ def plotDistance(p_sim,p_data, binwidth):
     distances = []
     energies = []
     weights = []
+    n_1cm = 0
     for shower in showers:
         dist = (shower._true_interaction_point - shower._true_start_point).Mag()
         en = shower.mc_true_energy()
@@ -67,6 +68,8 @@ def plotDistance(p_sim,p_data, binwidth):
         distances.append(dist)
         energies.append(en)
         weights.append(shower._weight)
+        if dist < 1.0:
+            n_1cm += 1
 
     pk = open('/data_linux/argoneut/dedx_files/photon_vertexes.pkl')
     _2d_starts = pickle.load(pk)
@@ -108,25 +111,43 @@ def plotDistance(p_sim,p_data, binwidth):
 
     # bin_centers = 0.5*(bin_edges[1:] + bin_edges[:-1])
 
+    print "{} of {} photons converted less than 1 centimeter.".format(n_1cm, len(distances))
 
     f, ax = plt.subplots(figsize=(10,10))
 
-    ax.hist(distances, bins=bins, color="b",fill=True,
-            label="Simulated Photons")
+    dist_hist, bin_edges = np.histogram(distances, bins=bins)
+
+    dist_errs = np.sqrt(dist_hist)
+
+    bin_centers = (bin_edges[:1] + bin_edges[1:] - 0.5*binwidth)
+
+
+    print bin_edges
+    print bin_centers
+
+    plt.bar(bin_centers,dist_errs,width=binwidth,
+            bottom=dist_hist-dist_errs,
+            alpha=0.5,
+            align='center')
+    # ax.plot(bin_centers, dist_hist,
+    #         color="b",
+    #         # fill=True,
+    #         ls="steps-mid",
+    #         label="Simulated Photons")
 
     # ax.plot(bin_centers, p_conv_dist_data, color="black",
     #         ls="none",marker="o",label="Reconstructed Photons")
 
 
-    ax.set_title("Conversion Distance of Photons",fontsize=25)
+    ax.set_title("Conversion Distance of Gammas",fontsize=35)
 
 
-    plt.xlabel("Conversion Distance [cm]",fontsize=20)
-    plt.ylabel("Normalized",fontsize=20)
-    plt.legend(fontsize=20)
+    plt.xlabel("Conversion Distance [cm]",fontsize=30)
+    plt.ylabel("Area Normalized",fontsize=30)
+    plt.legend(fontsize=30)
     plt.grid(True)
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label.set_fontsize(25) 
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(0) 
     # Save the plot:
@@ -140,14 +161,14 @@ def plotDistance(p_sim,p_data, binwidth):
     print len(distances)
     print len(energies)
     ax.hist2d(distances, energies, bins=[bins,energy_bins])
-    plt.title("Energy Dependence of Photon Conversion Distance", fontsize=25)
-    plt.xlabel("Conversion Distance [cm]",fontsize=20)
-    plt.ylabel("Photon Energy [MeV]",fontsize=20)
+    plt.title(r"Energy Dependence of $\gamma$ Conversion Distance", fontsize=35)
+    plt.xlabel("Conversion Distance [cm]",fontsize=30)
+    plt.ylabel("Photon Energy [MeV]",fontsize=30)
 
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label.set_fontsize(25) 
     for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize(16) 
+        tick.label.set_fontsize(25) 
     plt.show()
 
 def adjustWeightsToNCPi0_Gauss(sigma, mu, scale, p_sim):
@@ -225,7 +246,7 @@ def main():
     adjustWeightsToNCPi0_Gauss(482.6,635,5793.0,p_sim)
 
 
-    binwidth = 1.0
+    binwidth = 1.25
 
     plotDistance(p_sim, p_data, binwidth)
 

@@ -37,7 +37,7 @@ def VertexQuality(electrons_mc, photons_mc):
         ).mc_3D_vertex_resolution()
 
     binwidth = 0.1
-    _3d_bins = numpy.arange(0.0, 5.0, binwidth)
+    _3d_bins = numpy.arange(0.0, 2.0, binwidth)
     _1d_bins = numpy.arange(-2.5, 4.5, binwidth)
 
     electron_hist, _3d_bin_edges = numpy.histogram(

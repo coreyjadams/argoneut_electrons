@@ -51,80 +51,80 @@ def main():
     # Plot the X-Y, Y-Z and the X-Z projections of electrons and photons
     # Plot the angles theta and phi for electrons and photons
 
-    # # X-Y Projection:
-    # f, ax = plt.subplots(figsize=((47./40)*10,10))
+    # X-Y Projection:
+    f, ax = plt.subplots(figsize=((47./40)*10,10))
 
-    # ax.scatter(e_x,e_y, marker="o", s=50,color='b', label = "Electrons")
-    # ax.scatter(p_x,p_y, marker="+", s=80,color='r', label = "Photons")
-    # plt.xlabel("X (Drift) Direction [cm]",fontsize=20)
-    # plt.ylabel("Y (Vertical) Direction [cm]",fontsize=20)
-    # plt.title("Cross Section Projection of TPC",fontsize=30)
-    # ax.set_xlim((0,47))
-    # ax.set_ylim((-20,20))
-    # plt.grid(True)
-    # for tick in ax.xaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # for tick in ax.yaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # plt.show()
+    ax.scatter(p_x,p_y, marker="+", s=200,color='r', label = "Photons",linewidth=5)
+    ax.scatter(e_x,e_y, marker="o", s=100,color='b', label = "Electrons",linewidth=5)
+    plt.xlabel("X (Drift) Direction [cm]",fontsize=30)
+    plt.ylabel("Y (Vertical) Direction [cm]",fontsize=30)
+    plt.title("Cross Section Projection of TPC",fontsize=40)
+    ax.set_xlim((0,47))
+    ax.set_ylim((-20,20))
+    plt.grid(True)
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(25)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(25)
+    plt.show()
 
-    # # Y-Z Projection:
-    # f, ax = plt.subplots(figsize=((90./40)*10,10))
+    # Y-Z Projection:
+    f, ax = plt.subplots(figsize=((90./40)*10,10))
 
-    # ax.scatter(e_z,e_y, marker="o", s=50,color='b', label = "Electrons")
-    # ax.scatter(p_z,p_y, marker="+", s=80,color='r', label = "Photons")
-    # plt.xlabel("Z (Beam) Direction [cm]",fontsize=20)
-    # plt.ylabel("Y (Vertical) Direction [cm]",fontsize=20)
-    # plt.title("Side Projection of TPC",fontsize=30)
-    # ax.set_xlim((0,90))
-    # ax.set_ylim((-20,20))
-    # plt.grid(True)
-    # for tick in ax.xaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # for tick in ax.yaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # plt.show()
+    ax.scatter(p_z,p_y, marker="+", s=200,color='r', label = "Photons",linewidth=5)
+    ax.scatter(e_z,e_y, marker="o", s=100,color='b', label = "Electrons",linewidth=5)
+    plt.xlabel("Z (Beam) Direction [cm]",fontsize=30)
+    plt.ylabel("Y (Vertical) Direction [cm]",fontsize=30)
+    plt.title("Side Projection of TPC",fontsize=40)
+    ax.set_xlim((0,90))
+    ax.set_ylim((-20,20))
+    plt.grid(True)
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(25)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(25)
+    plt.show()
 
-    # # X-Z Projection:
-    # f, ax = plt.subplots(figsize=((90./45)*10,10))
+    # X-Z Projection:
+    f, ax = plt.subplots(figsize=((90./45)*10,10))
 
-    # ax.scatter(e_z,e_x, marker="o", s=50,color='b', label = "Electrons")
-    # ax.scatter(p_z,p_x, marker="+", s=80,color='r', label = "Photons")
-    # plt.ylabel("X (Drift) Direction [cm]",fontsize=20)
-    # plt.xlabel("Z (Beam) Direction [cm]",fontsize=20)
-    # plt.title("Top Down Projection of TPC",fontsize=30)
+    ax.scatter(p_z,p_x, marker="+", s=200,color='r', label = "Photons",linewidth=5)
+    ax.scatter(e_z,e_x, marker="o", s=100,color='b', label = "Electrons",linewidth=5)
+    plt.ylabel("X (Drift) Direction [cm]",fontsize=30)
+    plt.xlabel("Z (Beam) Direction [cm]",fontsize=30)
+    plt.title("Top Down Projection of TPC",fontsize=40)
+    ax.set_ylim((0,45))
+    ax.set_xlim((0,90))
+    plt.grid(True)
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(25)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(25)
+    plt.show()
+
+    # Theta angular distribution:
+    f, ax = plt.subplots(figsize=(10, 7))
+
+    theta_bins = numpy.arange(0, 180, 9)
+
+    ax.hist(e_theta, theta_bins, label="Electrons",
+            normed=True, histtype='step',
+            linewidth=5, color='b')
+    ax.hist(p_theta, theta_bins, label="Photons",
+            normed=True, histtype='step',
+            linewidth=5, color='r')
+    plt.ylabel("Area Normalized", fontsize=30)
+    plt.xlabel("Polar Angle [Deg.]", fontsize=30)
+    plt.title(r"$\theta$ (Polar Angle) of Showers to Beam Direction", fontsize=40)
     # ax.set_ylim((0,45))
     # ax.set_xlim((0,90))
-    # plt.grid(True)
-    # for tick in ax.xaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # for tick in ax.yaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # plt.show()
-
-    # # Theta angular distribution:
-    # f, ax = plt.subplots(figsize=(10, 7))
-
-    # theta_bins = numpy.arange(0, 180, 9)
-
-    # ax.hist(e_theta, theta_bins, label="Electrons",
-    #         normed=True, histtype='step',
-    #         linewidth=5, color='b')
-    # ax.hist(p_theta, theta_bins, label="Photons",
-    #         normed=True, histtype='step',
-    #         linewidth=5, color='r')
-    # plt.ylabel("Normalized", fontsize=20)
-    # plt.xlabel("Polar Angle [Deg.]", fontsize=20)
-    # plt.title(r"$\theta$ (Polar Angle) of Showers to Beam Direction", fontsize=20)
-    # # ax.set_ylim((0,45))
-    # # ax.set_xlim((0,90))
-    # plt.legend(fontsize=20)
-    # plt.grid(True)
-    # for tick in ax.xaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
-    # for tick in ax.yaxis.get_major_ticks():
-    #     tick.label.set_fontsize(0)
-    # plt.show()
+    plt.legend(fontsize=40)
+    plt.grid(True)
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(25)
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
+    plt.show()
 
     # # Phi angular distribution:
     # f, ax = plt.subplots(figsize=(10, 7))
