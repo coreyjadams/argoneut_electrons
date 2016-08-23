@@ -113,7 +113,7 @@ def plotDistance(p_sim,p_data, binwidth):
 
     print "{} of {} photons converted less than 1 centimeter.".format(n_1cm, len(distances))
 
-    f, ax = plt.subplots(figsize=(10,10))
+    f, ax = plt.subplots(figsize=(10,5))
 
     dist_hist, bin_edges = np.histogram(distances, bins=bins)
 

@@ -288,7 +288,7 @@ def main():
 def plotdEdx(e_data, e_sim, p_data, p_sim, p_sim_weights, name):
 
     # cut = 0
-    cut = 2.9
+    cut = 2.5
 
     data_bin_width = 0.4
     sim_bin_width = 0.4
@@ -330,8 +330,8 @@ def plotdEdx(e_data, e_sim, p_data, p_sim, p_sim_weights, name):
 
     electron_sim_hist = (1-0.17011)*electron_sim_hist + 0.17011*photon_sim_hist
 
-    bin_centers_data = bin_edges_data[:-1] + 0.5*data_bin_width
-    bin_centers_sim = bin_edges_sim[:-1] + 0.5*sim_bin_width
+    bin_centers_data = bin_edges_data[:-1] + 0.25*data_bin_width
+    bin_centers_sim = bin_edges_sim[:-1] + 0.25*sim_bin_width
 
     electron_err_norm = []
     for e_val, frac_err in zip(electron_data_hist, electron_frac_err):
@@ -342,14 +342,14 @@ def plotdEdx(e_data, e_sim, p_data, p_sim, p_sim_weights, name):
         photon_err_norm.append(p_val*frac_err)
 
     f2, ax2 = plt.subplots(figsize=(15, 8))
-    ax2.set_title("Calorimetric Electron Photon Separation", fontsize=30)
+    ax2.set_title("Calorimetric Electron/Gamma Separation", fontsize=30)
 
     ax2.plot(bin_centers_sim, electron_sim_hist, color="b",
              ls="steps-mid", linewidth=3,
              label="Simulated Electron Candidates", alpha=0.7)
     ax2.plot(bin_centers_sim, photon_sim_hist, color="r",
              ls="steps-mid", linewidth=3,
-             label="Simulated Photons", alpha=0.7)
+             label="Simulated Gammas", alpha=0.7)
 
     e_line = ax2.errorbar(bin_centers_data, electron_data_hist, xerr=data_bin_width*0.5,
                           yerr=electron_err_norm,
@@ -367,40 +367,42 @@ def plotdEdx(e_data, e_sim, p_data, p_sim, p_sim_weights, name):
                           capsize=2,
                           color='r',
                           ls="none")
-    plt.xlabel("dE/dx [MeV/cm]", fontsize=20)
-    plt.ylabel("Unit Normalized", fontsize=20)
+    plt.xlabel("dE/dx [MeV/cm]", fontsize=30)
+    plt.ylabel("Area Normalized", fontsize=30)
     # plt.legend()
 
-    # if cut > 0:
-    #     mc_eff_tuple = makeCut(e_sim, p_sim,cut)
-    #     data_eff_tuple = makeCut(e_data, p_data, cut)
-    #     # data_purity, data_eff_tuple = makeCut(e_sim.getBestdEdxVector(plane), p_sim.getBestdEdxVector(plane),cut)
+    if cut > 0:
+        mc_eff_tuple = makeCut(e_sim, p_sim,cut)
+        data_eff_tuple = makeCut(e_data, p_data, cut)
+        print mc_eff_tuple
+        print data_eff_tuple
+        # data_purity, data_eff_tuple = makeCut(e_sim.getBestdEdxVector(plane), p_sim.getBestdEdxVector(plane),cut)
 
-    #     # Now draw a line at the place that gives the best dEdx cut:
+        # Now draw a line at the place that gives the best dEdx cut:
 
-    #     ax2.axvline(cut, linewidth=2, color='g', linestyle="--",
-    #                 label="Cut at {} MeV/cm".format(cut))
-    #     y_lims = ax2.get_ylim()
-    #     plt.text(4.05, y_lims[1]*0.65, "Electron Efficiency:", size=25,)
-    #     plt.text(7.95, y_lims[1]*0.65,
-    #              "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[0][0],
-    #                                       1.0*data_eff_tuple[0][1]),
-    #              size=25, horizontalalignment='right')
-    #     plt.text(4.05, y_lims[1]*0.55, "Photon Mis. ID:", size=25,)
-    #     plt.text(7.95, y_lims[1]*0.55,
-    #              "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[1][0],
-    #                                       1.0*data_eff_tuple[1][1]),
-    #              size=25, horizontalalignment='right')
+        # ax2.axvline(cut, linewidth=2, color='g', linestyle="--",
+        #             label="Cut at {} MeV/cm".format(cut))
+        # y_lims = ax2.get_ylim()
+        # plt.text(4.05, y_lims[1]*0.65, "Electron Efficiency:", size=25,)
+        # plt.text(7.95, y_lims[1]*0.65,
+        #          "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[0][0],
+        #                                   1.0*data_eff_tuple[0][1]),
+        #          size=25, horizontalalignment='right')
+        # plt.text(4.05, y_lims[1]*0.55, "Photon Mis. ID:", size=25,)
+        # plt.text(7.95, y_lims[1]*0.55,
+        #          "{:.2} +/- {:.2}".format(1.0*data_eff_tuple[1][0],
+        #                                   1.0*data_eff_tuple[1][1]),
+        #          size=25, horizontalalignment='right')
 
     # # Now, get the sigma curve (s/sqrt(s**2 + b**2))
     # x_points, sigma = plotSigma(e_data, p_data)
     # x_points, sim_sigma = plotSigma(e_sim, p_sim)
 
-    # for tick in ax2.xaxis.get_major_ticks():
-    #     tick.label.set_fontsize(16)
+    for tick in ax2.xaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
 
-    # for tick in ax2.yaxis.get_major_ticks():
-    #     tick.label.set_fontsize(0)
+    for tick in ax2.yaxis.get_major_ticks():
+        tick.label.set_fontsize(0)
 
     # ax1 = ax2.twinx()
     # sig_line = ax1.plot(x_points, sigma, linewidth=3, color='g', label="Data")

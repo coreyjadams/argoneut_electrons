@@ -26,16 +26,16 @@ dataSet = namedtuple("dataSet",
 
 def main():
 
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
     # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
-    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_simch_samples()
+    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_simch_samples()
     # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_simch_samples()
     adjustWeightsToNCPi0_Gauss(482.6,635,5793.0,p_sim)
 
     # e_data.getShowerCaloVector().set_drop_first_hit(True)
 
-    e_sim_energy_vs_dedx(e_sim)
-    p_sim_energy_vs_dedx(p_sim)
+    # e_sim_energy_vs_dedx(e_sim)
+    # p_sim_energy_vs_dedx(p_sim)
 
     # Check the dE/dx
 
@@ -54,8 +54,8 @@ def main():
     #     if i > 10:
     #       break
 
-    # e_true_vs_reco_dedx(e_sim)
-    # p_true_vs_reco_dedx(p_sim)
+    e_true_vs_reco_dedx(e_sim)
+    p_true_vs_reco_dedx(p_sim)
 
     # data_collection_vs_induction(e_data,p_data)
     # sim_collection_vs_induction(e_sim,p_sim)
@@ -416,9 +416,9 @@ def dEdxCorrelationHist(data_set, x_bins, y_bins, x_label, y_label):
 
     axScatter = plt.axes(rect_scatter)
     # plt.xlabel("dE/dx [MeV/cm], {l}".format(l=branch_name_x))
-    plt.xlabel(x_label)
+    plt.xlabel(x_label,fontsize=20)
     # plt.ylabel("dE/dx [MeV/cm], {l}".format(l=branch_name_y))
-    plt.ylabel(y_label)
+    plt.ylabel(y_label,fontsize=20)
 
     axHistx = plt.axes(rect_histx)
     axHisty = plt.axes(rect_histy)
@@ -449,13 +449,19 @@ def dEdxCorrelationHist(data_set, x_bins, y_bins, x_label, y_label):
     for i in xrange(len(y_bin_edges) - 1):
         y_centers.append(0.5*(y_bin_edges[i] + y_bin_edges[i+1]))
 
+    cmap = plt.get_cmap('jet')
+    cmap.set_under('w')
+
     # the scatter plot:
     axScatter.hist2d(data_set.values_x,
                      data_set.values_y,
                      bins=[x_bin_edges, y_bin_edges],
                      label=data_set.label,
-                     # norm=LogNorm(),
-                     cmap="ocean_r")
+                     vmin=0.01,
+                     cmap=cmap)
+                     # cmap="nipy_spectral_r")
+
+    axScatter.plot([0,10],[0,10],ls="--",color='black',linewidth=2)
 
     axHistx.errorbar(x_centers, hist_data_x,
                      # xerr=binwidth*0.5,
@@ -472,6 +478,11 @@ def dEdxCorrelationHist(data_set, x_bins, y_bins, x_label, y_label):
                      capsize=0,
                      marker=data_set.marker,
                      color=data_set.color)
+
+    for tick in axScatter.xaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
+    for tick in axScatter.yaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
 
     axScatter.legend()
 

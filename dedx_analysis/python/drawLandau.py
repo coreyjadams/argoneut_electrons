@@ -287,12 +287,12 @@ def photonFit(photon_data, binwidth,photon_sim=None):
         bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
 
         ax.plot(bin_centers+0.5*binwidth, sim, color="r",
-             ls="steps", label="Simulated Photons")
+             ls="steps", label="Simulated Gammas")
 
 
 
     plt.xlabel("dE/dx [MeV/cm]")
-    plt.ylabel("")
+    plt.ylabel("Area Normalized")
     plt.legend()
     plt.grid(True)
 
@@ -300,7 +300,7 @@ def photonFit(photon_data, binwidth,photon_sim=None):
 
 def photonDataMC(photon_data,photon_sim):
 
-    bins = np.arange(0, 8.0, binwidth)
+    bins = np.arange(0, 8.01+binwidth, binwidth)
     data, bin_edges = np.histogram(photon_data, bins)
 
     err = []
@@ -322,7 +322,7 @@ def photonDataMC(photon_data,photon_sim):
     # Make a fit to the hits for photons
     
   
-    f, ax = plt.subplots(figsize=(10, 7))
+    f, ax = plt.subplots(figsize=(15, 7))
 
 
 
@@ -341,13 +341,13 @@ def photonDataMC(photon_data,photon_sim):
         bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
 
         ax.plot(bin_centers, sim, color="r",
-             ls="steps-mid", label="Simulated Photons",
+             ls="steps-mid", label="Simulated Gamma dE/dx Hits",
              linewidth=3)
 
     ax.errorbar(bin_centers, data, yerr=err, xerr=binwidth*0.5,
-                label="Photon Like dE/dx Hits", capsize=0,ls="none",marker="o",color='r')
+                label="Data Gamma dE/dx Hits", capsize=0,ls="none",marker="o",color='r')
     # ax.errorbar(bin_centers, i_data, yerr=i_err, xerr=binwidth*0.5, label="Induction Hits",capsize=0)
-    ax.set_title("Photon dE/dx Hits",fontsize=30)
+    ax.set_title("Gamma dE/dx Hits",fontsize=30)
 
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontsize(16)
@@ -355,9 +355,10 @@ def photonDataMC(photon_data,photon_sim):
         tick.label.set_fontsize(0)
 
     plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
-    plt.ylabel("Normalized",fontsize=20)
-    plt.legend()
+    plt.ylabel("Area Normalized",fontsize=20)
+    plt.legend(fontsize=20)
     plt.grid(True)
+    plt.xlim([0,8.0])
 
     plt.show()
 

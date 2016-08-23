@@ -11,18 +11,20 @@ from matplotlib import pyplot as plt
 def drawdEdx(e_sim, p_sim, binwidth):
 
     # This will loop over a distance soon:
-    distances = np.arange(1.5,20,0.5)
+    # distances = [5]
+    # distances = np.arange(1.5,20,0.5)
+    distances = [2.0, 3.0, 4.0, 6.0, 10.0]
 
     bins = np.arange(binwidth, 12+binwidth, binwidth)
 
 
     for distance in distances:
         print "Starting distance {}".format(distance)
-        e_true_hits = e_sim.getShowerCaloVector().true_dEdx_3D_mean(distance)
-        p_true_hits = p_sim.getShowerCaloVector().true_dEdx_3D_mean(distance)
+        e_true_hits = e_sim.getShowerCaloVector().true_dEdx_3D_LMA(distance)
+        p_true_hits = p_sim.getShowerCaloVector().true_dEdx_3D_LMA(distance)
 
 
-        # print e_true_hits.size()
+
         e_data, bin_edges = np.histogram(e_true_hits, bins,density=True)
         p_data, bin_edges = np.histogram(p_true_hits, bins,density=True)
 
@@ -35,16 +37,18 @@ def drawdEdx(e_sim, p_sim, binwidth):
 
 
         ax.plot(bin_centers, e_data, color="b",
-             ls="steps", label="Simulated Electrons")
+             ls="steps", linewidth=4,
+             label="Simulated Electrons")
         ax.plot(bin_centers, p_data, color="r",
-             ls="steps", label="Simulated Photons")
+             ls="steps", linewidth=4,
+             label="Simulated Gammas")
 
-        ax.set_title("Modified-Mean dE/dx", fontsize=25)
+        ax.set_title("Lowest Moving Average dE/dx",fontsize=30)
 
         y_lim = ax.get_ylim()
-        plt.ylim([0, 1.3])
+        plt.ylim([0, 1.4])
 
-        plt.text(7.0, 0.75,"Distance = {} cm".format(distance),fontsize=20)
+        plt.text(6.0, 0.7,"Distance = {} cm".format(distance),fontsize=25)
 
 
 
@@ -58,16 +62,17 @@ def drawdEdx(e_sim, p_sim, binwidth):
              # marker="x",ls="")
 
 
-        plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
+        plt.xlabel("dE/dx [MeV/cm]",fontsize=25)
         plt.ylabel("")
-        plt.legend(fontsize=20)
+        plt.legend(fontsize=25)
         plt.grid(True)
         for tick in ax.xaxis.get_major_ticks():
-            tick.label.set_fontsize(16)
+            tick.label.set_fontsize(20)
         for tick in ax.yaxis.get_major_ticks():
             tick.label.set_fontsize(0)
+
         # Save the plot:
-        plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_true_dedx_response/mean/true_mean_{}cm.png".format(distance))
+        plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_true_dedx_response/LMA/true_LMA_{}cm.png".format(distance))
         plt.close()
         # plt.show()
 

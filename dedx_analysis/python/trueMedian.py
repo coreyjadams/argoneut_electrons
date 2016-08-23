@@ -8,19 +8,20 @@ import showerCalo
 from matplotlib import pyplot as plt
 
 
-def drawLandaus(e_sim, p_sim, binwidth):
+def drawdEdx(e_sim, p_sim, binwidth):
 
     # This will loop over a distance soon:
-    distances = [0.5,1,1.5,2,2.5]
-    distances = np.arange(0.5,50,0.5)
+    # distances = np.arange(1.5,1.51,0.5)
+    # distances = np.arange(0.5,20,0.5)
+    distances = [2.0, 3.0, 4.0, 6.0, 10.0]
 
     bins = np.arange(binwidth, 12+binwidth, binwidth)
 
 
     for distance in distances:
         print "Starting distance {}".format(distance)
-        e_true_hits = e_sim.getShowerCaloVector().true_dedx_hits(distance)
-        p_true_hits = p_sim.getShowerCaloVector().true_dedx_hits(distance)
+        e_true_hits = e_sim.getShowerCaloVector().true_dEdx_3D_median(distance)
+        p_true_hits = p_sim.getShowerCaloVector().true_dEdx_3D_median(distance)
 
 
 
@@ -36,16 +37,18 @@ def drawLandaus(e_sim, p_sim, binwidth):
 
 
         ax.plot(bin_centers, e_data, color="b",
-             ls="steps", label="Simulated Electron Hits")
+             ls="steps",linewidth=4,
+             label="Simulated Electrons")
         ax.plot(bin_centers, p_data, color="r",
-             ls="steps", label="Simulated Photon Hits")
+             ls="steps", linewidth=4,
+             label="Simulated Gammas")
 
-        ax.set_title("True dE/dx Hits")
+        ax.set_title("Median dE/dx",fontsize=30)
 
         y_lim = ax.get_ylim()
-        plt.ylim([0, 1.3])
+        plt.ylim([0, 1.4])
 
-        plt.text(7.0, 0.75,"Distance = {} cm".format(distance),fontsize=20)
+        plt.text(6.0, 0.7,"Distance = {} cm".format(distance),fontsize=25)
 
 
 
@@ -59,13 +62,16 @@ def drawLandaus(e_sim, p_sim, binwidth):
              # marker="x",ls="")
 
 
-        plt.xlabel("dE/dx [MeV/cm]")
+        plt.xlabel("dE/dx [MeV/cm]",fontsize=25)
         plt.ylabel("")
-        plt.legend()
+        plt.legend(fontsize=25)
         plt.grid(True)
-
+        for tick in ax.xaxis.get_major_ticks():
+            tick.label.set_fontsize(20)
+        for tick in ax.yaxis.get_major_ticks():
+            tick.label.set_fontsize(0)
         # Save the plot:
-        plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_6_plots/landau/true_landau_{}cm.png".format(distance))
+        plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_true_dedx_response/median/true_median_{}cm.png".format(distance))
         plt.close()
         # plt.show()
 
@@ -76,4 +82,4 @@ def drawLandaus(e_sim, p_sim, binwidth):
 binwidth = 0.2
 
 
-drawLandaus(e_sim, p_sim, binwidth)
+drawdEdx(e_sim, p_sim, binwidth)

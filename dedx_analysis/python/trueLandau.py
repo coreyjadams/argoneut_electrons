@@ -8,18 +8,19 @@ import showerCalo
 from matplotlib import pyplot as plt
 
 
-def drawdEdx(e_sim, p_sim, binwidth):
+def drawLandaus(e_sim, p_sim, binwidth):
 
     # This will loop over a distance soon:
-    distances = np.arange(0.5,20,0.5)
-    
+    distances = [0.5,1,1.5,2,2.5]
+    distances = np.arange(0.5,50,0.5)
+
     bins = np.arange(binwidth, 12+binwidth, binwidth)
 
 
     for distance in distances:
         print "Starting distance {}".format(distance)
-        e_true_hits = e_sim.getShowerCaloVector().true_dEdx_3D_median(distance)
-        p_true_hits = p_sim.getShowerCaloVector().true_dEdx_3D_median(distance)
+        e_true_hits = e_sim.getShowerCaloVector().true_dedx_hits(distance)
+        p_true_hits = p_sim.getShowerCaloVector().true_dedx_hits(distance)
 
 
 
@@ -35,11 +36,11 @@ def drawdEdx(e_sim, p_sim, binwidth):
 
 
         ax.plot(bin_centers, e_data, color="b",
-             ls="steps", label="Simulated Electrons")
+             ls="steps", label="Simulated Electron Hits")
         ax.plot(bin_centers, p_data, color="r",
-             ls="steps", label="Simulated Photons")
+             ls="steps", label="Simulated Photon Hits")
 
-        ax.set_title("Median dE/dx",fontsize=25)
+        ax.set_title("True dE/dx Hits")
 
         y_lim = ax.get_ylim()
         plt.ylim([0, 1.3])
@@ -58,18 +59,15 @@ def drawdEdx(e_sim, p_sim, binwidth):
              # marker="x",ls="")
 
 
-        plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
+        plt.xlabel("dE/dx [MeV/cm]")
         plt.ylabel("")
-        plt.legend(fontsize=20)
+        plt.legend()
         plt.grid(True)
-        for tick in ax.xaxis.get_major_ticks():
-            tick.label.set_fontsize(16)
-        for tick in ax.yaxis.get_major_ticks():
-            tick.label.set_fontsize(0)
+
         # Save the plot:
-        plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_6_plots/median/true_median_{}cm.png".format(distance))
-        plt.close()
-        # plt.show()
+        plt.savefig("/home/cadams/Dropbox/Talks/dEdx/EGammaSep/dedx_6_plots/landau/true_landau_{}cm.png".format(distance))
+        # plt.close()
+        plt.show()
 
 
 (e_data, e_sim), (p_data, p_sim) = showerCalo.full_simch_samples()
@@ -78,4 +76,4 @@ def drawdEdx(e_sim, p_sim, binwidth):
 binwidth = 0.2
 
 
-drawdEdx(e_sim, p_sim, binwidth)
+drawLandaus(e_sim, p_sim, binwidth)

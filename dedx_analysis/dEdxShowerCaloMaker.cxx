@@ -119,6 +119,8 @@ bool dEdxShowerCaloMaker::getTruedEdxVector(larlite::storage_manager * storage, 
 
 bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
 
+  static int i_counter = 0;
+  // std::cout << "Entered Analyze " << i_counter << std::endl;
 
   // Get the showers for this event
   larlite::event_shower * ev_shower = storage -> get_data<larlite::event_shower>(_producer_name);
@@ -176,7 +178,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     if ( _lifetimes.find(ev_pfpart->run()) != _lifetimes.end() ) {
       lifetime = _lifetimes[ev_pfpart->run()];
     } else {
-      std::cout << "Skipping run " << ev_pfpart->run() << ", couldn't find the lifetime" << std::endl;
+      // std::cout << "Skipping run " << ev_pfpart->run() << ", couldn't find the lifetime" << std::endl;
       return false;
     }
   }
@@ -264,6 +266,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
 
     }
 
+    // std::cout << "Check 0 " << i_counter << std::endl;
 
     for (auto & _params : proto_shower.params()) {
 
@@ -319,6 +322,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
                                               slope,
                                               averagePoint);
       }
+      // std::cout << "Check 01 " << i_counter << std::endl;
 
       // This block of code is the "old way" to get the hits for computing dE/dx
       /*
@@ -351,10 +355,13 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
 
       // Need to get the pitch in this plane:
       double pitch = getPitch(startDir, plane);
+      // std::cout << "Check 02 " << i_counter << std::endl;
 
 
       double projection_error = 0.0;
       projection_error = fabs((geomHelper->Slope_3Dto2D(startDir, plane) - slope) / slope);
+
+      // std::cout << "Check 1 " << i_counter << std::endl;
 
       // Fill out the plane by plane info:
       if (_params.plane_id.Plane == 0) {
@@ -462,6 +469,8 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     _shower_calo_vector.push_back(this_calo);
 
   }
+  // std::cout << "Ok Here Analyze " << i_counter << std::endl;
+  i_counter ++;
 
   return true;
 }

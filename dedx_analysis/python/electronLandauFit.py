@@ -10,7 +10,6 @@ from scipy import optimize
 import landau
 
 
-
 ncpi0_x = [26.31579, 75.18797, 131.57895, 184.21053, 229.3233,
            278.1955, 334.58646, 383.45865, 424.81204, 484.9624,
            526.3158, 582.7068, 635.3383, 684.2105, 729.3233,
@@ -44,17 +43,17 @@ nc_max = np.max(ncpi0_y)
 ncpi0_y /= nc_max
 
 
-def chisq(target_dist, fitted_dist):
+def chisq(target_dist, fitted_dist, errors):
     cs = 0.0
-    for t, f in zip(target_dist, fitted_dist):
+    for t, f, e in zip(target_dist, fitted_dist, errors):
         if t > 0.01:
-            cs += (t-f)**2 / t
+            cs += (t-f)**2 / e
     return cs
 
 
-def bestFit(alpha, e_data, e_sim, p_sim):
-    joint_dist = (alpha[0])*e_sim + alpha[1] * p_sim
-    return chisq(e_data, joint_dist)
+def bestFit(alpha, e_data, e_sim, p_sim, errors):
+    joint_dist = (1 - alpha)*e_sim + alpha * p_sim
+    return chisq(e_data, joint_dist, errors)
 
 
 def drawMCLandaus(e_sim, p_sim, binwidth):
@@ -75,13 +74,13 @@ def drawMCLandaus(e_sim, p_sim, binwidth):
             ls="steps-mid", label="Simulated Electron Hits",
             linewidth=3)
     ax.plot(bin_centers, p_mc_dist, color="r",
-            ls="steps-mid", label="Simulated Photon Hits",
+            ls="steps-mid", label="Simulated Gamma Hits",
             linewidth=3)
 
     ax.set_title("True dE/dx Hits", fontsize=25)
 
     y_lim = ax.get_ylim()
-    # plt.ylim([0, 1.3])
+    plt.ylim([0, 1.3*y_lim[1]])
 
     # plt.text(7.0, 0.75,"Distance = {} cm".format(distance),fontsize=20)
 
@@ -94,11 +93,11 @@ def drawMCLandaus(e_sim, p_sim, binwidth):
     # ax.plot(bin_centers, sim, color="b",
     # marker="x",ls="")
 
-    plt.xlabel("dE/dx [MeV/cm]", fontsize=20)
-    plt.ylabel("Normalized", fontsize=20)
-    plt.legend()
+    plt.xlabel("dE/dx [MeV/cm]", fontsize=25)
+    plt.ylabel("Area Normalized", fontsize=25)
+    plt.legend(fontsize=20)
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label.set_fontsize(24)
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(0)
     plt.grid(True)
@@ -132,45 +131,59 @@ def drawLandaus(e_data, e_sim, p_sim, binwidth):
 
     err *= e_data_dist
 
+    print e_data_dist
+    print err
+
     bin_centers = 0.5*(bin_edges[1:] + bin_edges[:-1])
 
     # Combined distribution:
     res = optimize.minimize(
-        bestFit, x0=(1.0, 0.2), args=(e_data_dist, e_mc_dist, p_mc_dist))
+        bestFit, x0=(0.15), args=(e_data_dist, e_mc_dist, p_mc_dist, err))
 
     print res
 
     alpha = res.x
-    combo_dist = alpha[0]*e_mc_dist + alpha[1]*p_mc_dist
+    print alpha
+    combo_dist = (1-alpha)*e_mc_dist + alpha*p_mc_dist
 
     # Calculate the chi-sq for the electron only simulation as well as
     # the joint electron + photon fit:
 
-    chisq_e_only = chisq(e_data_dist, e_mc_dist)
-    chisq_joint = chisq(e_data_dist, combo_dist)
+    chisq_e_only = chisq(e_data_dist, e_mc_dist, err)
+    chisq_joint = chisq(e_data_dist, combo_dist, err)
 
     print "Chisq went from {} to {}".format(chisq_e_only, chisq_joint)
 
     # Figure out the contamination from photons.
-    integral = 0.0;
+    integral = 0.0
     for e, p in zip(e_mc_dist, p_mc_dist):
-        integral += alpha[0]*e + alpha[1]*p
+        integral += (1-alpha)*e + alpha*p
+
+    print integral
 
     print integral*binwidth
     print np.sum(alpha)
 
-    print "Photon contamination is {:.3}%".format(alpha[1]*100/(integral*binwidth))
+    print "Gamma contamination is {}%".format(int(alpha*100/(integral*binwidth)))
+
+    # We can also find out what value of alpha gives chi2 = chi2+1,
+    # which puts an error bar on alpha
+    for i in np.arange(0.04, 0.4, 0.005):
+        temp_dist = (1-i) * e_mc_dist + i * p_mc_dist
+        print "chisq of alpha = {} is {}".format(i, chisq(e_data_dist,
+                                                          temp_dist,
+                                                          err))
 
     f, ax = plt.subplots(figsize=(10, 7))
 
-    ax.bar(bin_centers-0.5*binwidth, alpha[0]*e_mc_dist,
+    ax.bar(bin_centers-0.5*binwidth, (1-alpha)*e_mc_dist,
            width=binwidth, color="b",
            label="Simulated Electron Hits",
            alpha=0.7)
-    ax.bar(bin_centers-0.5*binwidth, alpha[1]*p_mc_dist,
+    ax.bar(bin_centers-0.5*binwidth, alpha*p_mc_dist,
            width=binwidth, color="red",
-           bottom=alpha[0]*e_mc_dist,
-           label="Simulated Photon Hits",
+           bottom=(1-alpha)*e_mc_dist,
+           label="Simulated Gamma Hits",
            alpha=0.7)
     # ax.plot(bin_centers, alpha[1]*p_mc_dist, color="r",
     # ls="steps-mid", label="Simulated Photon Hits")
@@ -185,12 +198,12 @@ def drawLandaus(e_data, e_sim, p_sim, binwidth):
     # plt.text(6.0, 0.55, "$\chi^2$: {:.2}".format(
     #     chisq_joint), fontsize=20, color='g')
 
-    ax.set_title("True dE/dx Hits",fontsize=25)
+    ax.set_title("True dE/dx Hits", fontsize=25)
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontsize(16)
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(0)
-    
+
     # y_lim = ax.get_ylim()
     # plt.ylim([0, 1.3])
 
@@ -205,9 +218,9 @@ def drawLandaus(e_data, e_sim, p_sim, binwidth):
     # ax.plot(bin_centers, sim, color="b",
     # marker="x",ls="")
 
-    plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
-    plt.ylabel("Normalized",fontsize=20)
-    plt.legend()
+    plt.xlabel("dE/dx [MeV/cm]", fontsize=25)
+    plt.ylabel("Area Normalized", fontsize=25)
+    plt.legend(fontsize=20)
     plt.grid(True)
 
     # Save the plot:
@@ -215,8 +228,9 @@ def drawLandaus(e_data, e_sim, p_sim, binwidth):
     # plt.close()
     plt.show()
 
-    # Now, subtract the photon contamination from the electron data sample and fit a landau to it.
-    e_data_corrected = e_data_dist - p_mc_dist*alpha[1]/(integral*binwidth)
+    # Now, subtract the photon contamination from the electron data sample and
+    # fit a landau to it.
+    e_data_corrected = e_data_dist - p_mc_dist*alpha/(integral*binwidth)
 
     for i in xrange(len(e_data_corrected)):
         if e_data_corrected[i] < 0:
@@ -226,17 +240,15 @@ def drawLandaus(e_data, e_sim, p_sim, binwidth):
 
     print e_data_corrected
 
-
-    x_fit = np.arange(0, 8, 0.25*binwidth)
+    x_fit = np.arange(0, 8, 0.125*binwidth)
     x_fit += 0.5*0.25*binwidth
 
     popt, pcov = optimize.curve_fit(
-        landau.gauss_landau, bin_centers, e_data_corrected, bounds=([0,0,0,0], [10, 10, 10, 10]))
-    y_fit = landau.gauss_landau(x_fit, popt[0], popt[1], popt[2],popt[3])
+        landau.gauss_landau, bin_centers, e_data_corrected, bounds=([0, 0, 0, 0], [10, 10, 10, 10]))
+    y_fit = landau.gauss_landau(x_fit, popt[0], popt[1], popt[2], popt[3])
     textstring = "Landau MPV: {:.3}\n".format(popt[0])
     textstring += "Landau $\sigma$: {:.3}\n".format(popt[1])
     textstring += "Gauss $\sigma$: {:.3}".format(popt[2])
-
 
     f, ax = plt.subplots(figsize=(10, 7))
     ax.errorbar(bin_centers, e_data_corrected, yerr=err, xerr=binwidth*0.5,
@@ -244,27 +256,25 @@ def drawLandaus(e_data, e_sim, p_sim, binwidth):
                 ls="none", marker="o", color='black')
 
     # ax.errorbar(x, i_data, yerr=i_err, xerr=binwidth*0.5, label="Induction Hits",capsize=0)
-    ax.set_title("Corrected Electron dE/dx Hits",fontsize=25)
+    ax.set_title("Corrected Electron dE/dx Hits", fontsize=25)
 
-    plt.plot(x_fit, y_fit, label="Fitted landau",color='g')
+    plt.plot(x_fit, y_fit, label="Fitted landau", color='g',linewidth=2)
     y_lim = ax.get_ylim()
     # plt.ylim([0, 0.6])
-
-
 
     props = dict(boxstyle='round', facecolor='wheat', alpha=1.0)
     ax.text(5, 0.45*y_lim[1], textstring, bbox=props, fontsize=20)
 
-    plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
-    plt.ylabel("Normalized",fontsize=20)
-    plt.legend()
+    plt.xlabel("dE/dx [MeV/cm]", fontsize=25)
+    plt.ylabel("Area Normalized", fontsize=25)
+    plt.legend(fontsize=20)
     plt.grid(True)
     # ax.set_title("True dE/dx Hits",fontsize=25)
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label.set_fontsize(24)
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(0)
-    
+
     plt.show()
 
 
