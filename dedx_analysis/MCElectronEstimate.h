@@ -46,39 +46,35 @@ namespace larlite {
     */
     virtual bool analyze(storage_manager* storage);
 
+    virtual bool begin_subrun(storage_manager* storage);
+
+
     /** IMPLEMENT in MCElectronEstimate.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
+    std::vector<double> _deposited_energy;
+    std::vector<double> _true_energy;
+
+    std::vector<double> _theta;
+    std::vector<double> _phi;
+    std::vector<double> _pdg;
+
+
+
   protected:
-
-    // Some histograms for Filling Information
-    TH1F * nue_NeutrinoEnergy;
-    TH1F * nue_ElectronEnergy;
-    TH1F * num_NeutrinoEnergy;
-    TH1F * num_ElectronEnergy;
-    TH1F * nue_deposit_Energy;
-    TH1F * num_deposit_Energy;
-
-    TH2F * nue_trueNu_trueLep;
-    TH2F * num_trueNu_trueLep;
-
-    TH2F * nue_depost_trueLep;
-    TH2F * num_depost_trueLep;
 
     float pot;
 
     // some useful numbers to calculate:
     int _n_electrons;
     int _n_positrons;
-    int _n_muons;
-    int _n_antimuons;
 
     int subrun;
 
     // private functions:
-    bool isActive(const TLorentzVector & vertex);
+    bool isActive(const TLorentzVector & vertex,double cut=3);
     
   };
 }

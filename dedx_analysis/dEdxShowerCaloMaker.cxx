@@ -144,11 +144,11 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     _other_vertex = ev_mcshower -> front().DetProfile().Position().Vect();
     _truth_start_dir = ev_mcshower -> front().DetProfile().Momentum().Vect();
     _true_interaction_point = ev_mcshower -> front().Start().Position().Vect();
-    _truth_start_dir *= 1.0/ _truth_start_dir.Mag();
+    _truth_start_dir *= 1.0 / _truth_start_dir.Mag();
     _true_energy = ev_mcshower -> front().Start().E();
     _true_deposited_energy = ev_mcshower -> front().DetProfile().E();
 
-    if (_true_deposited_energy < 50){
+    if (_true_deposited_energy < 50) {
       return false;
     }
     getTruedEdxVector(storage, _distance_and_E);
@@ -307,7 +307,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
           _close_hit_indexes =
             geomHelper -> SelectLocalPointList( _params.hit_vector,
                                                 startingHit,
-                                                dist,
+                                                4*dist,
                                                 0.5,
                                                 slope,
                                                 averagePoint);
@@ -317,7 +317,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
         _close_hit_indexes =
           geomHelper -> SelectLocalPointList( _params.hit_vector,
                                               startingHit,
-                                              dist,
+                                              4*dist,
                                               0.5,
                                               slope,
                                               averagePoint);
@@ -363,9 +363,33 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
 
       // std::cout << "Check 1 " << i_counter << std::endl;
 
+      // Fill out the total deposited energy:
+
+      if ( this_calo._reco_deposited_energy.size() != 2) {
+        this_calo._reco_deposited_energy.resize(2);
+      }
+      this_calo._reco_deposited_energy.at(_params.plane_id.Plane) = 0.0;
+
+
+
+      // std::cout << "Just calculated reco dep E as "
+      //           << this_calo._reco_deposited_energy.at(_params.plane_id.Plane)
+      //           << std::endl;
+
       // Fill out the plane by plane info:
       if (_params.plane_id.Plane == 0) {
         //induction
+
+        for (auto & hit : _params.hit_vector) {
+          double _wire_temp = (hit.w) / geomHelper->WireToCm();
+          int wire = _wire_temp + 0.1;
+          this_calo._reco_deposited_energy.at(_params.plane_id.Plane);
+          double tick = (hit.t + 0.6 ) / (geomHelper->TimeToCm())
+                        + detprop -> TriggerOffset();
+          double lifetime_corr = exp(tick * timetick / lifetime);
+          double dq = hit.charge * lifetime_corr  * _calorimetry_corrections[0][wire];
+          this_calo._reco_deposited_energy.at(_params.plane_id.Plane) += dq * recombFactor;
+        }
 
         for (auto & index : _close_hit_indexes) {
           auto & hit = _params.hit_vector.at(index);
@@ -406,6 +430,17 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
         this_calo._induction_dist = dist;
       }
       else {
+
+        for (auto & hit : _params.hit_vector) {
+          double _wire_temp = (hit.w) / geomHelper->WireToCm();
+          int wire = _wire_temp + 0.1;
+          this_calo._reco_deposited_energy.at(_params.plane_id.Plane);
+          double tick = (hit.t + 0.2 ) / (geomHelper->TimeToCm())
+                        + detprop -> TriggerOffset();
+          double lifetime_corr = exp(tick * timetick / lifetime);
+          double dq = hit.charge * lifetime_corr  * _calorimetry_corrections[1][wire];
+          this_calo._reco_deposited_energy.at(_params.plane_id.Plane) += dq * recombFactor;
+        }
 
         for (auto & index : _close_hit_indexes) {
           auto & hit = _params.hit_vector.at(index);

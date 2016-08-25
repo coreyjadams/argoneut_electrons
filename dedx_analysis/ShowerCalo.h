@@ -115,6 +115,9 @@ public:
 
   double getPitch(const TVector3 & dir3D, int pl );
 
+  double reco_deposited_energy(int plane);
+
+  std::vector<std::pair<double, double> > dEdx_hits_and_distances(int plane);
 
 public:
 
@@ -135,6 +138,8 @@ public:
   double _true_deposited_energy;
 
   double _weight;
+
+  std::vector<double>  _reco_deposited_energy;
 
   std::vector<std::pair<double, double> > _distance_and_E;
 
@@ -215,6 +220,7 @@ public:
   std::vector<double> all_dedx_hits_box(int plane);
   std::vector<double> best_dedx_hits_box();
 
+  std::vector<double> reco_deposited_energy(int plane);
 
   std::vector<double> mc_x_resolution();
   std::vector<double> mc_y_resolution();

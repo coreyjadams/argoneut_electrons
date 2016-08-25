@@ -27,8 +27,8 @@ dataSet = namedtuple("dataSet",
 def main():
 
     # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
-    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_simch_samples()
+    (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_simch_samples()
     # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_simch_samples()
     adjustWeightsToNCPi0_Gauss(482.6,635,5793.0,p_sim)
 

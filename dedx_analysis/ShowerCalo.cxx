@@ -4,6 +4,44 @@
 #include <math.h>
 #include "ShowerCalo.h"
 
+
+std::vector<std::pair<double, double> >
+ShowerCalo::dEdx_hits_and_distances(int plane) {
+
+  std::vector<std::pair<double, double> > result;
+
+  std::vector<double> cands;
+  if (plane == 0) {
+    for (size_t index = 0; index < _induction_dedx.size(); index ++) {
+      if (_induction_dist_3D.at(index) > 0 &&
+          _induction_dist_3D.at(index) < 4*dedx_dist_max)
+      {
+        result.push_back(std::make_pair(_induction_dist_3D.at(index),
+                                        _induction_dedx.at(index)));
+      }
+    }
+  }
+  else if (plane == 1) {
+    for (size_t index = 0; index < _collection_dedx.size(); index ++) {
+      if (_collection_dist_3D.at(index) > 0 &&
+          _collection_dist_3D.at(index) < 4*dedx_dist_max)
+      {
+        result.push_back(std::make_pair(_collection_dist_3D.at(index),
+                                        _collection_dedx.at(index)));      }
+    }
+  }
+
+  std::sort(result.begin(), result.end(), sort_first());
+
+  if (_drop_first_hit) {
+    result.erase(result.begin());
+  }
+
+
+  return result;
+
+}
+
 double ShowerCalo::dEdx_median(int plane) {
   // Loop over the dE/dx points in the specified plane and compute the dE/dx using the median method
 
@@ -190,6 +228,18 @@ double ShowerCalo::dEdx_LMA(int plane) {
 
 }
 
+double ShowerCalo::reco_deposited_energy(int plane) {
+  if (plane == 0) {
+    return _reco_deposited_energy[0];
+  }
+  else if (plane == 1) {
+    return _reco_deposited_energy[1];
+  }
+
+  return 0;
+
+}
+
 double ShowerCalo::getPitch(const TVector3 & dir3D, int pl ) {
 
 
@@ -334,8 +384,8 @@ std::vector<double> ShowerCalo::true_dedx_hits(double distance) {
     val /= pitch;
 
   std::vector<double> hits;
-  for (auto &val : cands){
-    if (val > 0.01){
+  for (auto &val : cands) {
+    if (val > 0.01) {
       hits.push_back(val);
     }
   }
@@ -378,8 +428,8 @@ double ShowerCalo::true_dEdx_median(int plane) {
     val /= pitch;
 
   std::vector<double> hits;
-  for (auto &val : cands){
-    if (val > 0.01){
+  for (auto &val : cands) {
+    if (val > 0.01) {
       hits.push_back(val);
     }
   }
@@ -962,6 +1012,15 @@ std::vector<double> shower_collection::true_dedx_median(int plane) {
   _result.reserve(this->size());
   for (auto & item : *this ) {
     _result.push_back(item.true_dEdx_median(plane));
+  }
+  return _result;
+}
+
+std::vector<double> shower_collection::reco_deposited_energy(int plane) {
+  std::vector<double> _result;
+  _result.reserve(this->size());
+  for (auto & item : *this ) {
+    _result.push_back(item.reco_deposited_energy(plane));
   }
   return _result;
 }
