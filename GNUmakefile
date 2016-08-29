@@ -20,7 +20,7 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := utils vertex calo merging matching spacepoints analysis filter #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := utils vertex calo merging matching spacepoints dedx_analysis filter #ADD_NEW_SUBDIR ... do not remove this comment from this line
 #####################################################################################
 #
 # COMPILATION...

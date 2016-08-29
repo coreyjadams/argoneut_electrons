@@ -1,20 +1,19 @@
 import ROOT
-import numpy
 import showerCalo
 
-import math
-
-from matplotlib import pyplot as plt
+import scipy.stats
 
 import numpy
+
+
+from matplotlib import pyplot as plt
 
 
 def main():
 
     # load the data:
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
-    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
-
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
 
     sim_reco_dep_e_i = e_sim.getShowerCaloVector().reco_deposited_energy(0)
     sim_reco_dep_e_c = e_sim.getShowerCaloVector().reco_deposited_energy(1)
@@ -23,23 +22,39 @@ def main():
     fig, axScatter = plt.subplots(figsize=(8, 8))
 
     # axScatter = plt.axes(rect_scatter)
-    plt.xlabel("Reco Deposited Energy [MeV]",fontsize=20)
-    plt.ylabel("True Deposited Energy [MeV]",fontsize=20)
+    plt.ylabel("Reco Deposited Energy [MeV]", fontsize=20)
+    plt.xlabel("True Deposited Energy [MeV]", fontsize=20)
 
-    bins = numpy.arange(0,1000,20)
+    bins = numpy.arange(0, 2000, 20)
 
     cmap = plt.get_cmap('jet')
     cmap.set_under('w')
 
+    # Fit a straight line to this set of data:
+    res = scipy.stats.linregress(sim_true_dep_e, sim_reco_dep_e_i)
+
     # the scatter plot:
-    axScatter.hist2d(sim_reco_dep_e_i,
-                     sim_true_dep_e,
-                     bins=[bins,bins],
+    axScatter.hist2d(sim_true_dep_e,
+                     sim_reco_dep_e_i,
+                     bins=[bins, bins],
                      vmin=0.01,
                      cmap=cmap)
-                     # cmap="nipy_spectral_r")
+    # cmap="nipy_spectral_r")
 
-    axScatter.plot([0,10],[0,10],ls="--",color='black',linewidth=2)
+    for tick in axScatter.xaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
+
+    for tick in axScatter.yaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
+
+    slope = res.slope
+    intc = res.intercept
+
+    axScatter.plot([0, 2000], [0, intc + slope*2000],
+                   ls="--",
+                   color='black',
+                   linewidth=2,
+                   label=r"Linear Fit, $\alpha={:.2},\beta={:.3}$".format(intc,slope))
 
 
     # # Set limits for dE/dx values
@@ -51,29 +66,44 @@ def main():
     # plt.legend()
 
     plt.show()
-
 
     fig, axScatter = plt.subplots(figsize=(8, 8))
 
     # axScatter = plt.axes(rect_scatter)
-    plt.xlabel("Reco Deposited Energy [MeV]",fontsize=20)
-    plt.ylabel("True Deposited Energy [MeV]",fontsize=20)
+    plt.ylabel("Reco Deposited Energy [MeV]", fontsize=20)
+    plt.xlabel("True Deposited Energy [MeV]", fontsize=20)
 
-    bins = numpy.arange(0,1000,20)
+    bins = numpy.arange(0, 2000, 20)
 
     cmap = plt.get_cmap('jet')
     cmap.set_under('w')
 
     # the scatter plot:
-    axScatter.hist2d(sim_reco_dep_e_c,
-                     sim_true_dep_e,
-                     bins=[bins,bins],
+    axScatter.hist2d(sim_true_dep_e,
+                     sim_reco_dep_e_c,
+                     bins=[bins, bins],
                      vmin=0.01,
                      cmap=cmap)
-                     # cmap="nipy_spectral_r")
+    # cmap="nipy_spectral_r")
 
-    axScatter.plot([0,10],[0,10],ls="--",color='black',linewidth=2)
+    for tick in axScatter.xaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
 
+    for tick in axScatter.yaxis.get_major_ticks():
+        tick.label.set_fontsize(20)
+
+    # Fit a straight line to this set of data:
+    res = scipy.stats.linregress(sim_true_dep_e, sim_reco_dep_e_c)
+    slope = res.slope
+    intc = res.intercept
+
+    axScatter.plot([0, 2000], [0, intc + slope*2000],
+                   ls="--",
+                   color='black',
+                   linewidth=2,
+                   label=r"Linear Fit, $\alpha={:.2},\beta={:.3}$".format(intc, slope))
+
+    plt.legend(fontsize=20)
 
     # # Set limits for dE/dx values
     # axScatter.set_xlim((x_bins[0], x_bins[-1]))
@@ -85,9 +115,7 @@ def main():
 
     plt.show()
 
-    # Compare the 
-
-
+    # Compare the
 
 
 if __name__ == "__main__":
