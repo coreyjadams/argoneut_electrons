@@ -27,12 +27,17 @@ if __name__ == '__main__':
     my_proc.add_input_file(f)
 
     # Specify IO mode
-    my_proc.set_io_mode(larlite.storage_manager.kREAD)
+    my_proc.set_io_mode(larlite.storage_manager.kBOTH)
 
     # Specify output root file name
-    # my_proc.set_ana_output_file()
+    my_proc.set_ana_output_file("ana.root")
+    my_proc.set_output_file("out.root")
+
+    filterModule = argofilter.TrackFilter()
+    filterModule.setTrackProducer("pmtrack")
+    filterModule.setClusterProducer("trajcluster")
 
     # Attach an analysis unit ... here we use a base class which do
-    my_proc.add_process(argofilter.TrackFilter())
+    my_proc.add_process(filterModule)
 
     my_proc.run(0)

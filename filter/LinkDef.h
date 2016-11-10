@@ -10,7 +10,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class argofilter::BasicFilter+;
-#pragma link C++ class larlite::TrackFilter+;
+#pragma link C++ class argofilter::TrackFilter+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 

@@ -16,13 +16,14 @@
 #define LARLITE_TRACKFILTER_H
 
 #include "Analysis/ana_base.h"
+#include "TH1D.h"
 
-namespace larlite {
+namespace argofilter {
   /**
      \class TrackFilter
      User custom analysis class made by SHELL_USER_NAME
    */
-  class TrackFilter : public ana_base{
+  class TrackFilter : public larlite::ana_base{
   
   public:
 
@@ -40,15 +41,24 @@ namespace larlite {
     /** IMPLEMENT in TrackFilter.cc! 
         Analyze a data event-by-event  
     */
-    virtual bool analyze(storage_manager* storage);
+    virtual bool analyze(larlite::storage_manager* storage);
 
     /** IMPLEMENT in TrackFilter.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
+    void setTrackProducer(std::string s){_track_producer = s;}
+    void setClusterProducer(std::string s){_cluster_producer = s;}
+
   protected:
     
+    std::string _track_producer;
+    std::string _cluster_producer;
+
+    // Analysis histograms:
+    TH1D * _n_tracks_hist;
+
   };
 }
 #endif
