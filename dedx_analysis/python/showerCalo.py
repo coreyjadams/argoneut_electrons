@@ -283,6 +283,31 @@ def full_simch_samples():
     return ((electron_data_module, electron_sim_module),
             (photon_data_module, photon_sim_module))
 
+
+def full_simch_electrons():
+    electron_data_file = "/data_linux/argoneut/dedx_files/electron_shower_reco.root"
+
+    data_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_data_gapsFilled.pkl"
+    lifetime_file = '/data_linux/argoneut/calibration_files/lifetimes_data.pkl'
+
+    electron_data_module = showerCalo(
+        electron_data_file, data_calibration_file,lifetime_file, mc=False, producer="bootlegMatched",select=True)
+
+    electron_data_module.run()
+
+    # For MC:
+    electron_sim_file = "/data_linux/argoneut/argoneut_single_electron/larlite_electron_lowerE_simch_mergeall_endpoint2d_match_shower.root"
+
+    sim_calibration_file = "/data_linux/argoneut/calibration_files/wireByWireCorrections_sim.pkl"
+
+    electron_sim_module = showerCalo(
+        electron_sim_file, sim_calibration_file,None, mc=True, producer="showerreco")
+
+    electron_sim_module.run()
+
+    return (electron_data_module, electron_sim_module)
+
+
 def lite_simch_samples():
     electron_data_file = "/data_linux/argoneut/dedx_files/electron_shower_reco.root"
     photon_data_file = "/data_linux/argoneut/dedx_files/photon_shower_reco.root"

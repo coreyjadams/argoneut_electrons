@@ -43,12 +43,13 @@ def drawdEdx(e_sim, p_sim, binwidth):
              ls="steps", linewidth=4,
              label="Simulated Gammas")
 
-        ax.set_title("Median dE/dx",fontsize=30)
+        # ax.set_title("Median dE/dx",fontsize=30)
 
         y_lim = ax.get_ylim()
         plt.ylim([0, 1.4])
 
-        plt.text(6.0, 0.7,"Distance = {} cm".format(distance),fontsize=25)
+        plt.text(5.0, 0.8,"Median",fontsize=25)
+        plt.text(5.0, 0.7,"Distance = {} cm".format(distance),fontsize=25)
 
 
 

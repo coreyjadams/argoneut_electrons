@@ -467,7 +467,10 @@ def main():
 
     print res
 
-    adjustWeightsToNCPi0_Gauss(482.6,635,5793.0,p_sim)
+    makePlot(p_sim, p_data, bins)
+    makePlotLandau(p_sim, p_data,bins)
+
+    adjustWeightsToNCPi0_Gauss(res.x[0],res.x[1],res.x[2],p_sim)
     # adjustWeightsToNCPi0_exp(500,1.0,p_sim)
 
     makePlot(p_sim, p_data, bins)

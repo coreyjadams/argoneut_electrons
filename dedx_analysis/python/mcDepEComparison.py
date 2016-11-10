@@ -44,14 +44,15 @@ def main():
     mc_est = processMC(f)
 
     # Get the data too:
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
     (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
 
     data_depE = e_data.getShowerCaloVector().reco_deposited_energy(1)
 
     print "MC Electrons: ", mc_est._theta.size()
 
-    width=500
-    energy_bins = numpy.arange(000, 4000, width)
+    width=400
+    energy_bins = numpy.arange(200, 4000, width)
 
 
     # This section creates the mc distribution
@@ -77,10 +78,14 @@ def main():
 
     data_hist, bins = numpy.histogram(data_depE, energy_bins, normed=False)
 
+    print "Lowest data event: {}".format(numpy.min(data_depE))
+
     data_err = []
     for i in data_hist:
         if i > 0:
-            data_err.append(1/math.sqrt(i))
+            print i
+            data_err.append(math.sqrt(1/i + (0.2*i)**2) / i)
+            print data_err[-1]
         else:
             data_err.append(0)
 
@@ -92,11 +97,10 @@ def main():
 
     fig, ax = plt.subplots(figsize=(10, 7))
 
-    print mc_err
-    print mc_hist
+    print data_err
+    print data_hist
 
-    ax.bar(x_bins, mc_err, width=width, label="MC Electrons",
-           bottom=mc_hist-0.5*mc_err,
+    ax.bar(x_bins, mc_hist, width=width, label="MC Electrons",
            alpha=0.5,
            align='center')
     ax.errorbar(x_bins, data_hist, label="Electron Candidates",
@@ -104,6 +108,11 @@ def main():
                 marker="o",
                 markersize=8,
                 yerr=data_err, color='black')
+
+    x1,x2,y1,y2 = plt.axis()
+
+    plt.axis((200,x2,0,y2))
+
 
     plt.ylabel("Area Normalized", fontsize=20)
     plt.xlabel("Reconstructed Deposited Energy [MeV]", fontsize=20)

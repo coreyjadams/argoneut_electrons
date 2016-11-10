@@ -11,9 +11,11 @@ from matplotlib import pyplot as plt
 
 def main():
 
+    # threshold = 5.0
+
     # load the data:
-    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
-    (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+    # (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_simch_samples()
+    (e_data, e_sim) = showerCalo.full_simch_electrons()
 
     sim_reco_dep_e_i = e_sim.getShowerCaloVector().reco_deposited_energy(0)
     sim_reco_dep_e_c = e_sim.getShowerCaloVector().reco_deposited_energy(1)
@@ -50,7 +52,7 @@ def main():
     slope = res.slope
     intc = res.intercept
 
-    axScatter.plot([0, 2000], [0, intc + slope*2000],
+    axScatter.plot([0, 2000], [intc, intc + slope*2000],
                    ls="--",
                    color='black',
                    linewidth=2,
@@ -97,12 +99,13 @@ def main():
     slope = res.slope
     intc = res.intercept
 
-    axScatter.plot([0, 2000], [0, intc + slope*2000],
+    axScatter.plot([0, 2000], [intc, intc + slope*2000],
                    ls="--",
                    color='black',
                    linewidth=2,
                    label=r"Linear Fit, $\alpha={:.2},\beta={:.3}$".format(intc, slope))
 
+    plt.text(50,1500,"All Depositions > {} MeV ".format(threshold),fontsize=20)
     plt.legend(fontsize=20)
 
     # # Set limits for dE/dx values

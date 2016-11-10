@@ -350,12 +350,12 @@ def photonDataMC(photon_data,photon_sim):
     ax.set_title("Gamma dE/dx Hits",fontsize=30)
 
     for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(16)
+        tick.label.set_fontsize(25)
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(0)
 
-    plt.xlabel("dE/dx [MeV/cm]",fontsize=20)
-    plt.ylabel("Area Normalized",fontsize=20)
+    plt.xlabel("dE/dx [MeV/cm]",fontsize=30)
+    plt.ylabel("Area Normalized",fontsize=30)
     plt.legend(fontsize=20)
     plt.grid(True)
     plt.xlim([0,8.0])
@@ -364,10 +364,11 @@ def photonDataMC(photon_data,photon_sim):
 
 
 
-(e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
-# (e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
+# (e_data, e_sim), (p_data, p_sim) = showerCalo.full_samples()
+(e_data, e_sim), (p_data, p_sim) = showerCalo.lite_samples()
 
 # e_data.getShowerCaloVector().set_drop_first_hit(True)
+# adjustWeightsToNCPi0_Gauss(298.6,743,9870,p_sim)
 adjustWeightsToNCPi0_Gauss(482.6,635,5793.0,p_sim)
 
 

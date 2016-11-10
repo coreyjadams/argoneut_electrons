@@ -12,6 +12,7 @@ def drawdEdx(e_sim, p_sim, binwidth):
 
     # This will loop over a distance soon:
     # distances = np.arange(1.5,20,0.5)
+    # distances = [2.0, 3.0]
     distances = [2.0, 3.0, 4.0, 6.0, 10.0]
 
     bins = np.arange(binwidth, 12+binwidth, binwidth)
@@ -42,12 +43,13 @@ def drawdEdx(e_sim, p_sim, binwidth):
              ls="steps", linewidth=4,
              label="Simulated Gammas")
 
-        ax.set_title("Modified-Mean dE/dx", fontsize=30)
+        # ax.set_title("Modified-Mean dE/dx", fontsize=30)
 
         y_lim = ax.get_ylim()
         plt.ylim([0, 1.4])
 
-        plt.text(6.0, 0.7,"Distance = {} cm".format(distance),fontsize=25)
+        plt.text(5.0, 0.8,"Modified Mean",fontsize=25)
+        plt.text(5.0, 0.7,"Distance = {} cm".format(distance),fontsize=25)
 
 
 

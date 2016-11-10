@@ -49,13 +49,13 @@ def main():
     e_theta = []
     e_phi = []
     for shower in e_data.getShowerCaloVector():
-        e_theta.append((180. / math.pi)*shower._3D_direction.Theta())
+        e_theta.append(math.cos(shower._3D_direction.Theta()))
         e_phi.append((180. / math.pi)*shower._3D_direction.Phi())
 
-    mcTheta = (180. / math.pi)*numpy.asarray(mc_est._theta)
+    mcTheta = numpy.cos(numpy.asarray(mc_est._theta))
 
 
-    theta_bins = numpy.arange(0, 180, 9)
+    theta_bins = numpy.arange(0.75, 1.001, 0.0125)
 
     # This section creats the mc distribution
     # area normalized with statistical error:
@@ -103,23 +103,26 @@ def main():
     print mc_err
     print mc_hist
 
-    ax.bar(x_bins,mc_err,width=9, label="Electron Candidates",
-            bottom=mc_hist-0.5*mc_err,
-            alpha=0.5,
-            align='center')
+
+
+    ax.bar(x_bins,mc_hist,width=0.0125, align='center',
+            label="Electron Candidates",
+            alpha=0.65,
+            color="b")
     ax.errorbar(x_bins, data_hist, label="MC Electrons",
                 ls="none",
                 marker="o",
-                markersize=8,
+                capsize=6,
+                markersize=10,
                 yerr=data_err, color='black')
 
     plt.ylabel("Area Normalized", fontsize=20)
-    plt.xlabel("Polar Angle [Deg.]", fontsize=20)
-    plt.title(
-        r"$\theta$ (Polar Angle) of Showers to Beam Direction", fontsize=30)
+    plt.xlabel(r"$cos(\theta)$", fontsize=20)
+    # plt.title(
+        # r"$\theta$ (Polar Angle) of Showers to Beam Direction", fontsize=30)
     # ax.set_ylim((0,45))
     # ax.set_xlim((0,90))
-    plt.legend(fontsize=30)
+    plt.legend(fontsize=20,loc=2)
     plt.grid(True)
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontsize(15)
