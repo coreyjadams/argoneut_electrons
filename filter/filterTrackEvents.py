@@ -12,7 +12,10 @@ if __name__ == '__main__':
         sys.stderr.write(msg)
         sys.exit(1)
 
-    f = sys.argv[-1]
+
+    print sys.argv
+
+    f = sys.argv[1:]
 
     
     # Run minos matching on the file, reject events that are matched to minos:
@@ -24,7 +27,8 @@ if __name__ == '__main__':
     my_proc = larlite.ana_processor()
 
     # Set input root file
-    my_proc.add_input_file(f)
+    for _f in f:
+        my_proc.add_input_file(_f)
 
     # Specify IO mode
     my_proc.set_io_mode(larlite.storage_manager.kBOTH)
