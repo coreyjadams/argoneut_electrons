@@ -69,7 +69,7 @@ def main(**args):
 
   # showerRecoUnit.SetInputProducer("mergeallMatched")
   showerRecoUnit.SetInputProducer("mergeallMatched")
-  showerRecoUnit.SetOutputProducer("showerreco")
+  showerRecoUnit.SetOutputProducer("showerrecoNoIter")
   # showerRecoUnit.SetOutputProducer("mergeallreco")
 
   my_proc.add_process(showerRecoUnit)

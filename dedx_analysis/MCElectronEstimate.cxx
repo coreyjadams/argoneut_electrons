@@ -114,7 +114,7 @@ bool MCElectronEstimate::isActive(const TLorentzVector & vertex, double cut) {
   // Argoneut specific
   if (vertex.X() > 23.5 - cut || vertex.X() < -23.5 + cut) return false;
   if (vertex.Y() > 20 - cut || vertex.Y() < -20 + cut) return false;
-  if (vertex.Z() > 90 - 25 || vertex.Z() < 0 + cut) return false;
+  if (vertex.Z() > 90 - cut || vertex.Z() < 0 + cut) return false;
 
   return true;
 }

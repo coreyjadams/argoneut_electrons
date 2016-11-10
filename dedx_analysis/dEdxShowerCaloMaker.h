@@ -108,6 +108,9 @@ protected:
   protoshower::ProtoShowerHelper ps_helper;
   protoshower::ProtoShowerAlgArgoNeuT *  ps_alg;
 
+  float threshold = 5.0;
+  float _total_depE;
+
 };
 }
 #endif

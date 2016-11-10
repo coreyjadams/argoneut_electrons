@@ -74,7 +74,7 @@ namespace larlite {
     int subrun;
 
     // private functions:
-    bool isActive(const TLorentzVector & vertex,double cut=3);
+    bool isActive(const TLorentzVector & vertex,double cut=4);
     
   };
 }

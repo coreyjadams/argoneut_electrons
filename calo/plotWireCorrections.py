@@ -3,7 +3,7 @@ from  matplotlib import pyplot as plt
 import pickle
 
 # Get the data:
-pk = open('wireByWireCorrections_data.pkl')
+pk = open('/data_linux/argoneut/calibration_files/wireByWireCorrections_data.pkl')
 
 wire_corr = pickle.load(pk)
 
@@ -59,6 +59,6 @@ plt.grid(True)
 
 plt.show()
 
-# Repickle the corrected version:
-output = open("wireByWireCorrections_data_gapsFilled.pkl",'wb')
-pickle.dump(wire_corr,output)
+# # Repickle the corrected version:
+# output = open("wireByWireCorrections_data_gapsFilled.pkl",'wb')
+# pickle.dump(wire_corr,output)

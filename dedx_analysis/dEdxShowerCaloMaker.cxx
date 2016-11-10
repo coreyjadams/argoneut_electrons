@@ -65,7 +65,7 @@ bool dEdxShowerCaloMaker::getTruedEdxVector(larlite::storage_manager * storage, 
 
 
   // Compare to the total energy deposited in the simch info:
-  double simch_depE = 0.0;
+  _total_depE = 0.0;
   for (auto & simid : * ev_simch) {
     if (simid.Channel() < 240)
       continue;
@@ -78,6 +78,9 @@ bool dEdxShowerCaloMaker::getTruedEdxVector(larlite::storage_manager * storage, 
       // Really, that can be most easily translated into the required metrics
       // by knowing how far along the direction it is from the start point, as well
       // as the perpendicular distance.
+      if (ide.energy > threshold) {
+        _total_depE += ide.energy;
+      }
 
       TVector3 thisPoint(ide.x, ide.y, ide.z);
 
@@ -96,7 +99,7 @@ bool dEdxShowerCaloMaker::getTruedEdxVector(larlite::storage_manager * storage, 
 
       // std::cout << "3dpoint : [" << ide.x << ", " << ide.y << ", " << ide.z << "]" << std::endl;
       // _data.push_back( SimChannel3D(ide.x, ide.y, ide.z) );
-      simch_depE += ide.energy;
+      // simch_depE += ide.energy;
     }
   }
 
@@ -146,12 +149,14 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
     _true_interaction_point = ev_mcshower -> front().Start().Position().Vect();
     _truth_start_dir *= 1.0 / _truth_start_dir.Mag();
     _true_energy = ev_mcshower -> front().Start().E();
+
+    getTruedEdxVector(storage, _distance_and_E);
+    // _true_deposited_energy = _total_depE;
     _true_deposited_energy = ev_mcshower -> front().DetProfile().E();
 
     if (_true_deposited_energy < 50) {
       return false;
     }
-    getTruedEdxVector(storage, _distance_and_E);
   }
   else {
     // Get the vertex from the "bootlegVertex producer used in data"
@@ -167,7 +172,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
   auto LArProp = larutil::LArProperties::GetME();
   auto detprop = larutil::DetectorProperties::GetME();
 
-  double _mip_q = LArProp->ModBoxInverse(1.73);
+  double _mip_q = LArProp->ModBoxInverse(2.0);
 
 
   const double recombFactor = LArProp->ModBoxCorrection(_mip_q) / _mip_q;
@@ -307,7 +312,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
           _close_hit_indexes =
             geomHelper -> SelectLocalPointList( _params.hit_vector,
                                                 startingHit,
-                                                4*dist,
+                                                4 * dist,
                                                 0.5,
                                                 slope,
                                                 averagePoint);
@@ -317,7 +322,7 @@ bool dEdxShowerCaloMaker::analyze(larlite::storage_manager* storage) {
         _close_hit_indexes =
           geomHelper -> SelectLocalPointList( _params.hit_vector,
                                               startingHit,
-                                              4*dist,
+                                              4 * dist,
                                               0.5,
                                               slope,
                                               averagePoint);

@@ -24,6 +24,8 @@ def getShowerRecoAlgModular():
   alg = showerreco.ShowerRecoAlgModular()
   alg.SetDebug(False)
 
+  angle3D = showerreco.Angle3DFormula()
+
   # 3D Axis Module:
   axis3D = showerreco.Axis3DModule()
   axis3D.setMaxIterations(100)
@@ -47,10 +49,10 @@ def getShowerRecoAlgModular():
   dedx.SetUsePitch(False)
   dedx.setVerbosity(False)
 
+  alg.AddShowerRecoModule(angle3D)
   # alg.AddShowerRecoModule(axis3D)
-  alg.AddShowerRecoModule(axis3D)
   alg.AddShowerRecoModule(showerreco.StartPoint3DModule()  )
-  alg.AddShowerRecoModule(showerreco.OtherStartPoint3D()  )
+  # alg.AddShowerRecoModule(showerreco.OtherStartPoint3D()  )
   alg.AddShowerRecoModule(energy)
   alg.AddShowerRecoModule(dqdx)
   # alg.AddShowerRecoModule(dedx)

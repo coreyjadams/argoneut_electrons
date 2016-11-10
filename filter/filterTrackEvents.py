@@ -33,6 +33,6 @@ if __name__ == '__main__':
     # my_proc.set_ana_output_file()
 
     # Attach an analysis unit ... here we use a base class which do
-    my_proc.add_process(argofilter.CrossingMuonFilter())
+    my_proc.add_process(argofilter.TrackFilter())
 
     my_proc.run(0)

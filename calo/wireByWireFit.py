@@ -57,7 +57,7 @@ def runCaloMuons(amp_q_constants, area_q_constants, amp_e_constants, area_e_cons
     #     lifetimes[run] = lifetime_calibrations[run]
 
     # This is for mc:
-    lifetimes[1] = 750
+    lifetimes[1] = 500
 
     caloAlg.setLifetimes(lifetimes)
 
@@ -98,7 +98,7 @@ def fitWireData(caloAlg, plane, wire):
         else:
             scale -= 0.5*(popt[0] - 1.73) / 1.73
         i += 1
-        if i > 5:
+        if i > 7:
             break
 
     # scale the y axis to fit nicely:
@@ -131,7 +131,7 @@ def fitWireData(caloAlg, plane, wire):
     # plt.show()
 
     file_name = "xing_muons_dedx_fit_plane{}_wire{}.png".format(plane,wire)
-    file_path = "/data_linux/argoneut/dedx_plots/xing_muon_calibration_data/wires/"
+    file_path = "/data_linux/argoneut/dedx_plots/xing_muon_calibration_sim_500/wires/"
     plt.savefig(file_path+file_name)
     plt.close(fig)
     return scale
@@ -185,6 +185,6 @@ if __name__ == '__main__':
 
 
     print wireCorrections
-    output = open("wireByWireCorrections_sim.pkl",'wb')
+    output = open("wireByWireCorrections_sim_500.pkl",'wb')
     pickle.dump(wireCorrections,output)
 
