@@ -51,40 +51,30 @@ bool FilterMinosTracks::analyze(storage_manager* storage) {
 
 
   auto evt_minos = storage->get_data<larlite::event_minos>("minos");
-  auto evt_track = storage->get_data<larlite::event_track>("ct");
+  // auto evt_track = storage->get_data<larlite::event_track>("pmtrack");
   auto evt_mctruth = storage->get_data<larlite::event_mctruth>("generator");
 
 
   if (evt_minos->size() == 0 || evt_track->size() == 0 ) {
     //std::cout<<"No minos or no argoneut tracks..."<<std::endl;
-    return -1;
+    return true;
   }
 
+  // Get the pfparticles
+  larlite::event_track * ev_track = nullptr;
+  auto track_ass = storage -> find_one_ass(evt_minos->id(), ev_track, evt_minos->name());
 
-  auto ass_info = evt_minos->association(evt_track->id());
-  //evt_minos->list_association() ;
 
-  for (auto const & track_indices : ass_info ) {
+  for (auto const & track_indices : track_ass ) {
 //    std::cout<<"track indices size: "<<track_indices.size()<<std::endl;
     for (size_t track_index = 0; track_index < track_indices.size(); track_index++) {
-      auto X = evt_mctruth->at(track_index).GetNeutrino().Lepton().Trajectory().at(0).X() ;
-      auto Y = evt_mctruth->at(track_index).GetNeutrino().Lepton().Trajectory().at(0).Y() ;
-      auto Z = evt_mctruth->at(track_index).GetNeutrino().Lepton().Trajectory().at(0).Z() ;
 
-      if ( X < 0 || X > 47 || Y < -20 || Y > 20 || Z < 0 || Z > 90) {
-        //    std::cout<<"Outside active volume..."<<std::endl;
-        return false;
-      }
-
-//        std::cout<<"track index: "<<track_index<<std::endl;
       auto argo_track = evt_track->at(track_index) ;
-      _outGoingLepton = evt_mctruth->at(track_index).GetNeutrino().Lepton().PdgCode() ;
-
 
       std::vector<double> larStart(3, 0), larEnd(3, 0);
-      larStart[0] = argo_track.vertex_at(0)[0];
-      larStart[1] = argo_track.vertex_at(0)[1];
-      larStart[2] = argo_track.vertex_at(0)[2];
+      larStart[0] = argo_track.LocationAtPoint(0)[0];
+      larStart[1] = argo_track.LocationAtPoint(0)[1];
+      larStart[2] = argo_track.LocationAtPoint(0)[2];
 
 
       if (fabs(larStart[0]) < fdBoundary ||
@@ -105,7 +95,7 @@ bool FilterMinosTracks::analyze(storage_manager* storage) {
         Reset() ;
         return true;
       }
-      else {
+      else {  
         _rejX = evt_mctruth->at(track_index).GetNeutrino().Lepton().Trajectory().at(0).X() ;
         _rejY = evt_mctruth->at(track_index).GetNeutrino().Lepton().Trajectory().at(0).Y() ;
         _rejZ = evt_mctruth->at(track_index).GetNeutrino().Lepton().Trajectory().at(0).Z() ;
